@@ -15,7 +15,6 @@ plugins {
 }
 
 ext {
-    globalWebDir = file("$rootDir/web")
     isReleaseVersion = !version.endsWith("SNAPSHOT")
 }
 
@@ -31,9 +30,6 @@ apply from: "$rootDir/gradle/License.gradle"
 def leafProjects = subprojects.findAll { subproject ->
     subproject.subprojects.empty
 }
-leafProjects.remove(project(":java:installer"))
-ext.leafProjects = leafProjects // Publish as external variable
-
 
 // Spotbugs
 def enableSpotbugs = hasProperty("spotbugs") || Boolean.getBoolean("spotbugs") || Boolean.parseBoolean(System.getenv('SPOTBUGS'))
@@ -475,8 +471,6 @@ configure(leafProjects) {
     task printDependencies(type: DependencyReportTask) {
         description "Prints project dependency tree"
     }
-}
-
 }
 
 build.dependsOn leafProjects.collect { proj -> proj.build }, project.tasks.getByName('downloadLicenses')
