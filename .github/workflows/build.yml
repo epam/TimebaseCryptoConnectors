@@ -50,7 +50,7 @@ jobs:
           DOCKER_REGISTRY_USERNAME: ${{ secrets.DOCKER_HUB_USER }}
           DOCKER_REGISTRY_PASSWORD: ${{ secrets.DOCKER_HUB_TOKEN }}
       - name: Run tests
-        run: ./gradlew junitTest
+        run: ./gradlew test
       - name: Upload test results
         if: ${{ failure() }}
         uses: actions/upload-artifact@v2
