@@ -1,0 +1,10 @@
+.vs
+*.vc.db
+*.user
+.idea
+.gradle
+
+/**/bin/
+/**/obj/
+/**/build/
+/**/out/
