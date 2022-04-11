@@ -83,12 +83,13 @@ public abstract class SingleWsFeed extends MdFeed {
                             } : null;
 
             final WebSocket.Listener wsListener = new WebSocket.Listener() {
-                private final WsJsonFrameSender jsonSender = new WsJsonFrameSender(webSocket);
+                private WsJsonFrameSender jsonSender;
                 private final ZlibAsciiTextDecompressor decompressor = new ZlibAsciiTextDecompressor(); // TODO: configurable decoder?
 
                 @Override
                 public void onOpen(final WebSocket webSocket) {
                     lastReceiveTime = System.nanoTime();
+                    jsonSender = new WsJsonFrameSender(webSocket);
 
                     try {
                         prepareSubscription(jsonSender, symbols);
