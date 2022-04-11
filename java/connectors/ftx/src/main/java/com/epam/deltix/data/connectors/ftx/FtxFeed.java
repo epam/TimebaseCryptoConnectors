@@ -1,4 +1,4 @@
-package com.epam.deltix.data.connectors.huobi;
+package com.epam.deltix.data.connectors.ftx;
 
 import com.epam.deltix.data.connectors.commons.*;
 import com.epam.deltix.data.connectors.commons.json.*;
@@ -6,19 +6,19 @@ import com.epam.deltix.data.connectors.commons.l2.*;
 import com.epam.deltix.dfp.Decimal64Utils;
 import com.epam.deltix.qsrv.hf.pub.ExchangeCodec;
 import com.epam.deltix.qsrv.hf.tickdb.pub.TimeConstants;
+import com.epam.deltix.timebase.messages.TypeConstants;
 
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
 
-public class HuobiSpotFeed extends SingleWsFeed {
-    private static final long HUOBI_EXCHANGE_CODE = ExchangeCodec.codeToLong("HUOBI");
-    private static final AtomicLong ID_GENERATOR = new AtomicLong();
+public class FtxFeed extends SingleWsFeed {
+    private static final long FTX_EXCHANGE_CODE = ExchangeCodec.codeToLong("FTX");
+    private static final BigDecimal TIME_MILLIS_SCALE = new BigDecimal(1000);
     // all fields are used by one single thread of WsFeed's ExecutorService
     private final JsonValueParser jsonParser = new JsonValueParser();
-    private final Iso8601DateTimeParser dtParser = new Iso8601DateTimeParser();
     private final Map<String, L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent>>
             l2Processors = new HashMap<>();
     private final DefaultEvent priceBookEvent = new DefaultEvent();
@@ -26,7 +26,7 @@ public class HuobiSpotFeed extends SingleWsFeed {
 
     private final int depth;
 
-    public HuobiSpotFeed(
+    public FtxFeed(
             final String uri,
             final int depth,
             final MdModel.Options selected,
@@ -37,7 +37,7 @@ public class HuobiSpotFeed extends SingleWsFeed {
         super(uri, 5000, selected, output, errorListener, symbols);
 
         this.depth = depth;
-        tradeProducer = new TradeProducer(HUOBI_EXCHANGE_CODE, output);
+        tradeProducer = new TradeProducer(FTX_EXCHANGE_CODE, output);
     }
 
     @Override
@@ -47,8 +47,9 @@ public class HuobiSpotFeed extends SingleWsFeed {
                 JsonValue subscriptionJson = JsonValue.newObject();
                 JsonObject body = subscriptionJson.asObject();
 
-                body.putString("sub", "market." + s.toLowerCase(Locale.ROOT) + ".depth.step0");
-                body.putString("id", String.valueOf(ID_GENERATOR.incrementAndGet()));
+                body.putString("op", "subscribe");
+                body.putString("channel", "orderbook");
+                body.putString("market", s);
 
                 subscriptionJson.toJsonAndEoj(jsonWriter);
             });
@@ -59,8 +60,9 @@ public class HuobiSpotFeed extends SingleWsFeed {
                 JsonValue subscriptionJson = JsonValue.newObject();
                 JsonObject body = subscriptionJson.asObject();
 
-                body.putString("sub", "market." + s.toLowerCase(Locale.ROOT) + ".trade.detail");
-                body.putString("id", String.valueOf(ID_GENERATOR.incrementAndGet()));
+                body.putString("op", "subscribe");
+                body.putString("channel", "trades");
+                body.putString("market", s);
 
                 subscriptionJson.toJsonAndEoj(jsonWriter);
             });
@@ -76,57 +78,43 @@ public class HuobiSpotFeed extends SingleWsFeed {
         }
 
         JsonValue jsonValue = jsonParser.eoj();
-
         JsonObject object = jsonValue.asObject();
-        if (object == null) {
-            return;
-        }
 
-        long ping = object.getLong("ping");
-        if (ping != 0L) {
-            jsonWriter.startObject();
-            jsonWriter.objectMember("pong");
-            jsonWriter.numberValue(ping);
-            jsonWriter.endObject();
-            jsonWriter.eoj();
-            return;
-        }
-
-        String topic = object.getString("ch");
-        if (topic == null) {
-            return;
-        }
-
-        String[] topicElements = topic.split("\\.");
-        if (topicElements.length != 4) {
-            return;
-        }
-
-        long timestamp = object.getLong("ts");
-        String instrument = topicElements[1];
-        if ("depth".equalsIgnoreCase(topicElements[2]) && "step0".equalsIgnoreCase(topicElements[3])) {
+        String channel = object.getString("channel");
+        if ("orderbook".equalsIgnoreCase(channel)) {
+            String instrument = object.getString("market");
             L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent> l2Processor
                 = getPriceBookProcessor(instrument);
 
-            JsonObject tick = object.getObject("tick");
-            if (tick != null) {
+            String type = object.getString("type");
+            JsonObject jsonData = object.getObject("data");
+            if ("partial".equalsIgnoreCase(type)) {
+                long timestamp = getTimestamp(jsonData.getDecimal("time"));
                 l2Processor.onSnapshotPackageStarted(TimeConstants.TIMESTAMP_UNKNOWN, timestamp);
-                processSnapshotSide(l2Processor, tick.getArray("bids"), false);
-                processSnapshotSide(l2Processor, tick.getArray("asks"), true);
+                processSnapshotSide(l2Processor, jsonData.getArrayRequired("bids"), false);
+                processSnapshotSide(l2Processor, jsonData.getArrayRequired("asks"), true);
                 l2Processor.onPackageFinished();
+            } else if ("update".equalsIgnoreCase(type)) {
+                JsonArray bids = jsonData.getArray("bids");
+                JsonArray asks = jsonData.getArray("asks");
+                if ((bids != null && bids.size() > 0) || (asks != null && asks.size() > 0)) {
+                    long timestamp = getTimestamp(jsonData.getDecimal("time"));
+                    l2Processor.onIncrementalPackageStarted(timestamp);
+                    processChanges(l2Processor, bids, false);
+                    processChanges(l2Processor, asks, true);
+                    l2Processor.onPackageFinished();
+                }
             }
-        } else if ("trade".equalsIgnoreCase(topicElements[2]) && "detail".equalsIgnoreCase(topicElements[3])) {
-            JsonObject tick = object.getObject("tick");
-            if (tick != null) {
-                JsonArray dataJson = tick.getArray("data");
-                if (dataJson != null) {
-                    for (int i = 0; i < dataJson.size(); ++i) {
-                        JsonObject trade = dataJson.getObject(i);
-                        long price = Decimal64Utils.fromBigDecimal(trade.getDecimalRequired("price"));
-                        long size = Decimal64Utils.fromBigDecimal(trade.getDecimalRequired("amount"));
-
-                        tradeProducer.onTrade(timestamp, instrument, price, size);
-                    }
+        } else if ("trades".equalsIgnoreCase(channel)) {
+            String instrument = object.getString("market");
+            JsonArray trades = object.getArray("data");
+            if (trades != null) {
+                for (int i = 0; i < trades.size(); ++i) {
+                    JsonObject trade = trades.getObject(i);
+                    long price = Decimal64Utils.fromBigDecimal(trade.getDecimalRequired("price"));
+                    long size = Decimal64Utils.fromBigDecimal(trade.getDecimalRequired("size"));
+                    long timestamp = OffsetDateTime.parse(trade.getString("time")).toInstant().toEpochMilli();
+                    tradeProducer.onTrade(timestamp, instrument, price, size);
                 }
             }
         }
@@ -150,7 +138,7 @@ public class HuobiSpotFeed extends SingleWsFeed {
 
             result = L2Processor.builder()
                 .withInstrument(instrument)
-                .withSource(HUOBI_EXCHANGE_CODE)
+                .withSource(FTX_EXCHANGE_CODE)
                 .withBookOutputSize(depth)
                 .buildWithPriceBook(
                     builder.build()
@@ -187,4 +175,37 @@ public class HuobiSpotFeed extends SingleWsFeed {
         }
     }
 
+    private void processChanges(
+            final L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent> l2Processor,
+            final JsonArray changes,
+            final boolean ask)
+    {
+        if (changes == null) {
+            return;
+        }
+
+        for (int i = 0; i < changes.size(); i++) {
+            final JsonArray change = changes.getArrayRequired(i);
+            if (change.size() != 2) {
+                throw new IllegalArgumentException("Unexpected size of a change :" + change.size());
+            }
+            priceBookEvent.reset();
+
+            long size = Decimal64Utils.fromBigDecimal(change.getDecimalRequired(1));
+            if (Decimal64Utils.isZero(size)) {
+                size = TypeConstants.DECIMAL_NULL; // means delete the price
+            }
+
+            priceBookEvent.set(
+                ask,
+                Decimal64Utils.fromBigDecimal(change.getDecimalRequired(0)),
+                size
+            );
+            l2Processor.onEvent(priceBookEvent);
+        }
+    }
+
+    private long getTimestamp(BigDecimal time) {
+        return time.multiply(TIME_MILLIS_SCALE).longValue();
+    }
 }

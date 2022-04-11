@@ -43,3 +43,13 @@ connectors:
       - "L2"
       - "TRADES"
     instruments: "btcusdt,ethbtc"
+
+  ftx:
+    stream: ftx
+    wsUrl: wss://ftx.com/ws
+    depth: 20
+    model:
+      - "L1"
+      - "L2"
+      - "TRADES"
+    instruments: "USDT-PERP,LTC/USDT"
