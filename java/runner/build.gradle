@@ -12,7 +12,7 @@ dependencies {
 
     implementation 'javax.annotation:javax.annotation-api'
 
-    implementation "com.epam.deltix:gflog-api",
+    runtimeOnly "com.epam.deltix:gflog-api",
             "com.epam.deltix:gflog-core",
             "com.epam.deltix:gflog-jul",
             "com.epam.deltix:gflog-jcl"
