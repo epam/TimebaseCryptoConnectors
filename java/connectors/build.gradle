@@ -1,0 +1,43 @@
+defaultTasks 'clean', 'build'
+
+ext.nowTimestamp = new Date().format('yyyy/MM/dd HH:mm:ss z', TimeZone.getTimeZone('GMT'))
+
+def leafProjects = subprojects.findAll { subproject ->
+    subproject.subprojects.empty
+}
+
+/****** For all java connectors subprojects ******/
+configure(leafProjects) {
+
+    dependencies {
+        implementation project(":java:commons")
+        implementation group: 'io.github.green4j', name: 'green-jelly'
+
+        implementation "org.finos.timebase-ce:timebase-client"
+        implementation "com.epam.deltix:dfp"
+
+        testImplementation "org.junit.jupiter:junit-jupiter-api"
+        testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine"
+    }
+
+    tasks.withType(JavaCompile) {
+        options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+    }
+
+    test {
+        useJUnitPlatform()
+        testLogging {
+            showStandardStreams = true
+            exceptionFormat = 'full'
+        }
+    }
+
+    / **
+     * All commons projects' classes should be included into the result jar
+     * /
+    project.afterEvaluate {
+        project.configurations.collectMany { it.allDependencies }.
+                findAll { it instanceof ProjectDependency }.
+                forEach { jar.from project(it.getDependencyProject().path).sourceSets.main.output }
+    }
+}

@@ -1,1 +1,27 @@
-include ':java:executor'
+def excludingProjects = ['buildSrc'] as Set
+
+def discoverSubprojects
+discoverSubprojects = { File baseFolder, File currentFolder, List toCollection ->
+
+    //System.out.println("Process folder: " + currentFolder)
+    currentFolder.eachDir() { dir ->
+
+        def relative = baseFolder.toPath().relativize(dir.toPath())
+        def projectName = relative.toString().replace(File.separatorChar, ':' as char)
+
+        if (new File('build.gradle', dir).exists() && new File('src', dir).exists()) {
+            System.out.println("Found project: " + projectName)
+
+            if (!excludingProjects.contains(projectName)) {
+                toCollection.add(projectName)
+            }
+        } else {
+            discoverSubprojects(baseFolder, dir, toCollection)
+        }
+
+    }
+    return toCollection
+}
+
+include discoverSubprojects(rootDir, new File("java", rootDir), new ArrayList()) as String[]
+

@@ -1,0 +1,45 @@
+server:
+  port: 8930
+
+timebase:
+  url: dxtick://localhost:8011
+
+connectors:
+  coinbase:
+    stream: coinbase
+    wsUrl: wss://ws-feed.pro.coinbase.com
+    model:
+      - "L1"
+      - "L2"
+      - "TRADES"
+    instruments: "ETH-USD,BTC-USD,BTC-USDT,LTC-USD"
+
+  kraken:
+    stream: kraken
+    wsUrl: wss://ws.kraken.com
+    depth: 20
+    model:
+      - "L1"
+      - "L2"
+      - "TRADES"
+    instruments: "XBT/USD,XBT/USDT,ETH/USD,ETH/USDT,USDT/USD"
+
+  bitmex:
+    stream: bitmex
+    wsUrl: wss://ws.bitmex.com/realtime
+    depth: 20
+    model:
+      - "L1"
+      - "L2"
+      - "TRADES"
+    instruments: "XBTUSD,ETHUSD"
+
+  huobi-spot:
+    stream: huobi-spot
+    wsUrl: wss://api.huobi.pro/ws
+    depth: 20
+    model:
+      - "L1"
+      - "L2"
+      - "TRADES"
+    instruments: "btcusdt,ethbtc"

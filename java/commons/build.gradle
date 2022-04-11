@@ -1,0 +1,8 @@
+dependencies {
+    implementation 'io.github.green4j:green-jelly'
+    implementation "com.epam.deltix:dfp"
+
+    implementation "org.finos.timebase-ce:timebase-api"
+    implementation "org.finos.timebase-ce:timebase-client"
+    implementation "com.epam.deltix:timebase-messages"
+}
