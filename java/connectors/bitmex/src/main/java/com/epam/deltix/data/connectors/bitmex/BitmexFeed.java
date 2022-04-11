@@ -79,8 +79,6 @@ public class BitmexFeed extends SingleWsFeed {
             return;
         }
 
-        // todo: process type information
-
         String type = object.getString("table");
         if ("orderBookL2".equalsIgnoreCase(type)) {
             String action = object.getString("action");
@@ -108,9 +106,8 @@ public class BitmexFeed extends SingleWsFeed {
                 if (tradeData != null) {
                     for (int i = 0; i < tradeData.size(); ++i) {
                         JsonObject trade = tradeData.getObject(i);
-                        // todo: double types
-                        long price = Decimal64Utils.fromDouble(trade.getDoubleRequired("price"));
-                        long size = Decimal64Utils.fromDouble(trade.getDoubleRequired("size"));
+                        long price = Decimal64Utils.fromBigDecimal(trade.getDecimalRequired("price"));
+                        long size = Decimal64Utils.fromBigDecimal(trade.getDecimalRequired("size"));
                         String symbol = trade.getStringRequired("symbol");
                         long timestamp = dtParser.set(trade.getStringRequired("timestamp")).millis();
 
@@ -190,8 +187,8 @@ public class BitmexFeed extends SingleWsFeed {
             }
 
             long id = pair.getLong("id");
-            long size = Decimal64Utils.fromDouble(pair.getDoubleRequired("size"));
-            long price = Decimal64Utils.fromDouble(pair.getDoubleRequired("price"));
+            long size = Decimal64Utils.fromBigDecimal(pair.getDecimalRequired("size"));
+            long price = Decimal64Utils.fromBigDecimal(pair.getDecimalRequired("price"));
             boolean isOffer = "sell".equalsIgnoreCase(pair.getStringRequired("side"));
 
             idToPrice.put(id, price);
@@ -224,8 +221,8 @@ public class BitmexFeed extends SingleWsFeed {
             long size = TypeConstants.DECIMAL_NULL;
             long price = TypeConstants.DECIMAL_NULL;
             if ("insert".equalsIgnoreCase(action)) {
-                price = Decimal64Utils.fromDouble(change.getDoubleRequired("price"));
-                size = Decimal64Utils.fromDouble(change.getDoubleRequired("size"));
+                price = Decimal64Utils.fromBigDecimal(change.getDecimalRequired("price"));
+                size = Decimal64Utils.fromBigDecimal(change.getDecimalRequired("size"));
                 idToPrice.put(id, price);
             } else if ("delete".equalsIgnoreCase(action)) {
                 price = idToPrice.remove(id, Long.MIN_VALUE);
@@ -234,7 +231,7 @@ public class BitmexFeed extends SingleWsFeed {
                 }
             } else if ("update".equalsIgnoreCase(action)) {
                 price = idToPrice.get(id, Long.MIN_VALUE);
-                size = Decimal64Utils.fromDouble(change.getDoubleRequired("size"));
+                size = Decimal64Utils.fromBigDecimal(change.getDecimalRequired("size"));
                 if (price == Long.MIN_VALUE) {
                     throw new RuntimeException("Unknown price with id: " + id);
                 }

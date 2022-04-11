@@ -65,76 +65,68 @@ public class HuobiSpotFeed extends SingleWsFeed {
 
     @Override
     protected void onJson(final CharSequence data, final boolean last, final JsonWriter jsonWriter) {
-        try {
-            jsonParser.parse(data);
+        jsonParser.parse(data);
 
-            if (!last) {
-                return;
+        if (!last) {
+            return;
+        }
+
+        JsonValue jsonValue = jsonParser.eoj();
+
+        JsonObject object = jsonValue.asObject();
+        if (object == null) {
+            return;
+        }
+
+        long ping = object.getLong("ping");
+        if (ping != 0L) {
+            jsonWriter.startObject();
+            jsonWriter.objectMember("pong");
+            jsonWriter.numberValue(ping);
+            jsonWriter.endObject();
+            jsonWriter.eoj();
+            return;
+        }
+
+        String topic = object.getString("ch");
+        if (topic == null) {
+            return;
+        }
+
+        String[] topicElements = topic.split("\\.");
+        if (topicElements.length != 4) {
+            return;
+        }
+
+        long timestamp = object.getLong("ts");
+        String instrument = topicElements[1];
+        if ("depth".equalsIgnoreCase(topicElements[2]) && "step0".equalsIgnoreCase(topicElements[3])) {
+            L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent> l2Processor
+                = getPriceBookProcessor(instrument);
+
+            JsonObject tick = object.getObject("tick");
+            if (tick != null) {
+                l2Processor.onSnapshotPackageStarted(TimeConstants.TIMESTAMP_UNKNOWN, timestamp);
+                processSnapshotSide(l2Processor, tick.getArray("bids"), false);
+                processSnapshotSide(l2Processor, tick.getArray("asks"), true);
+                l2Processor.onPackageFinished();
             }
+        } else if ("trade".equalsIgnoreCase(topicElements[2]) && "detail".equalsIgnoreCase(topicElements[3])) {
+            JsonObject tick = object.getObject("tick");
+            if (tick != null) {
+                JsonArray dataJson = tick.getArray("data");
+                if (dataJson != null) {
+                    for (int i = 0; i < dataJson.size(); ++i) {
+                        JsonObject trade = dataJson.getObject(i);
+                        long price = Decimal64Utils.fromBigDecimal(trade.getDecimalRequired("price"));
+                        long size = Decimal64Utils.fromBigDecimal(trade.getDecimalRequired("amount"));
 
-            JsonValue jsonValue = jsonParser.eoj();
-
-            JsonObject object = jsonValue.asObject();
-            if (object == null) {
-                return;
-            }
-
-            long ping = object.getLong("ping");
-            if (ping != 0L) {
-                jsonWriter.startObject();
-                jsonWriter.objectMember("pong");
-                jsonWriter.numberValue(ping);
-                jsonWriter.endObject();
-                jsonWriter.eoj();
-                return;
-            }
-
-            String topic = object.getString("ch");
-            if (topic == null) {
-                return;
-            }
-
-            String[] topicElements = topic.split("\\.");
-            if (topicElements.length != 4) {
-                return;
-            }
-
-            long timestamp = object.getLong("ts");
-            String instrument = topicElements[1];
-            if ("depth".equalsIgnoreCase(topicElements[2]) && "step0".equalsIgnoreCase(topicElements[3])) {
-                L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent> l2Processor
-                    = getPriceBookProcessor(instrument);
-
-                JsonObject tick = object.getObject("tick");
-                if (tick != null) {
-                    l2Processor.onSnapshotPackageStarted(TimeConstants.TIMESTAMP_UNKNOWN, timestamp);
-                    processSnapshotSide(l2Processor, tick.getArray("bids"), false);
-                    processSnapshotSide(l2Processor, tick.getArray("asks"), true);
-                    l2Processor.onPackageFinished();
-                }
-            } else if ("trade".equalsIgnoreCase(topicElements[2]) && "detail".equalsIgnoreCase(topicElements[3])) {
-                JsonObject tick = object.getObject("tick");
-                if (tick != null) {
-                    JsonArray dataJson = tick.getArray("data");
-                    if (dataJson != null) {
-                        for (int i = 0; i < dataJson.size(); ++i) {
-                            JsonObject trade = dataJson.getObject(i);
-                            // todo: double
-                            long price = Decimal64Utils.fromDouble(trade.getDouble("price"));
-                            long size = Decimal64Utils.fromDouble(trade.getDouble("amount"));
-
-                            tradeProducer.onTrade(timestamp, instrument, price, size);
-                        }
+                        tradeProducer.onTrade(timestamp, instrument, price, size);
                     }
                 }
             }
-        } catch (Throwable t) {
-            System.out.println("Data: " + data);
-            t.printStackTrace();
-            int i = 3;
         }
     }
-
 
     private L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent>
         getPriceBookProcessor(String instrument)
@@ -182,12 +174,10 @@ public class HuobiSpotFeed extends SingleWsFeed {
                         + pair.size());
             }
             priceBookEvent.reset();
-
-            // todo: doubles
             priceBookEvent.set(
                     ask,
-                    Decimal64Utils.fromDouble(pair.getDoubleRequired(0)),
-                    Decimal64Utils.fromDouble(pair.getDoubleRequired(1))
+                    Decimal64Utils.fromBigDecimal(pair.getDecimalRequired(0)),
+                    Decimal64Utils.fromBigDecimal(pair.getDecimalRequired(1))
             );
             l2Processor.onEvent(priceBookEvent);
         }
