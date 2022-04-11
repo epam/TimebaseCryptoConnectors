@@ -12,8 +12,12 @@ import com.epam.deltix.qsrv.hf.tickdb.pub.TickDBFactory;
 import com.epam.deltix.qsrv.hf.tickdb.pub.TickLoader;
 import com.epam.deltix.timebase.messages.InstrumentMessage;
 
+import java.util.logging.Logger;
+
 public class TbMessageOutputFactory implements CloseableMessageOutputFactory {
-        private final String tbUrl;
+    private static final Logger LOG = Logger.getLogger(TbMessageOutputFactory.class.getName());
+
+    private final String tbUrl;
     private final String streamKey;
     private final RecordClassDescriptor[] types;
 
@@ -93,7 +97,7 @@ public class TbMessageOutputFactory implements CloseableMessageOutputFactory {
             return stream;
         }
 
-        System.out.println("Cannot find the stream '" + streamKey + "\'. Preparing new one..."); // TODO: logging?
+        LOG.info("Cannot find the stream '" + streamKey + "\'. Preparing a new one...");
 
         final StreamOptions options = new StreamOptions();
         options.name = streamKey;

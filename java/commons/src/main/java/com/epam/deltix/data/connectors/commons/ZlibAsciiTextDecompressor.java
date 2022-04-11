@@ -11,7 +11,7 @@ public class ZlibAsciiTextDecompressor {
     private byte[] receivedData = new byte[2048];
     private byte[] unzippedData = new byte[2048];
 
-    public CharSequence decompress(final ByteBuffer data) {
+    public CharSequence decompress(final ByteBuffer data) throws DataFormatException {
         int copiedBytes = copyReceivedData(data);
         int decompressedBytes = decompress(receivedData, copiedBytes);
         if (decompressedBytes == -1) {
@@ -30,22 +30,13 @@ public class ZlibAsciiTextDecompressor {
         return length;
     }
 
-    private int decompress(final byte[] input, final int length) {
+    private int decompress(final byte[] input, final int length) throws DataFormatException {
         try {
             inflater.setInput(input, 10, length - 10);
 
             int total = 0;
             while (!inflater.finished()) {
-                int count;
-
-                try {
-                    count = inflater.inflate(unzippedDataPortion);
-                } catch (DataFormatException e) {
-                    // todo:
-                    System.out.println("Unable to decompress data");
-                    e.printStackTrace();
-                    return -1;
-                }
+                final int count = inflater.inflate(unzippedDataPortion);
 
                 if (total + count > unzippedData.length) {
                     final byte[] newData = new byte[(total + count) << 1];

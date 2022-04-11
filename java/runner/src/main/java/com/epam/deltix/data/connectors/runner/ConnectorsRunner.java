@@ -26,7 +26,7 @@ import java.util.logging.Logger;
 
 @Service
 public class ConnectorsRunner {
-    private static final Logger LOGGER = Logger.getLogger(ConnectorsRunner.class.getName());
+    private static final Logger LOG = Logger.getLogger(ConnectorsRunner.class.getName());
 
     private final RunnerSettings runnerSettings;
     private final TimebaseSettings timebaseSettings;
@@ -52,7 +52,7 @@ public class ConnectorsRunner {
             discoverSettings()
         );
         implementations.forEach((name, implementation) -> {
-            LOGGER.info("Discovered Data Connector implementation: " + implementation);
+            LOG.info("Discovered Data Connector implementation: " + implementation);
         });
 
         connectorsSettings.getConnectors().forEach((name, settings) -> {
@@ -69,9 +69,9 @@ public class ConnectorsRunner {
                 }
 
                 connectors.put(name, connector);
-                LOGGER.info("Connector '" + name + "' instantiated");
+                LOG.info("Connector '" + name + "' instantiated");
             } else {
-                LOGGER.warning("Can't find implementation of connector '" +
+                LOG.warning("Can't find implementation of connector '" +
                         name + "' with type '" +
                         connectorType + "'.");
             }
@@ -82,14 +82,14 @@ public class ConnectorsRunner {
     public void startConnectors() {
         connectors.forEach((name, connector) -> {
             MdModel.Options model = buildModel(connector.model().select(), name);
-            LOGGER.info("Connector '" + name + "' subscribe model: " + model);
+            LOG.info("Connector '" + name + "' subscribe model: " + model);
 
             String[] instruments = buildInstruments(name);
-            LOGGER.info("Connector '" + name + "' subscribe instruments: " +
+            LOG.info("Connector '" + name + "' subscribe instruments: " +
                     Arrays.asList(instruments));
 
             connector.subscribe(model, instruments);
-            LOGGER.info("Connector '" + name + "' started");
+            LOG.info("Connector '" + name + "' started");
         });
     }
 
@@ -99,7 +99,7 @@ public class ConnectorsRunner {
             try {
                 connector.close();
             } catch (Throwable t) {
-                LOGGER.warning("Failed to close data connector '" + name + "'");
+                LOG.warning("Failed to close data connector '" + name + "'");
             }
         });
     }
@@ -122,12 +122,12 @@ public class ConnectorsRunner {
                 }
 
                 if (name == null || name.isEmpty()) {
-                    LOGGER.warning("Found data connector implementation " + cls.getName() +
+                    LOG.warning("Found data connector implementation " + cls.getName() +
                             " with unknown data connector name. Please specify @Connector annotation value.");
                 } else {
                     Class<?> settingsClass = settingsImplementations.get(name.toLowerCase());
                     if (settingsClass == null) {
-                        LOGGER.warning("Can't find settings class for data connector " + cls.getName() +
+                        LOG.warning("Can't find settings class for data connector " + cls.getName() +
                             ". DataConnectorSettings class will be injected for the connector.");
                         settingsClass = DataConnectorSettings.class;
                     }
@@ -153,17 +153,17 @@ public class ConnectorsRunner {
                 }
 
                 if (name == null || name.isEmpty()) {
-                    LOGGER.warning("Found settings implementation " + cls.getName() +
+                    LOG.warning("Found settings implementation " + cls.getName() +
                         " with unknown data connector name. Please specify @ConnectorSettings annotation value.");
                 } else {
                     if (settings.get(name.toLowerCase()) != null) {
-                        LOGGER.warning("Connector settings'" + name + "' discovered more then one times");
+                        LOG.warning("Connector settings'" + name + "' discovered more then one times");
                     }
 
                     settings.put(name.toLowerCase(), cls);
 
-                    if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine("Discovered settings class " + cls.getName() +
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.fine("Discovered settings class " + cls.getName() +
                                 " for connector " + name);
                     }
                 }
@@ -207,7 +207,7 @@ public class ConnectorsRunner {
                     instantiateDataConnectorSettings(implementation, settingsMap)
                 );
         } catch (Throwable t) {
-            LOGGER.log(Level.WARNING, "Failed to instantiate data connector " +
+            LOG.log(Level.WARNING, "Failed to instantiate data connector " +
                     implementation + ':' + t.getLocalizedMessage(), t);
             throw new RuntimeException(t);
         }
@@ -235,7 +235,7 @@ public class ConnectorsRunner {
                 try {
                     MdModelEnum.with(modelSelection, modelValue);
                 } catch (Throwable t) {
-                    LOGGER.warning("Invalid model value: " + modelValue +
+                    LOG.warning("Invalid model value: " + modelValue +
                         ". Valid model values are: " + Arrays.asList(MdModelEnum.values()));
                 }
             }

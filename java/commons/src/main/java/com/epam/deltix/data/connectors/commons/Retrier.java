@@ -3,8 +3,12 @@ package com.epam.deltix.data.connectors.commons;
 import java.io.Closeable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Retrier<C extends Closeable> implements AutoCloseable {
+    private static final Logger LOG = Logger.getLogger(Retrier.class.getName());
+
     private final RetriableFactory<C> factory;
 
     private final Thread retrier;
@@ -47,8 +51,7 @@ public class Retrier<C extends Closeable> implements AutoCloseable {
                         if (closed) {
                             break;
                         }
-                        System.out.println("An error happened: " + t.getLocalizedMessage()); // TODO: logging?
-                        t.printStackTrace(System.out);
+                        LOG.log(Level.WARNING, "An error happened: " + t.getLocalizedMessage(), t);
                     } finally {
                         Util.closeQuiet(retriable);
                     }
