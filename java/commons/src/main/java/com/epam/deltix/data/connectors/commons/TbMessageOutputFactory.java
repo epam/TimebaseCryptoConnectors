@@ -97,7 +97,7 @@ public class TbMessageOutputFactory implements CloseableMessageOutputFactory {
             return stream;
         }
 
-        LOG.info("Cannot find the stream '" + streamKey + "\'. Preparing a new one...");
+        LOG.info("Cannot find the stream '" + streamKey + "'. Preparing a new one...");
 
         final StreamOptions options = new StreamOptions();
         options.name = streamKey;
