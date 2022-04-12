@@ -16,7 +16,7 @@ Received market data is organized in so-called Packages. `PackageHeader` class r
 
 This is important to differentiate between snapshots. `PERIODICAL_SNAPSHOT` listens to `VENDOR_SNAPSHOT` and `INCREMENTAL_UPDATE` and keeps the actual state of the Order Book. It does not provide a state change and contains data to initialize the state for new subscribers or to initialize backtesting starting from a particular state. `PERIODICAL_SNAPSHOT` may be skipped, whereas `VENDOR_SNAPSHOT` must be processed in one way or another. `INCREMENTAL_UPDATE` contains state changes sent by the vendor or as per any application request (for example, because of possible error in the current state).
 
-![](docs/img/snapshots.png)
+![](/blob/main/docs/img/snapshots.png)
 
 Message body is represented by Entries objects, which can be one of the following types:
 
