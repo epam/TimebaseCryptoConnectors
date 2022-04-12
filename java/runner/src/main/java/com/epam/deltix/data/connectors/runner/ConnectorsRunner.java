@@ -247,7 +247,8 @@ public class ConnectorsRunner {
     private String[] buildInstruments(String connector) {
         String instruments = connectorsSettings.extractInstruments(connector);
         if (instruments != null) {
-            return Util.splitInstruments(instruments);
+            return Arrays.stream(Util.splitInstruments(instruments))
+                .map(String::trim).toArray(String[]::new);
         } else {
             return new String[0];
         }

@@ -18,7 +18,6 @@ public class HuobiSpotFeed extends SingleWsFeed {
     private static final AtomicLong ID_GENERATOR = new AtomicLong();
     // all fields are used by one single thread of WsFeed's ExecutorService
     private final JsonValueParser jsonParser = new JsonValueParser();
-    private final Iso8601DateTimeParser dtParser = new Iso8601DateTimeParser();
     private final Map<String, L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent>>
             l2Processors = new HashMap<>();
     private final DefaultEvent priceBookEvent = new DefaultEvent();

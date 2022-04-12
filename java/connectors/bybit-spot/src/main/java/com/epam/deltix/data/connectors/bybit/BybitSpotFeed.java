@@ -1,4 +1,4 @@
-package com.epam.deltix.data.connectors.ftx;
+package com.epam.deltix.data.connectors.bybit;
 
 import com.epam.deltix.data.connectors.commons.*;
 import com.epam.deltix.data.connectors.commons.json.*;
@@ -8,16 +8,14 @@ import com.epam.deltix.qsrv.hf.pub.ExchangeCodec;
 import com.epam.deltix.qsrv.hf.tickdb.pub.TimeConstants;
 import com.epam.deltix.timebase.messages.TypeConstants;
 
-import java.math.BigDecimal;
-import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-public class FtxFeed extends SingleWsFeed {
-    private static final long FTX_EXCHANGE_CODE = ExchangeCodec.codeToLong("FTX");
-    private static final long PING_PERIOD = 5000;
-    private static final BigDecimal TIME_MILLIS_SCALE = new BigDecimal(1000);
+public class BybitSpotFeed extends SingleWsFeed {
+    private static final long BYBIT_EXCHANGE_CODE = ExchangeCodec.codeToLong("BYBIT");
+    private static final long PING_PERIOD = 10000;
+
     // all fields are used by one single thread of WsFeed's ExecutorService
     private final JsonValueParser jsonParser = new JsonValueParser();
     private final Map<String, L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent>>
@@ -29,7 +27,7 @@ public class FtxFeed extends SingleWsFeed {
 
     private long lastPingTime;
 
-    public FtxFeed(
+    public BybitSpotFeed(
             final String uri,
             final int depth,
             final MdModel.Options selected,
@@ -37,39 +35,38 @@ public class FtxFeed extends SingleWsFeed {
             final ErrorListener errorListener,
             final String... symbols)
     {
-        super(uri, 15000, selected, output, errorListener, symbols);
+        super(uri, 30000, selected, output, errorListener, symbols);
 
         this.depth = depth;
-        tradeProducer = new TradeProducer(FTX_EXCHANGE_CODE, output);
+        tradeProducer = new TradeProducer(BYBIT_EXCHANGE_CODE, output);
     }
 
     @Override
     protected void prepareSubscription(JsonWriter jsonWriter, String... symbols) {
-        if (selected().level1() || selected().level2()) {
-            Arrays.asList(symbols).forEach(s -> {
+        Arrays.asList(symbols).forEach(s -> {
+            if (selected().level1() || selected().level2()) {
                 JsonValue subscriptionJson = JsonValue.newObject();
                 JsonObject body = subscriptionJson.asObject();
-
-                body.putString("op", "subscribe");
-                body.putString("channel", "orderbook");
-                body.putString("market", s);
+                body.putString("topic", "diffDepth");
+                body.putString("event", "sub");
+                body.putString("symbol", s);
+                JsonObject params = body.putObject("params");
+                params.putBoolean("binary", false);
 
                 subscriptionJson.toJsonAndEoj(jsonWriter);
-            });
-        }
-
-        if (selected().trades()) {
-            Arrays.asList(symbols).forEach(s -> {
+            }
+            if (selected().trades()) {
                 JsonValue subscriptionJson = JsonValue.newObject();
                 JsonObject body = subscriptionJson.asObject();
-
-                body.putString("op", "subscribe");
-                body.putString("channel", "trades");
-                body.putString("market", s);
+                body.putString("topic", "trade");
+                body.putString("event", "sub");
+                body.putString("symbol", s);
+                JsonObject params = body.putObject("params");
+                params.putBoolean("binary", false);
 
                 subscriptionJson.toJsonAndEoj(jsonWriter);
-            });
-        }
+            }
+        });
     }
 
     @Override
@@ -78,8 +75,8 @@ public class FtxFeed extends SingleWsFeed {
         if (currentTime - lastPingTime > PING_PERIOD) {
             lastPingTime = currentTime;
             jsonWriter.startObject();
-            jsonWriter.objectMember("op");
-            jsonWriter.stringValue("ping");
+            jsonWriter.objectMember("ping");
+            jsonWriter.numberValue(currentTime);
             jsonWriter.endObject();
             jsonWriter.eoj();
         }
@@ -93,40 +90,38 @@ public class FtxFeed extends SingleWsFeed {
         JsonValue jsonValue = jsonParser.eoj();
         JsonObject object = jsonValue.asObject();
 
-        String channel = object.getString("channel");
-        if ("orderbook".equalsIgnoreCase(channel)) {
-            String instrument = object.getString("market");
+        String topic = object.getString("topic");
+        String instrument = object.getString("symbol");
+        boolean first = object.getBoolean("f");
+        if ("diffDepth".equalsIgnoreCase(topic)) {
             L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent> l2Processor
                 = getPriceBookProcessor(instrument);
 
-            String type = object.getString("type");
-            JsonObject jsonData = object.getObject("data");
-            if ("partial".equalsIgnoreCase(type)) {
-                long timestamp = getTimestamp(jsonData.getDecimal("time"));
-                l2Processor.onSnapshotPackageStarted(TimeConstants.TIMESTAMP_UNKNOWN, timestamp);
-                processSnapshotSide(l2Processor, jsonData.getArrayRequired("bids"), false);
-                processSnapshotSide(l2Processor, jsonData.getArrayRequired("asks"), true);
-                l2Processor.onPackageFinished();
-            } else if ("update".equalsIgnoreCase(type)) {
-                JsonArray bids = jsonData.getArray("bids");
-                JsonArray asks = jsonData.getArray("asks");
-                if ((bids != null && bids.size() > 0) || (asks != null && asks.size() > 0)) {
-                    long timestamp = getTimestamp(jsonData.getDecimal("time"));
+            JsonArray jsonDataArray = object.getArrayRequired("data");
+            for (int i = 0; i < jsonDataArray.size(); ++i) {
+                JsonObject jsonData = jsonDataArray.getObjectRequired(i);
+                long timestamp = jsonData.getLong("t");
+                if (first) {
+                    l2Processor.onSnapshotPackageStarted(TimeConstants.TIMESTAMP_UNKNOWN, timestamp);
+                    processSnapshotSide(l2Processor, jsonData.getArray("b"), false);
+                    processSnapshotSide(l2Processor, jsonData.getArray("a"), true);
+                    l2Processor.onPackageFinished();
+                } else {
                     l2Processor.onIncrementalPackageStarted(timestamp);
-                    processChanges(l2Processor, bids, false);
-                    processChanges(l2Processor, asks, true);
+                    processChanges(l2Processor, jsonData.getArray("b"), false);
+                    processChanges(l2Processor, jsonData.getArray("a"), true);
                     l2Processor.onPackageFinished();
                 }
             }
-        } else if ("trades".equalsIgnoreCase(channel)) {
-            String instrument = object.getString("market");
-            JsonArray trades = object.getArray("data");
-            if (trades != null) {
-                for (int i = 0; i < trades.size(); ++i) {
-                    JsonObject trade = trades.getObject(i);
-                    long price = Decimal64Utils.fromBigDecimal(trade.getDecimalRequired("price"));
-                    long size = Decimal64Utils.fromBigDecimal(trade.getDecimalRequired("size"));
-                    long timestamp = OffsetDateTime.parse(trade.getString("time")).toInstant().toEpochMilli();
+        } else if ("trade".equalsIgnoreCase(topic)) {
+            if (!first) { // skip snapshots
+                JsonArray jsonDataArray = object.getArrayRequired("data");
+                for (int i = 0; i < jsonDataArray.size(); ++i) {
+                    JsonObject trade = jsonDataArray.getObjectRequired(i);
+                    long timestamp = trade.getLong("t");
+                    long price = Decimal64Utils.parse(trade.getStringRequired("p"));
+                    long size = Decimal64Utils.parse(trade.getStringRequired("q"));
+
                     tradeProducer.onTrade(timestamp, instrument, price, size);
                 }
             }
@@ -151,7 +146,7 @@ public class FtxFeed extends SingleWsFeed {
 
             result = L2Processor.builder()
                 .withInstrument(instrument)
-                .withSource(FTX_EXCHANGE_CODE)
+                .withSource(BYBIT_EXCHANGE_CODE)
                 .withBookOutputSize(depth)
                 .buildWithPriceBook(
                     builder.build()
@@ -162,9 +157,8 @@ public class FtxFeed extends SingleWsFeed {
     }
 
     private void processSnapshotSide(
-            final L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent> l2Processor,
-            final JsonArray quotePairs,
-            final boolean ask)
+        L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent> l2Processor,
+        JsonArray quotePairs, boolean ask)
     {
         if (quotePairs == null) {
             return;
@@ -174,24 +168,23 @@ public class FtxFeed extends SingleWsFeed {
             final JsonArray pair = quotePairs.getArrayRequired(i);
             if (pair.size() != 2) {
                 throw new IllegalArgumentException("Unexpected size of "
-                        + (ask ? "an ask" : "a bid")
-                        + " quote: "
-                        + pair.size());
+                    + (ask ? "an ask" : "a bid")
+                    + " quote: "
+                    + pair.size());
             }
             priceBookEvent.reset();
             priceBookEvent.set(
-                    ask,
-                    Decimal64Utils.fromBigDecimal(pair.getDecimalRequired(0)),
-                    Decimal64Utils.fromBigDecimal(pair.getDecimalRequired(1))
+                ask,
+                Decimal64Utils.parse(pair.getStringRequired(0)),
+                Decimal64Utils.parse(pair.getStringRequired(1))
             );
             l2Processor.onEvent(priceBookEvent);
         }
     }
 
     private void processChanges(
-            final L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent> l2Processor,
-            final JsonArray changes,
-            final boolean ask)
+        L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent> l2Processor,
+        JsonArray changes, boolean isAsk)
     {
         if (changes == null) {
             return;
@@ -204,21 +197,19 @@ public class FtxFeed extends SingleWsFeed {
             }
             priceBookEvent.reset();
 
-            long size = Decimal64Utils.fromBigDecimal(change.getDecimalRequired(1));
+            long size = Decimal64Utils.parse(change.getStringRequired(1));
             if (Decimal64Utils.isZero(size)) {
                 size = TypeConstants.DECIMAL_NULL; // means delete the price
             }
 
             priceBookEvent.set(
-                ask,
-                Decimal64Utils.fromBigDecimal(change.getDecimalRequired(0)),
+                isAsk,
+                Decimal64Utils.parse(change.getStringRequired(0)),
                 size
             );
+
             l2Processor.onEvent(priceBookEvent);
         }
     }
 
-    private long getTimestamp(BigDecimal time) {
-        return time.multiply(TIME_MILLIS_SCALE).longValue();
-    }
 }
