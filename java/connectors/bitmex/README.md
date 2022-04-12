@@ -1,0 +1,1 @@
+# BitMEX Data Connector
