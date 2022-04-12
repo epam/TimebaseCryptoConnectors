@@ -28,7 +28,7 @@ Message body is represented by Entries objects, which can be one of the followin
 
 Entries have the following hierarchy:
 
-![](/img/flowchart2.png)
+![](/docs/img/flowchart2.png)
 
 You can use any of these types of Entries s an input data to build your Order Book. It can serve as BBO aggregator, work with Level2 data or Level3 data. You can mix different Entries and different exchanges in one Package. But it is not allowed to send snapshots for multiple exchanges within the same Package.
 
@@ -76,7 +76,7 @@ Price should be a number, not null. Price should be > 0 by default. Price less o
 L2 level of market data granularity describes a set of active limit orders for a certain instrument maintained by exchange. It includes prices and sizes of bids and offers, number of orders on every price level. 
 The below figure illustrates a simplified example of an Order Book. The table consists of two parts: the left side shows orders for buy, the right one shows orders for sale. Each price level indicates its combined volume. The top line of the table yields the best bid and the best ask prices.
 
-![](/img/OrderBook.png)
+![](/docs/img/OrderBook.png)
 
 The key for such data is symbol, exchange, side and **level index**. This means that there is a unique price entry for such combination of fields.
 L2-updates insert, delete or update particular lines in the Order Book either on ask or bid side. It also can encode L2-snapshot entry. **Snapshot** is a message which reports the full Order Book state (snapshot) at once. Note L2 is price level-oriented depth-of-the-book format and should be used whenever price or integer index is used to locate Order Book changes. If incremental changes key is a **quoteId**, L3Entry should be used instead.
@@ -96,7 +96,7 @@ If the Order Book has a fixed depth, Market Depth is to be provided, or, alterna
 Levels on top of the Market Depth will be dropped. For example if Market Depth is 10 and one more level is added before 10th, 10th level will be dropped. If DELETE happens after that, the Order Book will have only 9 price levels.
 The following scheme describes the process of validation of an incoming message. If the validation rules are not met, the message is rejected and no updates are made to Order Book by this message. The green color of condition indicates that this is a warning case, and not a reason to consider the message invalid.
 
-![](/img/ValidationSchemeL2.png)
+<!-- ![](/docs/img/ValidationSchemeL2.png) -->
 
 <!-- ### Package Validation
 
@@ -139,7 +139,7 @@ The key of the data entry is symbol, exchange, side and **quote id**.
 The orders are sorted by price, and quotes within one price level form a queue (if a particular exchange operates with orders priority).
 L3-updates: new, cancel, modify and replace of one quote in Order Book either on ask or bid side. It can also encode L3-snapshot entry. Note, L3 is a quote-oriented depth-of-the-book format and should be used whenever **quoteId** is used to locate the Order Book changes.
 
-![](/img/L3OrderBook.png)
+![](/docs/img/L3OrderBook.png)
 
 The following entries can be sent within this level of granularity:
 
@@ -149,7 +149,7 @@ The following entries can be sent within this level of granularity:
 
 If `TradeEntry` is sent in L3 format (with `buyerOrderId` or `sellerOrderId` depending on `AgressiveSide`), sending such `TradeEntry` decreases order size with id equal to buyer or seller id. The following scheme describes the process of validation of an incoming message. If the validation rules are not met, the message is rejected and no updates are made to Order Book by this message.
 
-![](/img/ValidationSchemeL3.png)
+<!-- ![](/img/ValidationSchemeL3.png) -->
 
 <!-- ### Package Validation
 
