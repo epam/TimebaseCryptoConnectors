@@ -36,4 +36,11 @@ Received market data is organized in so-called Packages. `PackageHeader` class r
 
 ## Docker Compose
 
-## Developer Tutorials 
+## Developer Tutorials
+
+## Connectors
+* [BitMEX](https://github.com/epam/TimebaseCryptoConnectors/blob/main/java/connectors/bitmex/README.md)
+* [Coinbase](https://github.com/epam/TimebaseCryptoConnectors/blob/main/java/connectors/coinbase/README.md)
+* [FTX](https://github.com/epam/TimebaseCryptoConnectors/blob/main/java/connectors/ftx/README.md)
+* Huobi [Spot](https://github.com/epam/TimebaseCryptoConnectors/blob/main/java/connectors/huobi-spot/README.md)
+* [Kraken](https://github.com/epam/TimebaseCryptoConnectors/blob/main/java/connectors/kraken/README.md)
