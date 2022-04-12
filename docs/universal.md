@@ -2,36 +2,37 @@
 
 ## Introduction
 
-Deltix components may consume market data with different level of detalization from external sources. All market data is then stored in TimeBase - Deltix proprietary time-series database. In TimeBase, all data is organized in streams in a form of chronologically arranged messages. In object-oriented programing languages messages can be seen as classes, each with a specific set of fields. To be able to consume market data of any depth and detalization and map it on the Deltix data model, we developed a special library StandardMessageFormat that includes classes that represent L1, L2, and even L3 market data, which can be then used for Order Book construction.
+System components may consume market data with different level of granularity from external vendors. All market data is then stored in [TimeBase](https://timebase.info/) - Deltix proprietary time-series database. In TimeBase, all data is organized in [streams](https://kb.timebase.info/community/overview/streams) in a form of chronologically arranged [messages](https://kb.timebase.info/community/overview/messages). In object-oriented programing languages messages can be seen as classes, each with a specific set of fields. To be able to consume market data of any depth and granularity and map it on the TimeBase data model, we developed an [API]() that includes classes that represent L1, L2, and even L3 market data, which can be then used for Order Book construction.
 
 ## Model Types
 
-Received market data is organized in so-called Packages. [PackageHeader](#packageheader) class represents a package of any type of data. It includes fields that describe a message type and a message body:
+Received market data is organized in so-called Packages. `PackageHeader` class represents a package of any type of data. It includes fields that describe a message type and a message body:
 
 * **Message type** is represented by the PackageType: `Deltix.Timebase.Api.Messages.Universal.PackageType` in .NET and `deltix.timebase.api.messages.universal.PackageType` in JAVA. 
 * **Package type** can be one of the values of the enumeration `PackageType`:
     - `INCREMENTAL_UPDATE`: updates the market data snapshot received from the vendor.
-    - `PERIODICAL_SNAPSHOT`: market data snapshot sent by any Deltix component (Aggregator or market data connector).
+    - `PERIODICAL_SNAPSHOT`: runtime market data snapshot collected by the data connector.
     - `VENDOR_SNAPSHOT`: marked data snapshots received directly from the vendor.
 
-This is important to differentiate between snapshots. `PERIODICAL_SNAPSHOT` listens to `VENDOR_SNAPSHOT` and `INCREMENTAL_UPDATE` and keeps the actual state of the Order Book. It does not provide a state change and contains data to initialize the state for new subscribers or to initialize backtesting starting from a particular state. `PERIODICAL_SNAPSHOT` sent by Deltix components may be skipped, whereas `VENDOR_SNAPSHOT` must be processed in one way or another. `INCREMENTAL_UPDATE` contains state changes sent by the vendor or as per any application request (for example, because of possible error in the current state).
+This is important to differentiate between snapshots. `PERIODICAL_SNAPSHOT` listens to `VENDOR_SNAPSHOT` and `INCREMENTAL_UPDATE` and keeps the actual state of the Order Book. It does not provide a state change and contains data to initialize the state for new subscribers or to initialize backtesting starting from a particular state. `PERIODICAL_SNAPSHOT` may be skipped, whereas `VENDOR_SNAPSHOT` must be processed in one way or another. `INCREMENTAL_UPDATE` contains state changes sent by the vendor or as per any application request (for example, because of possible error in the current state).
 
-![](/doc/UniversalFormat/img/snapshots.png)
+![](/img/snapshots.png)
 
 Message body is represented by Entries objects, which can be one of the following types:
+
 * [L1](#l1-best-bid-offer) represents both exchange-local top of the book (BBO) as well as National Best Bid Offer (NBBO).
 * [L2](#l2-market-by-level): (e.g. FIX IncrementalRefresh/FullRefresh, CME.SBE, FAST, etc). L2 (market by level) market data snapshot provides an aggregated Order Book by price levels.
 * [L3](#l2-market-by-order): (like MBO.FIX, NASDAQ ITCH, BATS.PITCH). L3 (market by order) market data snapshot provides a detailed view into the full depth of the Order Book, individual orders size and position at every price level. 
-* TradeEntry: Basic information about market trades, not specific to any detalization level. TradeEntry can be sent within L1, L2 or L3.
+* TradeEntry: Basic information about market trades, not specific to any granularity level. TradeEntry can be sent within L1, L2 or L3.
 * BookResetEntry: It is used by the market data vendor to drop the state of a particular Order Book.
 
 Entries have the following hierarchy:
 
-![](/doc/UniversalFormat/img/flowchart2.png)
+![](/img/flowchart2.png)
 
 You can use any of these types of Entries s an input data to build your Order Book. It can serve as BBO aggregator, work with Level2 data or Level3 data. You can mix different Entries and different exchanges in one Package. But it is not allowed to send snapshots for multiple exchanges within the same Package.
 
-## PackageHeader
+<!-- ## JAVA and .NET Implementation
 
 Classes `Deltix.Timebase.Api.Messages.Universal.PackageHeader` in .NET and `deltix.timebase.api.messages.universal.PackageHeader` in JAVA represent market data package.
 `PackageHeader` represents package of any type of data. `PackageHeader` instance should have more than 0 entries, otherwise it is considered invalid. If user needs to send an empty package, `BookResetEntry` can be used instead.
@@ -43,18 +44,20 @@ Snapshot includes the entire state of the book for a particular exchange.
 |Field|.NET|JAVA|Description|Validation|
 |--|--|--|--|--|
 |PackageType|`Deltix.Timebase.Api.Messages.Universal.PackageHeader.PackageType`|`deltix.timebase.api.messages.universal.PackageHeader.getPackageType()`|Package type can be one of the values of the enumeration PackageType:</br>`INCREMENTAL_UPDATE` - updates the market data snapshot received from the vendor.</br>`PERIODICAL_SNAPSHOT` - market data snapshot sent by any Deltix component (Aggregator or market data connector).</br>`VENDOR_SNAPSHOT` - marked data snapshots received directly from the vendor.|Cannot be null. PacckageType should coincide with the message entries. Please, see each model type description for detailed information.|
-|Entries|`Deltix.Timebase.Api.Messages.Universal.PackageHeader.Entries`|`deltix.timebase.api.messages.universal.PackageHeader.getEntries()`|message body|Should have more than 0 entries, otherwise it is considered invalid.|
+|Entries|`Deltix.Timebase.Api.Messages.Universal.PackageHeader.Entries`|`deltix.timebase.api.messages.universal.PackageHeader.getEntries()`|message body|Should have more than 0 entries, otherwise it is considered invalid.| -->
+
+> Refer to the [API Reference]() for more information.
 
 ## L1 - Best Bid Offer
 
-L1 level of market data detalization may represent both exchange-local top of the book (BBO) as well as National Best Bid Offer (NBBO). This is always a one side quote. The unique key for such data entry is a combination of symbol, exchange and side fields. The following entries can be sent within this level of detalization:
+L1 level of market data granularity may represent both exchange-local top of the book (BBO) as well as National Best Bid Offer (NBBO). This is always a one side quote. The unique key for such data entry is a combination of symbol, exchange and side fields. The following entries can be sent within this level of granularity:
 
 * `L1Entry`
 * `TradeEntry`
 
-The following scheme describes the process of validation of an incoming message. If the validation rules are not met, the message is rejected and no updates are made by this message. The green color of condition indicates that this is a warning case, and not a reason to consider the message invalid.
+<!-- The following scheme describes the process of validation of an incoming message. If the validation rules are not met, the message is rejected and no updates are made by this message. The green color of condition indicates that this is a warning case, and not a reason to consider the message invalid.
 
-![](/doc/UniversalFormat/img/ValidationSchemeL1.png)
+![](/img/ValidationSchemeL1.png)
 
 ### Package Validation
 
@@ -64,14 +67,16 @@ Trade entry in this format can be sent as incremental update. They do not affect
 ### Fields Validation
 
 Validator (if it is used) requires that entry size should be a number (not NaN). In some cases (for example for indicative quotes) size may be null.
-Price should be a number, not null. Price should be > 0 by default. Price less or equal to 0 can be enabled in validator (for example for spreads or synthetic instruments trading). The required set of fields are: price, side, and size. It is also a warning case if bid is not less than ask within one exchange.
+Price should be a number, not null. Price should be > 0 by default. Price less or equal to 0 can be enabled in validator (for example for spreads or synthetic instruments trading). The required set of fields are: price, side, and size. It is also a warning case if bid is not less than ask within one exchange. -->
+
+> Refer to the [API Reference]() for more information.
 
 ## L2 - Market by Level
 
-L2 level of market data detalization describes a set of active limit orders for a certain instrument maintained by exchange. It includes prices and sizes of bids and offers, number of orders on every price level. 
+L2 level of market data granularity describes a set of active limit orders for a certain instrument maintained by exchange. It includes prices and sizes of bids and offers, number of orders on every price level. 
 The below figure illustrates a simplified example of an Order Book. The table consists of two parts: the left side shows orders for buy, the right one shows orders for sale. Each price level indicates its combined volume. The top line of the table yields the best bid and the best ask prices.
 
-![](/doc/UniversalFormat/img/OrderBook.png)
+![](/img/OrderBook.png)
 
 The key for such data is symbol, exchange, side and **level index**. This means that there is a unique price entry for such combination of fields.
 L2-updates insert, delete or update particular lines in the Order Book either on ask or bid side. It also can encode L2-snapshot entry. **Snapshot** is a message which reports the full Order Book state (snapshot) at once. Note L2 is price level-oriented depth-of-the-book format and should be used whenever price or integer index is used to locate Order Book changes. If incremental changes key is a **quoteId**, L3Entry should be used instead.
@@ -91,9 +96,9 @@ If the Order Book has a fixed depth, Market Depth is to be provided, or, alterna
 Levels on top of the Market Depth will be dropped. For example if Market Depth is 10 and one more level is added before 10th, 10th level will be dropped. If DELETE happens after that, the Order Book will have only 9 price levels.
 The following scheme describes the process of validation of an incoming message. If the validation rules are not met, the message is rejected and no updates are made to Order Book by this message. The green color of condition indicates that this is a warning case, and not a reason to consider the message invalid.
 
-![](/doc/UniversalFormat/img/ValidationSchemeL2.png)
+![](/img/ValidationSchemeL2.png)
 
-### Package Validation
+<!-- ### Package Validation
 
 Package validation block checks the package consistency. It is possible to mix different entries within one package, or entries from different exchanges in one package. But it is not allowed to send snapshots for multiple exchanges within one package. There also should not be snapshot entries combined with update entries in one snapshot message. But trades and updates can be sent in one package. It is considered that a snapshot of a current state of the Order Book for each exchange is sent entirely within one package. There cannot be, for example, snapshots of each side of the Order Book sent separately in multiple packages.
 Trade entry can be sent in this format within a package of incremental updates. They do not affect states of the Order Book.
@@ -123,7 +128,9 @@ The following rules are applied to the values of the fields:
         + AskN <= AskN+1</br>
     The provider should send packages during processing each part of which levels should remain sorted. Therefore after processing each entry in package Order Book should be ordered. Otherwise processing algorithms should have been significantly more complicated. It is critical that data is sorted on each side for each exchange, but if best bid is not less than best ask it is considered as a warning case. Such data are still valid.
 * For non-aggregated Order Book we allow to use `QuoteId`, but as it was said earlier, `QuoteId` is not the key of the data. If `QuoteId` field value coincides for multiple quotes then this is a warning case. In other words, it is at data provider discretion to provide quotes with unique id.
-* It is important that values in fields of the update coincide with the actual values in Order Book. For example, price in update is the same as price in Order Book for this level. Update cannot change price.
+* It is important that values in fields of the update coincide with the actual values in Order Book. For example, price in update is the same as price in Order Book for this level. Update cannot change price. -->
+
+> Refer to the [API Reference]() for more information.
 
 ## L3 - Market by Order
 
@@ -132,9 +139,9 @@ The key of the data entry is symbol, exchange, side and **quote id**.
 The orders are sorted by price, and quotes within one price level form a queue (if a particular exchange operates with orders priority).
 L3-updates: new, cancel, modify and replace of one quote in Order Book either on ask or bid side. It can also encode L3-snapshot entry. Note, L3 is a quote-oriented depth-of-the-book format and should be used whenever **quoteId** is used to locate the Order Book changes.
 
-![](/doc/UniversalFormat/img/L3OrderBook.png)
+![](/img/L3OrderBook.png)
 
-The following entries can be sent within this level of detalization:
+The following entries can be sent within this level of granularity:
 
 * `L3EntryNew`
 * `L3EntryUpdate`
@@ -142,9 +149,9 @@ The following entries can be sent within this level of detalization:
 
 If `TradeEntry` is sent in L3 format (with `buyerOrderId` or `sellerOrderId` depending on `AgressiveSide`), sending such `TradeEntry` decreases order size with id equal to buyer or seller id. The following scheme describes the process of validation of an incoming message. If the validation rules are not met, the message is rejected and no updates are made to Order Book by this message.
 
-![](/doc/UniversalFormat/img/ValidationSchemeL3.png)
+![](/img/ValidationSchemeL3.png)
 
-### Package Validation
+<!-- ### Package Validation
 
 If `L3EntryNew` is used to provide a snapshot of Order Book state, it is considered that snapshot for a particular exchange is sent completely within one package. Snapshot entries and updates entries should not be grouped in one snapshot package. Trade entries can be grouped with incremental updates. Snapshots for multiple exchanges should be sent in different packages.
 
@@ -177,4 +184,6 @@ The L3 format types reflect the actual trading actions. For example, the followi
 * `CancelReplace` -> `REPLACE`
 * `Replace` -> `MODIFY`
 * `Cancel` -> `CANCEL`
-* `NewOrder` -> `ADD_BACK`
+* `NewOrder` -> `ADD_BACK` -->
+
+> Refer to the [API Reference]() for more information. 
