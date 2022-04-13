@@ -24,7 +24,7 @@ task prepareFilesForDocker(type: Copy) {
     group 'docker'
     dependsOn ':build'
 
-    into ("lib") {
+    into ("/runner/lib") {
         // Runtime dependencies
         from configurations.runtimeClasspath
         // application
