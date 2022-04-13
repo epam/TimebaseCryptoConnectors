@@ -41,4 +41,4 @@ ENV JAVA_OPTS=-verbose:gc
 WORKDIR runner
 
 EXPOSE 8055
-ENTRYPOINT ["/bin/sh", "-c", "runner.sh"]
+ENTRYPOINT ["/bin/sh", "-c", "./runner.sh"]
