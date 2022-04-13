@@ -1,6 +1,7 @@
 FROM alpine:3.15.4
 
 ENV LANG=C.UTF-8
+COPY runner /runner
 
 # Here we install GNU libc (aka glibc) and set C.UTF-8 locale as default.
 RUN apk add --no-cache openjdk11=11.0.14_p9-r0 && \
@@ -33,9 +34,7 @@ RUN apk add --no-cache openjdk11=11.0.14_p9-r0 && \
         "$ALPINE_GLIBC_BIN_PACKAGE_FILENAME" \
         "$ALPINE_GLIBC_I18N_PACKAGE_FILENAME" && \
     apk add musl=1.2.2-r7 && \
-    mkdir timebase-home
-
-COPY runner /runner
+    chmod +x /runner/runner.sh
 
 ENV JAVA_OPTS=-verbose:gc
 WORKDIR runner
