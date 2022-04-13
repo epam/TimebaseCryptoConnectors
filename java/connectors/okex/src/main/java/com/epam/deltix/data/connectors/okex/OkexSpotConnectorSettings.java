@@ -1,19 +1,19 @@
-package com.epam.deltix.data.connectors.kraken;
+package com.epam.deltix.data.connectors.okex;
 
 import com.epam.deltix.data.connectors.commons.DataConnectorSettings;
 import com.epam.deltix.data.connectors.commons.annotations.ConnectorSettings;
 
-@ConnectorSettings("Kraken")
-public class KrakenConnectorSettings extends DataConnectorSettings {
+@ConnectorSettings("OKEX")
+public class OkexSpotConnectorSettings extends DataConnectorSettings {
 
-    private String wsUrl = "wss://ws.kraken.com";
+    private String wsUrl = "wss://ws.okex.com:8443/ws/v5/public";
     private int depth = 20;
 
-    public KrakenConnectorSettings() {
+    public OkexSpotConnectorSettings() {
         super();
     }
 
-    public KrakenConnectorSettings(String tbUrl, String stream, String wsUrl) {
+    public OkexSpotConnectorSettings(String tbUrl, String stream, String wsUrl) {
         super(tbUrl, stream);
         this.wsUrl = wsUrl;
     }

@@ -14,8 +14,8 @@ connectors:
       - "TRADES"
     instruments: "ETH-USD,BTC-USD,BTC-USDT,LTC-USD"
 
-  kraken:
-    stream: kraken
+  kraken-spot:
+    stream: kraken-spot
     wsUrl: wss://ws.kraken.com
     depth: 20
     model:
@@ -23,6 +23,16 @@ connectors:
       - "L2"
       - "TRADES"
     instruments: "XBT/USD,XBT/USDT,ETH/USD,ETH/USDT,USDT/USD"
+
+  kraken-futures:
+    stream: kraken-futures
+    wsUrl: wss://futures.kraken.com/ws/v1
+    depth: 20
+    model:
+      - "L1"
+      - "L2"
+      - "TRADES"
+    instruments: "PF_XBTUSD,PI_XRPUSD,PF_ETHUSD,FI_XBTUSD_220930"
 
   bitmex:
     stream: bitmex
@@ -44,6 +54,16 @@ connectors:
       - "TRADES"
     instruments: "btcusdt,ethbtc"
 
+  huobi-futures:
+    stream: huobi-futures
+    wsUrl: wss://api.hbdm.com/ws
+    depth: 20
+    model:
+      - "L1"
+      - "L2"
+      - "TRADES"
+    instruments: "BTC220930, LTC220930"
+
   ftx:
     stream: ftx
     wsUrl: wss://ftx.com/ws
@@ -56,7 +76,7 @@ connectors:
 
   bybit-linear-futures:
     type: bybit-futures
-    stream: bybit-linear-futures
+    stream: bybit-futures
     wsUrl: wss://stream.bybit.com/realtime_public # linear futures
     depth: 20
     model:
@@ -67,7 +87,7 @@ connectors:
 
   bybit-inverse-futures:
     type: bybit-futures
-    stream: bybit-inverse-futures
+    stream: bybit-futures
     wsUrl: wss://stream.bybit.com/realtime # inverse futures
     depth: 20
     model:
@@ -85,3 +105,13 @@ connectors:
       - "L2"
       - "TRADES"
     instruments: "BTCUSDT,ETHUSDT"
+
+  okex:
+    stream: okex
+    wsUrl: wss://ws.okex.com:8443/ws/v5/public
+    depth: 20
+    model:
+      - "L1"
+      - "L2"
+      - "TRADES"
+    instruments: "BTC-UST,BTC-USDT-220930"

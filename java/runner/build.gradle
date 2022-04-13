@@ -5,8 +5,11 @@ dependencies {
     implementation project(":java:connectors:bybit-spot")
     implementation project(":java:connectors:coinbase")
     implementation project(":java:connectors:ftx")
+    implementation project(":java:connectors:huobi-futures")
     implementation project(":java:connectors:huobi-spot")
-    implementation project(":java:connectors:kraken")
+    implementation project(":java:connectors:kraken-futures")
+    implementation project(":java:connectors:kraken-spot")
+    implementation project(":java:connectors:okex")
 
     implementation 'javax.annotation:javax.annotation-api'
 

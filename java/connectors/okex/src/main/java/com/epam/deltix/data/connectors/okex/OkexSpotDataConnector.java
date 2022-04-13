@@ -1,14 +1,14 @@
-package com.epam.deltix.data.connectors.kraken;
+package com.epam.deltix.data.connectors.okex;
 
 import com.epam.deltix.data.connectors.commons.*;
 import com.epam.deltix.data.connectors.commons.annotations.Connector;
 
-@Connector("Kraken")
-public class KrakenDataConnector extends DataConnector<KrakenConnectorSettings> {
+@Connector("OKEX")
+public class OkexSpotDataConnector extends DataConnector<OkexSpotConnectorSettings> {
     private String wsUrl;
     private int depth;
 
-    public KrakenDataConnector(KrakenConnectorSettings settings) {
+    public OkexSpotDataConnector(OkexSpotConnectorSettings settings) {
         super(settings, MdModel.availability()
             .withTrades()
             .withLevel1()
@@ -26,7 +26,7 @@ public class KrakenDataConnector extends DataConnector<KrakenConnectorSettings> 
             final String... symbols) {
 
         return errorListener -> {
-            final KrakenFeed result = new KrakenFeed(wsUrl, depth,
+            final OkexSpotFeed result = new OkexSpotFeed(wsUrl, depth,
                 selected,
                 outputFactory.create(),
                 errorListener,
