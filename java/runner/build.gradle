@@ -1,7 +1,3 @@
-//configurations.all {
-//    exclude group: "ch.qos.logback"
-//}
-
 dependencies {
     implementation project(":java:commons")
     implementation project(":java:connectors:bitmex")
@@ -13,13 +9,6 @@ dependencies {
     implementation project(":java:connectors:kraken")
 
     implementation 'javax.annotation:javax.annotation-api'
-
-    runtimeOnly "com.epam.deltix:gflog-api",
-            "com.epam.deltix:gflog-core",
-            "com.epam.deltix:gflog-jul",
-            "com.epam.deltix:gflog-jcl"
-
-    runtimeOnly "com.epam.deltix:gflog-slf4j"
 
     implementation "org.springframework.boot:spring-boot-starter-web"
     implementation "org.springframework.boot:spring-boot-starter-actuator"
