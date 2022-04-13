@@ -30,6 +30,10 @@ task prepareFilesForDocker(type: Copy) {
         // application
         from jar
     }
+    into ("/runner") {
+        // executables
+        from "$rootDir/bin"
+    }
 
     destinationDir project.file("$buildDir/docker")
 }

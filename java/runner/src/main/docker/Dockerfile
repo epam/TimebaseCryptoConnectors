@@ -41,4 +41,4 @@ ENV JAVA_OPTS=-verbose:gc
 WORKDIR runner
 
 EXPOSE 8055
-ENTRYPOINT ["/bin/sh", "-c", "java ${JAVA_OPTS} -cp ./lib/* com.epam.deltix.data.connectors.Application"]
+ENTRYPOINT ["/bin/sh", "-c", "runner.sh"]
