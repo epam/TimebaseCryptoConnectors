@@ -17,7 +17,7 @@ dependencies {
 }
 
 ext {
-    dockerImageName = 'timebase/dc-runner'
+    dockerImageName = 'timebase-crypto-connectors'
 }
 
 task prepareFilesForDocker(type: Copy) {
