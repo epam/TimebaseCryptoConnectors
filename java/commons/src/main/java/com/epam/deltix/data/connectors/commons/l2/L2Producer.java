@@ -27,8 +27,8 @@ import com.epam.deltix.util.time.TimeKeeper;
 public class L2Producer<I extends BookItem<E>, E extends BookEvent>
         extends L2ListenerAdapter<I, E> {
 
-    private static final int ANY_OFFER_MASK = 1;
-    private static final int ANY_BID_MASK = 2;
+    private static final int OFFER_MASK = 1;
+    private static final int BID_MASK = 2;
 
     private final PackageHeader l2Package = new PackageHeader();
     private final ObjectArrayList<BaseEntryInfo> entries = new ObjectArrayList<>(128);
@@ -63,9 +63,7 @@ public class L2Producer<I extends BookItem<E>, E extends BookEvent>
         exchangeId = instrumentBook.source();
 
         l2Package.setSymbol(instrumentBook.symbol());
-
         l2Package.setPackageType(PackageType.VENDOR_SNAPSHOT);
-
         l2Package.setOriginalTimestamp(originalTimestamp);
 
         cleanupL2PackageEntries();
@@ -87,7 +85,6 @@ public class L2Producer<I extends BookItem<E>, E extends BookEvent>
         }
 
         l2Package.setPackageType(PackageType.INCREMENTAL_UPDATE);
-
         l2Package.setOriginalTimestamp(originalTimestamp);
 
         cleanupL2PackageEntries();
@@ -95,7 +92,6 @@ public class L2Producer<I extends BookItem<E>, E extends BookEvent>
 
     private void sendPeriodicalSnapshot(final InstrumentBooks<I, E> instrumentBook) {
         l2Package.setPackageType(PackageType.PERIODICAL_SNAPSHOT);
-
         l2Package.setOriginalTimestamp(TimeConstants.TIMESTAMP_UNKNOWN);
 
         cleanupL2PackageEntries();
@@ -121,15 +117,15 @@ public class L2Producer<I extends BookItem<E>, E extends BookEvent>
 
         insert.setExchangeId(exchangeId);
         insert.setLevel((short) depth);
-        if (book.isOffer) {
-            insert.setSide(QuoteSide.ASK);
-            updatedSides |= ANY_OFFER_MASK;
-        } else {
-            insert.setSide(QuoteSide.BID);
-            updatedSides |= ANY_BID_MASK;
-        }
         insert.setPrice(item.getPrice());
         insert.setSize(item.getSize());
+        if (book.isOffer) {
+            insert.setSide(QuoteSide.ASK);
+            updatedSides |= OFFER_MASK;
+        } else {
+            insert.setSide(QuoteSide.BID);
+            updatedSides |= BID_MASK;
+        }
 
         entries.add(insert);
     }
@@ -141,15 +137,15 @@ public class L2Producer<I extends BookItem<E>, E extends BookEvent>
         update.setExchangeId(exchangeId);
         update.setAction(BookUpdateAction.UPDATE);
         update.setLevel((short) depth);
-        if (book.isOffer) {
-            update.setSide(QuoteSide.ASK);
-            updatedSides |= ANY_OFFER_MASK;
-        } else {
-            update.setSide(QuoteSide.BID);
-            updatedSides |= ANY_BID_MASK;
-        }
         update.setPrice(item.getPrice());
         update.setSize(item.getSize());
+        if (book.isOffer) {
+            update.setSide(QuoteSide.ASK);
+            updatedSides |= OFFER_MASK;
+        } else {
+            update.setSide(QuoteSide.BID);
+            updatedSides |= BID_MASK;
+        }
 
         entries.add(update);
     }
@@ -161,15 +157,15 @@ public class L2Producer<I extends BookItem<E>, E extends BookEvent>
         delete.setExchangeId(exchangeId);
         delete.setAction(BookUpdateAction.DELETE);
         delete.setLevel((short) depth);
-        if (book.isOffer) {
-            delete.setSide(QuoteSide.ASK);
-            updatedSides |= ANY_OFFER_MASK;
-        } else {
-            delete.setSide(QuoteSide.BID);
-            updatedSides |= ANY_BID_MASK;
-        }
         delete.setPrice(item.getPrice());
         delete.setSize(item.getSize());
+        if (book.isOffer) {
+            delete.setSide(QuoteSide.ASK);
+            updatedSides |= OFFER_MASK;
+        } else {
+            delete.setSide(QuoteSide.BID);
+            updatedSides |= BID_MASK;
+        }
 
         entries.add(delete);
     }
@@ -179,10 +175,10 @@ public class L2Producer<I extends BookItem<E>, E extends BookEvent>
         switch (l2Package.getPackageType()) {
             case VENDOR_SNAPSHOT:
             case PERIODICAL_SNAPSHOT:
-                if ((updatedSides & ANY_OFFER_MASK) == 0) {
+                if ((updatedSides & OFFER_MASK) == 0) {
                     entries.add(resetAsksEntry);
                 }
-                if ((updatedSides & ANY_BID_MASK) == 0) {
+                if ((updatedSides & BID_MASK) == 0) {
                     entries.add(resetBidsEntry);
                 }
                 break;
