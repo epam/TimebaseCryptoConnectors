@@ -1,4 +1,4 @@
-# FINOS Data Connectors
+# Timebase Data Connectors
 
 With [TimeBase Community Edition](https://github.com/finos/TimeBase-CE) you get access to a number of [market data and trade connectors](#available-connectors) for the most popular vendors that allow receiving data and recording it in [TimeBase streams](https://kb.timebase.info/community/overview/streams). 
 

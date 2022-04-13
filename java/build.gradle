@@ -83,7 +83,6 @@ configure(leafProjects) {
             failOnVersionConflict()
         }
 
-        exclude group: 'ch.qos.logback' // we use GFlogger binding for SL4J instead of logback
         exclude group: 'jakarta.annotation', module: 'jakarta.annotation-api' // GNU license
     }
 
@@ -113,15 +112,6 @@ configure(leafProjects) {
     // https://github.com/spring-gradle-plugins/dependency-management-plugin#dependency-management-dsl
     dependencyManagement {
         dependencies {
-
-             dependencySet (group: 'com.epam.deltix', version: gflogVersion) {
-                entry 'gflog-api'
-                entry 'gflog-core'
-                entry 'gflog-jul'
-                entry 'gflog-dcl'
-                entry 'gflog-slf4j'
-                entry 'gflog-jcl'
-            }
 
             dependency group: 'com.epam.deltix', name: 'dfp', version: dfpVersion
 

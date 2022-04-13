@@ -53,3 +53,35 @@ connectors:
       - "L2"
       - "TRADES"
     instruments: "USDT-PERP,LTC/USDT"
+
+  bybit-linear-futures:
+    type: bybit-futures
+    stream: bybit-linear-futures
+    wsUrl: wss://stream.bybit.com/realtime_public # linear futures
+    depth: 20
+    model:
+      - "L1"
+      - "L2"
+      - "TRADES"
+    instruments: "LTCUSDT,ADAUSDT"
+
+  bybit-inverse-futures:
+    type: bybit-futures
+    stream: bybit-inverse-futures
+    wsUrl: wss://stream.bybit.com/realtime # inverse futures
+    depth: 20
+    model:
+      - "L1"
+      - "L2"
+      - "TRADES"
+    instruments: "MANAUSD,LUNAUSD"
+
+  bybit-spot:
+    stream: bybit-spot
+    wsUrl: wss://stream.bybit.com/spot/quote/ws/v1
+    depth: 20
+    model:
+      - "L1"
+      - "L2"
+      - "TRADES"
+    instruments: "BTCUSDT,ETHUSDT"

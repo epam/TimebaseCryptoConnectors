@@ -137,7 +137,7 @@ jobs:
         with:
           java-version: 11
       - name: Publish docker
-        run: ./gradlew 
+        run: ./gradlew :java:runner:dockerPublishImageAll
         env:
           DOCKER_REGISTRY_URL:      ${{ secrets.DOCKER_REGISTRY_URL }}
           DOCKER_REGISTRY_USERNAME:  ${{ secrets.DOCKER_HUB_USER }}

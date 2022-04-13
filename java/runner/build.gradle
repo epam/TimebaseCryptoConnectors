@@ -1,23 +1,14 @@
-//configurations.all {
-//    exclude group: "ch.qos.logback"
-//}
-
 dependencies {
     implementation project(":java:commons")
     implementation project(":java:connectors:bitmex")
+    implementation project(":java:connectors:bybit-futures")
+    implementation project(":java:connectors:bybit-spot")
     implementation project(":java:connectors:coinbase")
     implementation project(":java:connectors:ftx")
     implementation project(":java:connectors:huobi-spot")
     implementation project(":java:connectors:kraken")
 
     implementation 'javax.annotation:javax.annotation-api'
-
-    runtimeOnly "com.epam.deltix:gflog-api",
-            "com.epam.deltix:gflog-core",
-            "com.epam.deltix:gflog-jul",
-            "com.epam.deltix:gflog-jcl"
-
-    runtimeOnly "com.epam.deltix:gflog-slf4j"
 
     implementation "org.springframework.boot:spring-boot-starter-web"
     implementation "org.springframework.boot:spring-boot-starter-actuator"
@@ -26,18 +17,22 @@ dependencies {
 }
 
 ext {
-    dockerImageName = 'timebase/dc-runner'
+    dockerImageName = 'timebase-crypto-connectors'
 }
 
 task prepareFilesForDocker(type: Copy) {
     group 'docker'
     dependsOn ':build'
 
-    into ("lib") {
+    into ("/runner/lib") {
         // Runtime dependencies
         from configurations.runtimeClasspath
         // application
         from jar
+    }
+    into ("/runner") {
+        // executables
+        from "$rootDir/bin"
     }
 
     destinationDir project.file("$buildDir/docker")
