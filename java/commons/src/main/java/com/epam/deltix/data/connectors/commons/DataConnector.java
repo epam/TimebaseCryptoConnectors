@@ -44,8 +44,8 @@ public abstract class DataConnector<T extends DataConnectorSettings> implements 
 
         retrier = new Retrier<>(doSubscribe(
                 selected,
-                new TbMessageOutputFactory(tbUrl, stream, selected.types()),
-/*
+                //new TbMessageOutputFactory(tbUrl, stream, selected.types()),
+
                 () -> new CloseableMessageOutput() {
                     @Override
                     public void close() {
@@ -57,7 +57,7 @@ public abstract class DataConnector<T extends DataConnectorSettings> implements 
                         System.out.println(message);
                     }
                 },
-*/
+
                 symbols
         ), 10_000);
 
