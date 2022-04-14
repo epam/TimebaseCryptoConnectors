@@ -6,13 +6,13 @@ With [TimeBase Community Edition](https://github.com/finos/TimeBase-CE) you get 
 
 Most of the featured connectors share common design and implementation principles. 
 
-![](/img/tb-ce-connectors.png)
+![](/img/tb-ce-connectors2.png)
 
-On the above illustration you can see, that a connector may receive and transfer various types of data via REST or WebSocket connection with a specific data vendor.
+On the above illustration you see, that connectors use a special framework to subscribe for market data via a WebSocket connection with a specific data vendor and to write it to [TimeBase](https://github.com/finos/TimeBase-CE). In TimeBase, all data is organized in [streams](https://kb.timebase.info/community/overview/streams) in a form of chronologically arranged [messages](https://kb.timebase.info/community/overview/messages). In object-oriented programing languages messages can be seen as classes, each with a specific set of fields.
 
-We have developed an [API](https://github.com/epam/TimebaseCryptoConnectors/blob/main/docs/universal.md) to consume market data from different vendors of any level of granularity and effectively map it on the TimeBase [data model](#data-model). It includes classes that represent L1, L2, and even L3 market data, you can use later to build your Order Book. In TimeBase, all data is organized in [streams](https://kb.timebase.info/community/overview/streams) in a form of chronologically arranged [messages](https://kb.timebase.info/community/overview/messages). In object-oriented programing languages messages can be seen as classes, each with a specific set of fields.
+We have developed a Universal Format [API](https://github.com/epam/TimebaseCryptoConnectors/blob/main/docs/universal.md) to consume market data from different vendors of any level of granularity and effectively map it on the TimeBase [data model](#data-model). It includes classes that represent L1, L2, and even L3 market data, you can use later to build your Order Book. 
 
-The job of any connector is to receive, transform/model, and load data into a designated TimeBase stream. 
+Refer to the [developer tutorials](https://github.com/epam/TimebaseCryptoConnectors#developer-tutorials) for details. 
 
 ## Data Model
 
@@ -29,11 +29,13 @@ Received market data is organized in so-called Packages. `PackageHeader` class r
     - `TradeEntry` includes basic information about market trades, not specific to any granularity level. TradeEntry can be sent within L1, L2 or L3.
     - `BookResetEntry`: it is used by the market data vendor to drop the state of a particular Order Book.
 
-> Refer to the [API Reference](https://github.com/epam/TimebaseCryptoConnectors/blob/main/docs/universal.md) documentation to learn more.
+> Refer to the [API Reference](https://github.com/epam/TimebaseCryptoConnectors/blob/main/docs/universal.md) documentation to learn more about the data model.
 
 ## Quick Start Connector
 
 ### Docker Compose 
+
+This is the example of the Docker Compose configuration to launch [TimeBase server](https://github.com/finos/TimeBase-CE), [TimeBase Web Admin](https://github.com/epam/TimebaseWS), and data connectors at once. 
 
 ```yaml
 version: "3"
@@ -85,7 +87,6 @@ services:
     depends_on:
       - timebase  
 ```
-### Gradle
 
 ## Developer Tutorials
 
@@ -101,7 +102,7 @@ Create settings class:
 
 Example of a [Coinbase Data Connector settings](https://github.com/epam/TimebaseCryptoConnectors/blob/01bbb8f3d9e3add9c0b710832a40afcc29e008a4/java/connectors/coinbase/src/main/java/com/epam/deltix/data/connectors/coinbase/CoinbaseConnectorSettings.java). 
 
-#### TimeBase Parameters
+#### TimeBase Default Settings
 
 |Parameter|Description|Required|
 |---------|-----------|--------|
@@ -109,20 +110,22 @@ Example of a [Coinbase Data Connector settings](https://github.com/epam/Timebase
 |tbUser|TimeBase username|no|
 |tbPassword|TimeBase user password|no|
 
-#### Connector Parameters 
+Refer to the [application.yaml](https://github.com/epam/TimebaseCryptoConnectors/blob/main/java/runner/src/main/resources/application.yaml#:~:text=timebase%3A,dxtick%3A//localhost%3A8011).
+
+#### Connector Settings 
 
 > Can be unique for each connector. 
 
 |Parameter|Description|Required|
 |---------|-----------|--------|
-|type|Data connector type. You can run multiple instances of each connector with different parameters (e.g. to read different set of instruments from different URLs or to save dta in different TimeBase streams). In this case, each instance of the connector will have a different name but share the same `type` e.g. coinbase.|no|
+|type|Data connector type. You can run multiple instances of each connector with different parameters (e.g. to read different set of instruments from different URLs or to save dta in different TimeBase streams). In this case, each instance of the connector will have a different `name` but share the same `type` e.g. coinbase. `Type` must match the `"You Connector Name"`. Can avoid `type` if the connector instance `name` is the same as `type` name.|no|
 |stream|TimeBase [stream](https://kb.timebase.info/community/overview/streams) name where all data will be stored.|yes|
 |wsUrl|Vendor URLs|yes|
 |depth|Number of levels in the Order Book.|no|
 |instruments|A list of trading instruments that will be received from the vendor.|yes|
 |model|Data model type.|yes|
 
-> Refer to [application.yaml](https://github.com/epam/TimebaseCryptoConnectors/blob/main/java/runner/src/main/resources/application.yaml) example.
+> Refer to [application.yaml](https://github.com/epam/TimebaseCryptoConnectors/blob/main/java/runner/src/main/resources/application.yaml#:~:text=connectors%3A,USDT%2CLTC%2DUSD%22).
 
 ### 2. Create WS Feed 
 
@@ -153,6 +156,9 @@ String... symbols);
     ```java
     protected abstract void onJson(CharSequence data, boolean last, JsonWriter jsonWriter);
     ```
+
+![](/img/tb-ce-connectors3.png)
+
 
 ## Available Connectors
 
