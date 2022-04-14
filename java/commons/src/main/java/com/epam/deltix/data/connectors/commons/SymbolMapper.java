@@ -87,18 +87,18 @@ public class SymbolMapper implements CloseableMessageOutputFactory {
     }
 
     private static class Symbol {
+        private static final int INITIAL_STATE = 0;
+        private static final int FROM_STATE = INITIAL_STATE + 1;
+        private static final int ESCAPING_IN_FROM_STATE = FROM_STATE + 1;
+        private static final int TO_STATE = ESCAPING_IN_FROM_STATE + 1;
+        private static final int ESCAPING_IN_TO_STATE = TO_STATE + 1;
+
         private final String from;
         private final String to;
 
         private Symbol(final String symbol) {
             final StringBuilder fromSymbol = new StringBuilder();
             final StringBuilder toSymbol = new StringBuilder();
-
-            final int INITIAL_STATE = 0;
-            final int FROM_STATE = INITIAL_STATE + 1;
-            final int ESCAPING_IN_FROM_STATE = FROM_STATE + 1;
-            final int TO_STATE = ESCAPING_IN_FROM_STATE + 1;
-            final int ESCAPING_IN_TO_STATE = TO_STATE + 1;
 
             int state = INITIAL_STATE;
             for (int i = 0; i < symbol.length(); i++) {
