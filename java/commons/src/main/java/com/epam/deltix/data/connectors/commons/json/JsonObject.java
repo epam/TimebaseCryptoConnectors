@@ -1,5 +1,7 @@
 package com.epam.deltix.data.connectors.commons.json;
 
+import com.epam.deltix.dfp.Decimal;
+import com.epam.deltix.dfp.Decimal64Utils;
 import io.github.green4j.jelly.JsonNumber;
 
 import java.math.BigDecimal;
@@ -150,6 +152,21 @@ public class JsonObject {
         return jsonValue != null ?
                 jsonValue.asDecimalRequired() :
                 NULL_VALUE.asDecimalRequired();
+    }
+
+    public @Decimal long getDecimal64(final String member) {
+        final JsonValue jsonValue = membersByName.get(member);
+        if (jsonValue == null) {
+            return Decimal64Utils.ZERO;
+        }
+        return jsonValue.asDecimal64();
+    }
+
+    public @Decimal long getDecimal64Required(final String member) {
+        final JsonValue jsonValue = membersByName.get(member);
+        return jsonValue != null ?
+            jsonValue.asDecimal64Required() :
+            NULL_VALUE.asDecimal64Required();
     }
 
     public void putBoolean(final String member, final boolean value) {

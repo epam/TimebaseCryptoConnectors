@@ -41,18 +41,33 @@ public abstract class SingleWsFeed extends MdFeed {
 
     private volatile long lastReceiveTime;
 
+    private final PeriodicalJsonTask periodicalJsonTask;
+
+    protected SingleWsFeed(
+        final String uri,
+        final int idleTimeoutMillis,
+        final MdModel.Options selected,
+        final CloseableMessageOutput output,
+        final ErrorListener errorListener,
+        final String... symbols) {
+
+        this(uri, idleTimeoutMillis, selected, output, errorListener, null, symbols);
+    }
+
     protected SingleWsFeed(
             final String uri,
             final int idleTimeoutMillis,
             final MdModel.Options selected,
             final CloseableMessageOutput output,
             final ErrorListener errorListener,
+            final PeriodicalJsonTask periodicalJsonTask,
             final String... symbols) {
         super(selected, output, errorListener);
 
         this.uri = uri;
         this.idleTimeoutMillis = idleTimeoutMillis;
         this.symbols = symbols;
+        this.periodicalJsonTask = periodicalJsonTask;
 
         mgmtService =
                 Executors.newSingleThreadScheduledExecutor(
@@ -104,6 +119,19 @@ public abstract class SingleWsFeed extends MdFeed {
                                 idleTimeoutMillis,
                                 idleTimeoutMillis,
                                 TimeUnit.MILLISECONDS);
+                    }
+
+                    if (periodicalJsonTask != null) {
+                        mgmtService.scheduleWithFixedDelay(
+                            () -> {
+                                if (state != STARTED_STATE) {
+                                    return;
+                                }
+                                periodicalJsonTask.process(jsonSender);
+                            },
+                            periodicalJsonTask.delayMillis(),
+                            periodicalJsonTask.delayMillis(),
+                            TimeUnit.MILLISECONDS);
                     }
                 }
 

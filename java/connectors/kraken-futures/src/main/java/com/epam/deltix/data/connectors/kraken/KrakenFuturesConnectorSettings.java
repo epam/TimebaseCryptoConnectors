@@ -7,7 +7,6 @@ import com.epam.deltix.data.connectors.commons.annotations.ConnectorSettings;
 public class KrakenFuturesConnectorSettings extends DataConnectorSettings {
 
     private String wsUrl = "wss://futures.kraken.com/ws/v1";
-    private int depth = 20;
 
     public KrakenFuturesConnectorSettings() {
         super();
@@ -26,11 +25,4 @@ public class KrakenFuturesConnectorSettings extends DataConnectorSettings {
         this.wsUrl = wsUrl;
     }
 
-    public int getDepth() {
-        return depth;
-    }
-
-    public void setDepth(int depth) {
-        this.depth = depth;
-    }
 }

@@ -1,5 +1,7 @@
 package com.epam.deltix.data.connectors.commons.json;
 
+import com.epam.deltix.dfp.Decimal;
+import com.epam.deltix.dfp.Decimal64Utils;
 import io.github.green4j.jelly.AppendableWriter;
 import io.github.green4j.jelly.JsonGenerator;
 import io.github.green4j.jelly.JsonNumber;
@@ -172,6 +174,24 @@ public final class JsonValue {
             throw new IllegalStateException("Missed required decimal");
         }
         return result;
+    }
+
+    public @Decimal long asDecimal64() {
+        final String result = asString();
+        if (result != null) {
+            return Decimal64Utils.parse(result);
+        }
+
+        return Decimal64Utils.fromBigDecimal(asDecimal());
+    }
+
+    public @Decimal long asDecimal64Required() {
+        final String result = asString();
+        if (result != null) {
+            return Decimal64Utils.parse(result);
+        }
+
+        return Decimal64Utils.fromBigDecimal(asDecimalRequired());
     }
 
     public boolean asBoolean() {

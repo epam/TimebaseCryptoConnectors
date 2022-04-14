@@ -7,7 +7,6 @@ import com.epam.deltix.data.connectors.commons.annotations.ConnectorSettings;
 public class BybitFuturesConnectorSettings extends DataConnectorSettings {
 
     private String wsUrl = "wss://stream.bybit.com/realtime_public";
-    private int depth = 20;
 
     public BybitFuturesConnectorSettings() {
         super();
@@ -26,11 +25,4 @@ public class BybitFuturesConnectorSettings extends DataConnectorSettings {
         this.wsUrl = wsUrl;
     }
 
-    public int getDepth() {
-        return depth;
-    }
-
-    public void setDepth(int depth) {
-        this.depth = depth;
-    }
 }
