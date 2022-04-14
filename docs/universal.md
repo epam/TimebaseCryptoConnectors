@@ -2,7 +2,7 @@
 
 ## Introduction
 
-System components may consume market data with different level of granularity from external vendors. All market data is then stored in [TimeBase](https://timebase.info/) - Deltix proprietary time-series database. In TimeBase, all data is organized in [streams](https://kb.timebase.info/community/overview/streams) in a form of chronologically arranged [messages](https://kb.timebase.info/community/overview/messages). In object-oriented programing languages messages can be seen as classes, each with a specific set of fields. To be able to consume market data of any depth and granularity and map it on the TimeBase data model, we developed an [API]() that includes classes that represent L1, L2, and even L3 market data, which can be then used for Order Book construction.
+System components may consume market data with different level of granularity from external vendors. All market data is then stored in [TimeBase](https://timebase.info/) - Deltix proprietary time-series database. In TimeBase, all data is organized in [streams](https://kb.timebase.info/community/overview/streams) in a form of chronologically arranged [messages](https://kb.timebase.info/community/overview/messages). In object-oriented programing languages messages can be seen as classes, each with a specific set of fields. To be able to consume market data of any depth and granularity and map it on the TimeBase data model, we developed an [API](https://github.com/epam/TimeBaseCommons/tree/main/messages/src/main/java/com/epam/deltix/timebase/messages/universal) that includes classes that represent L1, L2, and even L3 market data, which can be then used for Order Book construction.
 
 ## Model Types
 
@@ -46,7 +46,7 @@ Snapshot includes the entire state of the book for a particular exchange.
 |PackageType|`Deltix.Timebase.Api.Messages.Universal.PackageHeader.PackageType`|`deltix.timebase.api.messages.universal.PackageHeader.getPackageType()`|Package type can be one of the values of the enumeration PackageType:</br>`INCREMENTAL_UPDATE` - updates the market data snapshot received from the vendor.</br>`PERIODICAL_SNAPSHOT` - market data snapshot sent by any Deltix component (Aggregator or market data connector).</br>`VENDOR_SNAPSHOT` - marked data snapshots received directly from the vendor.|Cannot be null. PacckageType should coincide with the message entries. Please, see each model type description for detailed information.|
 |Entries|`Deltix.Timebase.Api.Messages.Universal.PackageHeader.Entries`|`deltix.timebase.api.messages.universal.PackageHeader.getEntries()`|message body|Should have more than 0 entries, otherwise it is considered invalid.| -->
 
-> Refer to the [API Reference]() for more information.
+> Refer to the [API Reference](https://github.com/epam/TimeBaseCommons/tree/main/messages/src/main/java/com/epam/deltix/timebase/messages/universal) for more information.
 
 ## L1 - Best Bid Offer
 
@@ -69,7 +69,7 @@ Trade entry in this format can be sent as incremental update. They do not affect
 Validator (if it is used) requires that entry size should be a number (not NaN). In some cases (for example for indicative quotes) size may be null.
 Price should be a number, not null. Price should be > 0 by default. Price less or equal to 0 can be enabled in validator (for example for spreads or synthetic instruments trading). The required set of fields are: price, side, and size. It is also a warning case if bid is not less than ask within one exchange. -->
 
-> Refer to the [API Reference]() for more information.
+> Refer to the [API Reference](https://github.com/epam/TimeBaseCommons/tree/main/messages/src/main/java/com/epam/deltix/timebase/messages/universal) for more information.
 
 ## L2 - Market by Level
 
@@ -130,7 +130,7 @@ The following rules are applied to the values of the fields:
 * For non-aggregated Order Book we allow to use `QuoteId`, but as it was said earlier, `QuoteId` is not the key of the data. If `QuoteId` field value coincides for multiple quotes then this is a warning case. In other words, it is at data provider discretion to provide quotes with unique id.
 * It is important that values in fields of the update coincide with the actual values in Order Book. For example, price in update is the same as price in Order Book for this level. Update cannot change price. -->
 
-> Refer to the [API Reference]() for more information.
+> Refer to the [API Reference](https://github.com/epam/TimeBaseCommons/tree/main/messages/src/main/java/com/epam/deltix/timebase/messages/universal) for more information.
 
 ## L3 - Market by Order
 
@@ -186,4 +186,4 @@ The L3 format types reflect the actual trading actions. For example, the followi
 * `Cancel` -> `CANCEL`
 * `NewOrder` -> `ADD_BACK` -->
 
-> Refer to the [API Reference]() for more information. 
+> Refer to the [API Reference](https://github.com/epam/TimeBaseCommons/tree/main/messages/src/main/java/com/epam/deltix/timebase/messages/universal) for more information. 

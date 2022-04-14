@@ -17,6 +17,8 @@ import java.util.logging.Logger;
 public class TbMessageOutputFactory implements CloseableMessageOutputFactory {
     private static final Logger LOG = Logger.getLogger(TbMessageOutputFactory.class.getName());
 
+    private static final int GET_STREAM_RETRIES = 5;
+
     private final String tbUrl;
     private final String streamKey;
     private final RecordClassDescriptor[] types;
@@ -63,7 +65,7 @@ public class TbMessageOutputFactory implements CloseableMessageOutputFactory {
             });
             tb.open(false);
 
-            final DXTickStream stream = getOrCreateStream(tb);
+            final DXTickStream stream = getOrCreateStreamWithRetries(tb, GET_STREAM_RETRIES);
 
             final LoadingOptions options = new LoadingOptions(false);
 
@@ -89,6 +91,23 @@ public class TbMessageOutputFactory implements CloseableMessageOutputFactory {
             Util.closeQuiet(tb);
             throw e;
         }
+    }
+
+    private DXTickStream getOrCreateStreamWithRetries(final DXTickDB db, final int retriesCount) {
+        for (int i = 0; i < retriesCount; ++i) {
+            try {
+                return getOrCreateStream(db);
+            } catch (Throwable t) {
+                LOG.warning("Failed to get or create stream '" + streamKey + "'. Retrying...");
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+
+        throw new RuntimeException("Failed to get or create stream'" + streamKey + "'. Number of retries exceeded.");
     }
 
     private DXTickStream getOrCreateStream(final DXTickDB tb) {

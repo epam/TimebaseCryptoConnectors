@@ -12,26 +12,25 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-public class KrakenFeed extends SingleWsFeed {
+public class KrakenSpotFeed extends SingleWsFeed {
     private static final long KRAKEN_EXCHANGE_CODE = ExchangeCodec.codeToLong("KRAKEN");
     // all fields are used by one single thread of WsFeed's ExecutorService
     private final JsonValueParser jsonParser = new JsonValueParser();
-    private final Iso8601DateTimeParser dtParser = new Iso8601DateTimeParser();
     private final Map<String, L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent>>
-            l2Processors = new HashMap<>();
+        l2Processors = new HashMap<>();
     private final DefaultEvent priceBookEvent = new DefaultEvent();
     private final TradeProducer tradeProducer;
 
     private final int depth;
 
-    public KrakenFeed(
-            final String uri,
-            final int depth,
-            final MdModel.Options selected,
-            final CloseableMessageOutput output,
-            final ErrorListener errorListener,
-            final String... symbols)
-    {
+    public KrakenSpotFeed(
+        final String uri,
+        final int depth,
+        final MdModel.Options selected,
+        final CloseableMessageOutput output,
+        final ErrorListener errorListener,
+        final String... symbols) {
+
         super(uri, 5000, selected, output, errorListener, symbols);
 
         this.depth = depth;
@@ -145,10 +144,10 @@ public class KrakenFeed extends SingleWsFeed {
     }
 
     private L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent>
-        getPriceBookProcessor(String instrument)
-    {
+        getPriceBookProcessor(String instrument) {
+
         L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent>
-                result = l2Processors.get(instrument);
+            result = l2Processors.get(instrument);
         if (result == null) {
             ChainedL2Listener.Builder<DefaultItem<DefaultEvent>, DefaultEvent> builder =
                 ChainedL2Listener.builder();
@@ -195,10 +194,10 @@ public class KrakenFeed extends SingleWsFeed {
     }
 
     private void processSnapshotSide(
-            final L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent> l2Processor,
-            final JsonArray quotePairs,
-            final boolean ask)
-    {
+        final L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent> l2Processor,
+        final JsonArray quotePairs,
+        final boolean ask) {
+
         if (quotePairs == null) {
             return;
         }
@@ -207,25 +206,25 @@ public class KrakenFeed extends SingleWsFeed {
             final JsonArray pair = quotePairs.getArrayRequired(i);
             if (pair.size() != 3) {
                 throw new IllegalArgumentException("Unexpected size of "
-                        + (ask ? "an ask" : "a bid")
-                        + " quote: "
-                        + pair.size());
+                    + (ask ? "an ask" : "a bid")
+                    + " quote: "
+                    + pair.size());
             }
             priceBookEvent.reset();
             priceBookEvent.set(
-                    ask,
-                    Decimal64Utils.parse(pair.getStringRequired(0)),
-                    Decimal64Utils.parse(pair.getStringRequired(1))
+                ask,
+                Decimal64Utils.parse(pair.getStringRequired(0)),
+                Decimal64Utils.parse(pair.getStringRequired(1))
             );
             l2Processor.onEvent(priceBookEvent);
         }
     }
 
     private void processChanges(
-            final L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent> l2Processor,
-            final JsonArray changes,
-            final boolean ask)
-    {
+        final L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent> l2Processor,
+        final JsonArray changes,
+        final boolean ask) {
+
         if (changes == null) {
             return;
         }

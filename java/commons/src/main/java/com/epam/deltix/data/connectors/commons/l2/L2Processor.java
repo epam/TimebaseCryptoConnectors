@@ -142,6 +142,10 @@ public class L2Processor<B extends Book<I, E>, I extends BookItem<E>, E extends 
         return symbol;
     }
 
+    public int outputBookSize() {
+        return outputBookSize;
+    }
+
     /**
      * Returns the bid side of the book
      * @return bids

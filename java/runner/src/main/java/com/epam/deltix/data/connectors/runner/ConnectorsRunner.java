@@ -71,7 +71,7 @@ public class ConnectorsRunner {
                 connectors.put(name, connector);
                 LOG.info("Connector '" + name + "' instantiated");
             } else {
-                LOG.warning("Can't find implementation of connector '" +
+                LOG.severe("Can't find implementation of connector '" +
                         name + "' with type '" +
                         connectorType + "'.");
             }
@@ -133,7 +133,7 @@ public class ConnectorsRunner {
                     }
 
                     implementations.put(
-                        name.toLowerCase(), new ConnectorImplementation(cls, settingsClass)
+                        name.toLowerCase(), new ConnectorImplementation(name, cls, settingsClass)
                     );
                 }
             }
