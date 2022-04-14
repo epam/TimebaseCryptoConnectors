@@ -42,7 +42,7 @@ connectors:
       - "L1"
       - "L2"
       - "TRADES"
-    instruments: "XBTUSD,ETHUSD"
+    instruments: "XBTUSD=BTC/USD,ETHUSD=ETH/USD"
 
   huobi-spot:
     stream: huobi-spot
@@ -83,7 +83,7 @@ connectors:
       - "L1"
       - "L2"
       - "TRADES"
-    instruments: "LTCUSDT,ADAUSDT"
+    instruments: "LTCUSDT=LTC/USDT,ADAUSDT=ADA/USDT"
 
   bybit-inverse-futures:
     type: bybit-futures
@@ -94,7 +94,7 @@ connectors:
       - "L1"
       - "L2"
       - "TRADES"
-    instruments: "MANAUSD,LUNAUSD"
+    instruments: "MANAUSD=MANA/USD,LUNAUSD=LUNA/USD"
 
   bybit-spot:
     stream: bybit-spot
@@ -104,7 +104,7 @@ connectors:
       - "L1"
       - "L2"
       - "TRADES"
-    instruments: "BTCUSDT,ETHUSDT"
+    instruments: "BTCUSDT=BTC/USDT,ETHUSDT=ETH/USDT"
 
   okex:
     stream: okex
