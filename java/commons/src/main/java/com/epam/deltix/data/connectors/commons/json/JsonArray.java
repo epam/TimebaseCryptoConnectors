@@ -1,5 +1,6 @@
 package com.epam.deltix.data.connectors.commons.json;
 
+import com.epam.deltix.dfp.Decimal;
 import io.github.green4j.jelly.JsonNumber;
 
 import java.math.BigDecimal;
@@ -112,6 +113,16 @@ public class JsonArray {
     public BigDecimal getDecimalRequired(final int index) {
         final JsonValue jsonValue = items.get(index);
         return jsonValue.asDecimalRequired();
+    }
+
+    public @Decimal long getDecimal64(final int index) {
+        final JsonValue jsonValue = items.get(index);
+        return jsonValue.asDecimal64();
+    }
+
+    public @Decimal long getDecimal64Required(final int index) {
+        final JsonValue jsonValue = items.get(index);
+        return jsonValue.asDecimal64Required();
     }
 
     public void addBoolean(final boolean value) {

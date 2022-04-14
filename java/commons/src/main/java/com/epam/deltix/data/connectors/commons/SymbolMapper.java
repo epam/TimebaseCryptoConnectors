@@ -13,9 +13,9 @@ import java.util.stream.Collectors;
  * <p>Symbology for the symbols: "NAME_FOR_CONNECTOR[=NAME_FOR_TIMEBASE]". If a symbol name contains char '=',
  * use escaping with the '\' character. For '\' use escaping '\\'. Examples:
  * <ul>
- *   <li>BTC/USD - the data connector will request the vendor using the "BTC/USD" name and the same name writing the result data to TB</li>
- *   <li>BTC-USD=BTC/USD - the data connector will request the vendor using the "BTC-USD" name and the "BTC/USD" name writing the result data to TB</li>
- *   <li>BTC\=USD=BTC\\USD - the data connector will request the vendor using the "BTC-USD" name and the "BTC\USD" name writing the result data to TB</li>
+ *   <li>BTC/USD - the data connector requests the vendor using the "BTC/USD" name and the same name writing the result data to TB</li>
+ *   <li>BTC-USD=BTC/USD - the data connector requests the vendor using the "BTC-USD" name and the "BTC/USD" name writing the result data to TB</li>
+ *   <li>BTC\=USD=BTC\\USD - the data connector requests the vendor using the "BTC=USD" name and the "BTC\USD" name writing the result data to TB</li>
  * </ul>
  * <p>
  */

@@ -17,7 +17,15 @@ public class MarketDataProcessorImpl implements MarketDataProcessor {
     private final Map<String, L2BookProcessorImpl> l2Processors = new HashMap<>();
     private final TradeProducer tradeProducer;
 
-    public MarketDataProcessorImpl(String exchangeId, MessageOutput output, MdModel.Options selected,  int bookSize) {
+    public static MarketDataProcessor create(String exchangeId,
+                                             MessageOutput output,
+                                             MdModel.Options selected,
+                                             int bookSize) {
+
+        return new MarketDataProcessorImpl(exchangeId, output, selected, bookSize);
+    }
+
+    private MarketDataProcessorImpl(String exchangeId, MessageOutput output, MdModel.Options selected,  int bookSize) {
         this.output = output;
         this.selected = selected;
         this.source = ExchangeCodec.codeToLong(exchangeId);

@@ -22,7 +22,7 @@ public class KrakenFuturesFeed extends SingleWsFeed {
     {
         super(uri, 5000, selected, output, errorListener, symbols);
 
-        this.dataProcessor = new MarketDataProcessorImpl("KRAKEN", this, selected(), depth);
+        this.dataProcessor = MarketDataProcessorImpl.create("KRAKEN", this, selected(), depth);
     }
 
     @Override

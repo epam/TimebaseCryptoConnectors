@@ -2,31 +2,19 @@ package com.epam.deltix.data.connectors.bybit;
 
 import com.epam.deltix.data.connectors.commons.*;
 import com.epam.deltix.data.connectors.commons.json.*;
-import com.epam.deltix.data.connectors.commons.l2.*;
-import com.epam.deltix.dfp.Decimal64Utils;
-import com.epam.deltix.qsrv.hf.pub.ExchangeCodec;
-import com.epam.deltix.qsrv.hf.tickdb.pub.TimeConstants;
 import com.epam.deltix.timebase.messages.TypeConstants;
 
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 public class BybitFuturesFeed extends SingleWsFeed {
-    private static final long BYBIT_EXCHANGE_CODE = ExchangeCodec.codeToLong("BYBIT");
     private static final long PING_PERIOD = 5000;
 
     // all fields are used by one single thread of WsFeed's ExecutorService
     private final JsonValueParser jsonParser = new JsonValueParser();
+    private final MarketDataProcessor dataProcessor;
     private final Iso8601DateTimeParser dtParser = new Iso8601DateTimeParser();
-    private final Map<String, L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent>>
-            l2Processors = new HashMap<>();
-    private final DefaultEvent priceBookEvent = new DefaultEvent();
-    private final TradeProducer tradeProducer;
 
     private final int depth;
-
-    private long lastPingTime;
 
     private enum UpdateType {
         delete,
@@ -42,10 +30,28 @@ public class BybitFuturesFeed extends SingleWsFeed {
             final ErrorListener errorListener,
             final String... symbols)
     {
-        super(uri, 30000, selected, output, errorListener, symbols);
+        super(uri, 30000, selected, output, errorListener, getPeriodicalJsonTask(), symbols);
 
         this.depth = depth;
-        tradeProducer = new TradeProducer(BYBIT_EXCHANGE_CODE, output);
+        this.dataProcessor = MarketDataProcessorImpl.create("BYBIT", this, selected(), depth);
+    }
+
+    private static PeriodicalJsonTask getPeriodicalJsonTask() {
+        return new PeriodicalJsonTask() {
+            @Override
+            public long delayMillis() {
+                return PING_PERIOD;
+            }
+
+            @Override
+            public void process(JsonWriter jsonWriter) {
+                jsonWriter.startObject();
+                jsonWriter.objectMember("op");
+                jsonWriter.stringValue("ping");
+                jsonWriter.endObject();
+                jsonWriter.eoj();
+            }
+        };
     }
 
     @Override
@@ -73,16 +79,6 @@ public class BybitFuturesFeed extends SingleWsFeed {
 
     @Override
     protected void onJson(final CharSequence data, final boolean last, final JsonWriter jsonWriter) {
-        long currentTime = System.currentTimeMillis();
-        if (currentTime - lastPingTime > PING_PERIOD) {
-            lastPingTime = currentTime;
-            jsonWriter.startObject();
-            jsonWriter.objectMember("op");
-            jsonWriter.stringValue("ping");
-            jsonWriter.endObject();
-            jsonWriter.eoj();
-        }
-
         jsonParser.parse(data);
 
         if (!last) {
@@ -104,21 +100,19 @@ public class BybitFuturesFeed extends SingleWsFeed {
 
         String instrument = topicElements[topicElements.length - 1];
         if (topic.startsWith("orderBook")) {
-            L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent> l2Processor
-                = getPriceBookProcessor(instrument);
             String type = object.getString("type");
             if ("snapshot".equalsIgnoreCase(type)) {
                 long timestamp = getTimestamp(object,"timestamp_e6") / 1000;
                 JsonObject dataObject = object.getObject("data");
                 JsonArray dataArray = object.getArray("data");
                 if (dataObject != null) {
-                    l2Processor.onSnapshotPackageStarted(TimeConstants.TIMESTAMP_UNKNOWN, timestamp);
-                    processSnapshot(l2Processor, dataObject.getArray("order_book"));
-                    l2Processor.onPackageFinished();
+                    L2BookProcessor l2BookProcessor = dataProcessor.onBookSnapshot(instrument, timestamp);
+                    processSnapshot(l2BookProcessor, dataObject.getArray("order_book"));
+                    l2BookProcessor.onFinish();
                 } else if (dataArray != null) {
-                    l2Processor.onSnapshotPackageStarted(TimeConstants.TIMESTAMP_UNKNOWN, timestamp);
-                    processSnapshot(l2Processor, dataArray);
-                    l2Processor.onPackageFinished();
+                    L2BookProcessor l2BookProcessor = dataProcessor.onBookSnapshot(instrument, timestamp);
+                    processSnapshot(l2BookProcessor, dataArray);
+                    l2BookProcessor.onFinish();
                 }
             } else if ("delta".equalsIgnoreCase(type)) {
                 long timestamp = getTimestamp(object,"timestamp_e6") / 1000;
@@ -126,11 +120,12 @@ public class BybitFuturesFeed extends SingleWsFeed {
                 if (dataObject == null) {
                     return;
                 }
-                l2Processor.onIncrementalPackageStarted(timestamp);
-                processChanges(l2Processor, dataObject.getArray("delete"), UpdateType.delete);
-                processChanges(l2Processor, dataObject.getArray("update"), UpdateType.update);
-                processChanges(l2Processor, dataObject.getArray("insert"), UpdateType.insert);
-                l2Processor.onPackageFinished();
+
+                L2BookProcessor l2BookProcessor = dataProcessor.onBookUpdate(instrument, timestamp);
+                processChanges(l2BookProcessor, dataObject.getArray("delete"), UpdateType.delete);
+                processChanges(l2BookProcessor, dataObject.getArray("update"), UpdateType.update);
+                processChanges(l2BookProcessor, dataObject.getArray("insert"), UpdateType.insert);
+                l2BookProcessor.onFinish();
             }
         } else if (topic.startsWith("trade.")) {
             JsonArray trades = object.getArray("data");
@@ -138,68 +133,32 @@ public class BybitFuturesFeed extends SingleWsFeed {
                 for (int i = 0; i < trades.size(); ++i) {
                     JsonObject trade = trades.getObject(i);
 
-                    long price = getDecimal(trade, "price");
-                    long size = getDecimal(trade, "size");
+                    long price = trade.getDecimal64("price");
+                    long size = trade.getDecimal64("size");
                     long timestamp = dtParser.set(trade.getStringRequired("timestamp")).millis();
 
-                    tradeProducer.onTrade(timestamp, instrument, price, size);
+                    dataProcessor.onTrade(instrument, timestamp, price, size);
                 }
             }
         }
     }
 
-    private L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent>
-        getPriceBookProcessor(String instrument)
-    {
-        L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent>
-                result = l2Processors.get(instrument);
-        if (result == null) {
-            ChainedL2Listener.Builder<DefaultItem<DefaultEvent>, DefaultEvent> builder =
-                ChainedL2Listener.builder();
-
-            if (selected().level1()) {
-                builder.with(new BestBidOfferProducer<>(this));
-            }
-            if (selected().level2()) {
-                builder.with(new L2Producer<>(this));
-            }
-
-            result = L2Processor.builder()
-                .withInstrument(instrument)
-                .withSource(BYBIT_EXCHANGE_CODE)
-                .withBookOutputSize(depth)
-                .buildWithPriceBook(
-                    builder.build()
-                );
-            l2Processors.put(instrument, result);
-        }
-        return result;
-    }
-
-    private void processSnapshot(
-            L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent> l2Processor,
-            JsonArray quotes)
-    {
+    private void processSnapshot(L2BookProcessor l2BookProcessor, JsonArray quotes) {
         if (quotes == null) {
             return;
         }
 
         for (int i = 0; i < quotes.size(); i++) {
             JsonObject quote = quotes.getObjectRequired(i);
-            priceBookEvent.reset();
-            priceBookEvent.set(
-                    "sell".equalsIgnoreCase(quote.getStringRequired("side")),
-                    getDecimal(quote, "price"),
-                    getDecimal(quote, "size")
+            l2BookProcessor.onQuote(
+                quote.getDecimal64("price"),
+                quote.getDecimal64("size"),
+                "sell".equalsIgnoreCase(quote.getStringRequired("side"))
             );
-            l2Processor.onEvent(priceBookEvent);
         }
     }
 
-    private void processChanges(
-            L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent> l2Processor,
-            JsonArray changes, UpdateType updateType)
-    {
+    private void processChanges(L2BookProcessor l2BookProcessor, JsonArray changes, UpdateType updateType) {
         if (changes == null) {
             return;
         }
@@ -207,29 +166,15 @@ public class BybitFuturesFeed extends SingleWsFeed {
         for (int i = 0; i < changes.size(); i++) {
             final JsonObject change = changes.getObjectRequired(i);
 
-            priceBookEvent.reset();
-
             long size = TypeConstants.DECIMAL_NULL;;
             if (updateType != UpdateType.delete) {
-                size = getDecimal(change, "size");
+                size = change.getDecimal64("size");
             }
 
-            priceBookEvent.set(
-                "sell".equalsIgnoreCase(change.getStringRequired("side")),
-                getDecimal(change, "price"),
-                size
-            );
-            l2Processor.onEvent(priceBookEvent);
-        }
-    }
-
-    private long getDecimal(JsonObject object, String fieldName) {
-        String stringValue = object.getString(fieldName);
-        if (stringValue != null) {
-            return Decimal64Utils.parse(stringValue);
-        } else {
-            return Decimal64Utils.fromBigDecimal(
-                object.getDecimalRequired(fieldName)
+            l2BookProcessor.onQuote(
+                change.getDecimal64("price"),
+                size,
+                "sell".equalsIgnoreCase(change.getStringRequired("side"))
             );
         }
     }

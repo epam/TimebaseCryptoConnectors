@@ -7,12 +7,13 @@ timebase:
 connectors:
   coinbase:
     stream: coinbase
+    depth: 20
     wsUrl: wss://ws-feed.pro.coinbase.com
     model:
       - "L1"
       - "L2"
       - "TRADES"
-    instruments: "ETH-USD,BTC-USD,BTC-USDT,LTC-USD"
+    instruments: "ETH-USD=ETH/USD,BTC-USD=BTC/USD,BTC-USDT=BTC/USDT,LTC-USD=LTC/USD"
 
   kraken-spot:
     stream: kraken-spot
@@ -22,7 +23,7 @@ connectors:
       - "L1"
       - "L2"
       - "TRADES"
-    instruments: "XBT/USD,XBT/USDT,ETH/USD,ETH/USDT,USDT/USD"
+    instruments: "XBT/USD=BTC/USD,XBT/USDT=BTC/USDT,ETH/USD,ETH/USDT,USDT/USD"
 
   kraken-futures:
     stream: kraken-futures
@@ -42,7 +43,7 @@ connectors:
       - "L1"
       - "L2"
       - "TRADES"
-    instruments: "XBTUSD,ETHUSD"
+    instruments: "XBTUSD=BTC/USD,ETHUSD=ETH/USD"
 
   huobi-spot:
     stream: huobi-spot
@@ -52,7 +53,7 @@ connectors:
       - "L1"
       - "L2"
       - "TRADES"
-    instruments: "btcusdt,ethbtc"
+    instruments: "btcusdt=BTC/USDT,ethbtc=ETH/BTC"
 
   huobi-futures:
     stream: huobi-futures
@@ -83,7 +84,7 @@ connectors:
       - "L1"
       - "L2"
       - "TRADES"
-    instruments: "LTCUSDT,ADAUSDT"
+    instruments: "LTCUSDT=LTC/USDT,ADAUSDT=ADA/USDT"
 
   bybit-inverse-futures:
     type: bybit-futures
@@ -94,7 +95,7 @@ connectors:
       - "L1"
       - "L2"
       - "TRADES"
-    instruments: "MANAUSD,LUNAUSD"
+    instruments: "MANAUSD=MANA/USD,LUNAUSD=LUNA/USD"
 
   bybit-spot:
     stream: bybit-spot
@@ -104,7 +105,7 @@ connectors:
       - "L1"
       - "L2"
       - "TRADES"
-    instruments: "BTCUSDT,ETHUSDT"
+    instruments: "BTCUSDT=BTC/USDT,ETHUSDT=ETH/USDT"
 
   okex:
     stream: okex
@@ -114,4 +115,4 @@ connectors:
       - "L1"
       - "L2"
       - "TRADES"
-    instruments: "BTC-UST,BTC-USDT-220930"
+    instruments: "BTC-UST=BTC/USD,BTC-USDT-220930"
