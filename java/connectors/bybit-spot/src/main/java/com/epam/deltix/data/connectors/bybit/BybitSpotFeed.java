@@ -40,8 +40,8 @@ public class BybitSpotFeed extends SingleWsFeed {
             @Override
             public void process(JsonWriter jsonWriter) {
                 jsonWriter.startObject();
-                jsonWriter.objectMember("op");
-                jsonWriter.stringValue("ping");
+                jsonWriter.objectMember("ping");
+                jsonWriter.numberValue(System.currentTimeMillis());
                 jsonWriter.endObject();
                 jsonWriter.eoj();
             }

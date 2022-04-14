@@ -7,12 +7,13 @@ timebase:
 connectors:
   coinbase:
     stream: coinbase
+    depth: 20
     wsUrl: wss://ws-feed.pro.coinbase.com
     model:
       - "L1"
       - "L2"
       - "TRADES"
-    instruments: "ETH-USD,BTC-USD,BTC-USDT,LTC-USD"
+    instruments: "ETH-USD=ETH/USD,BTC-USD=BTC/USD,BTC-USDT=BTC/USDT,LTC-USD=LTC/USD"
 
   kraken-spot:
     stream: kraken-spot
