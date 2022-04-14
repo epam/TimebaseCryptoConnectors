@@ -6,9 +6,11 @@ With [TimeBase Community Edition](https://github.com/finos/TimeBase-CE) you get 
 
 1. Download sample [docker-compose.yml](https://github.com/epam/TimebaseCryptoConnectors/blob/main/docs/docker-compose.yml).
 2. Run `docker-compose up`.
-3. View the data running on <a href="localhost:8099" target="_blank">localhost:8099</a> in [TimeBase Web Admin](https://kb.timebase.info/community/development/tools/Web%20Admin/admin_guide#stream-actions-monitor) application.
+3. View the data running on [localhost:8099](http://localhost:8099) in [TimeBase Web Admin](https://kb.timebase.info/community/development/tools/Web%20Admin/admin_guide#stream-actions-monitor) application.
 
-> Refer to the [developers tutorials](https://github.com/epam/TimebaseCryptoConnectors/blob/main/docs/developer.md) for mode information. 
+![](/img/stream-monitor.png)
+
+> Refer to the [developers tutorials](https://github.com/epam/TimebaseCryptoConnectors/blob/main/docs/developer.md) for more information. 
 
 ## Available Connectors
 

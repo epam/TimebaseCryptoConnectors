@@ -11,8 +11,6 @@ On the above illustration you see, that connectors use a special framework to su
 
 We have developed a Universal Format [API](https://github.com/epam/TimebaseCryptoConnectors/blob/main/docs/universal.md) to consume market data from different vendors of any level of granularity and effectively map it on the TimeBase [data model](#data-model). It includes classes that represent L1, L2, and even L3 market data, you can use later to build your Order Book. 
 
-> Refer to the [developer tutorials](https://github.com/epam/TimebaseCryptoConnectors#developer-tutorials) for details. 
-
 ## Data Model
 
 Received market data is organized in so-called Packages. `PackageHeader` class represents a package of any type of data. It includes fields that describe a message type and a message body:
