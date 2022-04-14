@@ -1,6 +1,6 @@
 # Timebase Data Connectors
 
-With [TimeBase Community Edition](https://github.com/finos/TimeBase-CE) you get access to a number of [market data and trade connectors](#available-connectors) for the most popular vendors that allow receiving data and recording it in [TimeBase streams](https://kb.timebase.info/community/overview/streams). 
+With [TimeBase Community Edition](https://github.com/finos/TimeBase-CE) you get access to a number of [market data connectors](#available-connectors) for the most popular vendors that allow receiving data and recording it in [TimeBase streams](https://kb.timebase.info/community/overview/streams). 
 
 ## Basic Principles
 
@@ -12,7 +12,7 @@ On the above illustration you see, that connectors use a special framework to su
 
 We have developed a Universal Format [API](https://github.com/epam/TimebaseCryptoConnectors/blob/main/docs/universal.md) to consume market data from different vendors of any level of granularity and effectively map it on the TimeBase [data model](#data-model). It includes classes that represent L1, L2, and even L3 market data, you can use later to build your Order Book. 
 
-Refer to the [developer tutorials](https://github.com/epam/TimebaseCryptoConnectors#developer-tutorials) for details. 
+> Refer to the [developer tutorials](https://github.com/epam/TimebaseCryptoConnectors#developer-tutorials) for details. 
 
 ## Data Model
 
@@ -100,7 +100,7 @@ Create settings class:
 * Annotate with `@ConnectorSettings("You Connector Name")`.
 * Add specific connector settings.
 
-Example of a [Coinbase Data Connector settings](https://github.com/epam/TimebaseCryptoConnectors/blob/01bbb8f3d9e3add9c0b710832a40afcc29e008a4/java/connectors/coinbase/src/main/java/com/epam/deltix/data/connectors/coinbase/CoinbaseConnectorSettings.java). 
+> Example of a [Coinbase Data Connector settings](https://github.com/epam/TimebaseCryptoConnectors/blob/01bbb8f3d9e3add9c0b710832a40afcc29e008a4/java/connectors/coinbase/src/main/java/com/epam/deltix/data/connectors/coinbase/CoinbaseConnectorSettings.java). 
 
 #### TimeBase Default Settings
 
@@ -110,7 +110,7 @@ Example of a [Coinbase Data Connector settings](https://github.com/epam/Timebase
 |tbUser|TimeBase username|no|
 |tbPassword|TimeBase user password|no|
 
-Refer to the [application.yaml](https://github.com/epam/TimebaseCryptoConnectors/blob/main/java/runner/src/main/resources/application.yaml#:~:text=timebase%3A,dxtick%3A//localhost%3A8011).
+> Refer to the [application.yaml](https://github.com/epam/TimebaseCryptoConnectors/blob/main/java/runner/src/main/resources/application.yaml#:~:text=timebase%3A,dxtick%3A//localhost%3A8011).
 
 #### Connector Settings 
 
