@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
  * <ul>
  *   <li>BTC/USD - the data connector will request the vendor using the "BTC/USD" name and the same name writing the result data to TB</li>
  *   <li>BTC-USD=BTC/USD - the data connector will request the vendor using the "BTC-USD" name and the "BTC/USD" name writing the result data to TB</li>
- *   <li>BTC\=USD=BTC\\USD - the data connector will request the vendor using the "BTC-USD" name and the "BTC\USD" name writing the result data to TB</li>
+ *   <li>BTC\=USD=BTC\\USD - the data connector will request the vendor using the "BTC=USD" name and the "BTC\USD" name writing the result data to TB</li>
  * </ul>
  * <p>
  */
