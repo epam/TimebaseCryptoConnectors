@@ -2,26 +2,16 @@ package com.epam.deltix.data.connectors.huobi;
 
 import com.epam.deltix.data.connectors.commons.*;
 import com.epam.deltix.data.connectors.commons.json.*;
-import com.epam.deltix.data.connectors.commons.l2.*;
-import com.epam.deltix.dfp.Decimal64Utils;
-import com.epam.deltix.qsrv.hf.pub.ExchangeCodec;
-import com.epam.deltix.qsrv.hf.tickdb.pub.TimeConstants;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class HuobiSpotFeed extends SingleWsFeed {
-    private static final long HUOBI_EXCHANGE_CODE = ExchangeCodec.codeToLong("HUOBI");
     private static final AtomicLong ID_GENERATOR = new AtomicLong();
     // all fields are used by one single thread of WsFeed's ExecutorService
     private final JsonValueParser jsonParser = new JsonValueParser();
-    private final Map<String, L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent>>
-            l2Processors = new HashMap<>();
-    private final DefaultEvent priceBookEvent = new DefaultEvent();
-    private final TradeProducer tradeProducer;
+    private final MarketDataProcessor dataProcessor;
 
     private final int depth;
 
@@ -36,7 +26,7 @@ public class HuobiSpotFeed extends SingleWsFeed {
         super(uri, 5000, selected, output, errorListener, symbols);
 
         this.depth = depth;
-        tradeProducer = new TradeProducer(HUOBI_EXCHANGE_CODE, output);
+        this.dataProcessor = MarketDataProcessorImpl.create("HUOBI", this, selected(), depth);
     }
 
     @Override
@@ -104,15 +94,12 @@ public class HuobiSpotFeed extends SingleWsFeed {
         long timestamp = object.getLong("ts");
         String instrument = topicElements[1];
         if ("depth".equalsIgnoreCase(topicElements[2]) && "step0".equalsIgnoreCase(topicElements[3])) {
-            L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent> l2Processor
-                = getPriceBookProcessor(instrument);
-
             JsonObject tick = object.getObject("tick");
             if (tick != null) {
-                l2Processor.onSnapshotPackageStarted(TimeConstants.TIMESTAMP_UNKNOWN, timestamp);
-                processSnapshotSide(l2Processor, tick.getArray("bids"), false);
-                processSnapshotSide(l2Processor, tick.getArray("asks"), true);
-                l2Processor.onPackageFinished();
+                L2BookProcessor l2BookProcessor = dataProcessor.onBookSnapshot(instrument, timestamp);
+                processSnapshotSide(l2BookProcessor, tick.getArray("bids"), false);
+                processSnapshotSide(l2BookProcessor, tick.getArray("asks"), true);
+                l2BookProcessor.onFinish();
             }
         } else if ("trade".equalsIgnoreCase(topicElements[2]) && "detail".equalsIgnoreCase(topicElements[3])) {
             JsonObject tick = object.getObject("tick");
@@ -121,49 +108,19 @@ public class HuobiSpotFeed extends SingleWsFeed {
                 if (dataJson != null) {
                     for (int i = 0; i < dataJson.size(); ++i) {
                         JsonObject trade = dataJson.getObject(i);
-                        long price = Decimal64Utils.fromBigDecimal(trade.getDecimalRequired("price"));
-                        long size = Decimal64Utils.fromBigDecimal(trade.getDecimalRequired("amount"));
+                        long price = trade.getDecimal64Required("price");
+                        long size = trade.getDecimal64Required("amount");
 
-                        tradeProducer.onTrade(timestamp, instrument, price, size);
+                        dataProcessor.onTrade(instrument, timestamp, price, size);
                     }
                 }
             }
         }
     }
 
-    private L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent>
-        getPriceBookProcessor(String instrument)
-    {
-        L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent>
-                result = l2Processors.get(instrument);
-        if (result == null) {
-            ChainedL2Listener.Builder<DefaultItem<DefaultEvent>, DefaultEvent> builder =
-                ChainedL2Listener.builder();
-
-            if (selected().level1()) {
-                builder.with(new BestBidOfferProducer<>(this));
-            }
-            if (selected().level2()) {
-                builder.with(new L2Producer<>(this));
-            }
-
-            result = L2Processor.builder()
-                .withInstrument(instrument)
-                .withSource(HUOBI_EXCHANGE_CODE)
-                .withBookOutputSize(depth)
-                .buildWithPriceBook(
-                    builder.build()
-                );
-            l2Processors.put(instrument, result);
-        }
-        return result;
-    }
-
     private void processSnapshotSide(
-            final L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent> l2Processor,
-            final JsonArray quotePairs,
-            final boolean ask)
-    {
+            final L2BookProcessor l2BookProcessor, final JsonArray quotePairs, final boolean ask) {
+
         if (quotePairs == null) {
             return;
         }
@@ -176,13 +133,12 @@ public class HuobiSpotFeed extends SingleWsFeed {
                         + " quote: "
                         + pair.size());
             }
-            priceBookEvent.reset();
-            priceBookEvent.set(
-                    ask,
-                    Decimal64Utils.fromBigDecimal(pair.getDecimalRequired(0)),
-                    Decimal64Utils.fromBigDecimal(pair.getDecimalRequired(1))
+
+            l2BookProcessor.onQuote(
+                pair.getDecimal64Required(0),
+                pair.getDecimal64Required(1),
+                ask
             );
-            l2Processor.onEvent(priceBookEvent);
         }
     }
 

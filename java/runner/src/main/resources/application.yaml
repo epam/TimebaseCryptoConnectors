@@ -23,7 +23,7 @@ connectors:
       - "L1"
       - "L2"
       - "TRADES"
-    instruments: "XBT/USD,XBT/USDT,ETH/USD,ETH/USDT,USDT/USD"
+    instruments: "XBT/USD=BTC/USD,XBT/USDT=BTC/USDT,ETH/USD,ETH/USDT,USDT/USD"
 
   kraken-futures:
     stream: kraken-futures
@@ -53,7 +53,7 @@ connectors:
       - "L1"
       - "L2"
       - "TRADES"
-    instruments: "btcusdt,ethbtc"
+    instruments: "btcusdt=BTC/USDT,ethbtc=ETH/BTC"
 
   huobi-futures:
     stream: huobi-futures
@@ -115,4 +115,4 @@ connectors:
       - "L1"
       - "L2"
       - "TRADES"
-    instruments: "BTC-UST,BTC-USDT-220930"
+    instruments: "BTC-UST=BTC/USD,BTC-USDT-220930"
