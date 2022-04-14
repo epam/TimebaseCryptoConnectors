@@ -42,8 +42,7 @@ public abstract class DataConnector<T extends DataConnectorSettings> implements 
             throw new IllegalArgumentException("Empty model selection");
         }
 
-        retrier = new Retrier<>(doSubscribe(
-                selected,
+        final SymbolMapper symbolMapper = new SymbolMapper(
                 new TbMessageOutputFactory(tbUrl, stream, selected.types()),
 /*
                 () -> new CloseableMessageOutput() {
@@ -58,7 +57,12 @@ public abstract class DataConnector<T extends DataConnectorSettings> implements 
                     }
                 },
 */
-                symbols
+                symbols);
+
+        retrier = new Retrier<>(doSubscribe(
+                selected,
+                symbolMapper,
+                symbolMapper.normalized()
         ), 10_000);
 
         retrier.start();

@@ -6,6 +6,7 @@ public class DataConnectorSettings {
     private String tbUser;
     private String tbPassword;
     private String stream;
+    private int depth = 20;
 
     public DataConnectorSettings() {
     }
@@ -47,4 +48,11 @@ public class DataConnectorSettings {
         this.stream = stream;
     }
 
+    public int getDepth() {
+        return depth;
+    }
+
+    public void setDepth(int depth) {
+        this.depth = depth;
+    }
 }

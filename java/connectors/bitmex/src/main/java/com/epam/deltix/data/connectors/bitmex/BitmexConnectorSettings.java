@@ -7,7 +7,6 @@ import com.epam.deltix.data.connectors.commons.annotations.ConnectorSettings;
 public class BitmexConnectorSettings extends DataConnectorSettings {
 
     private String wsUrl = "wss://ws.bitmex.com/realtime";
-    private int depth = 20;
 
     public BitmexConnectorSettings() {
         super();
@@ -26,11 +25,4 @@ public class BitmexConnectorSettings extends DataConnectorSettings {
         this.wsUrl = wsUrl;
     }
 
-    public int getDepth() {
-        return depth;
-    }
-
-    public void setDepth(int depth) {
-        this.depth = depth;
-    }
 }

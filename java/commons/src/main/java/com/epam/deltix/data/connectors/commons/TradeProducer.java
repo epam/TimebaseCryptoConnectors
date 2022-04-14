@@ -26,23 +26,17 @@ public class TradeProducer {
     public void onTrade(
             final CharSequence symbol,
             final @Decimal long price,
-            final @Decimal long size)
-    {
-        tradePackage.setOriginalTimestamp(TimeStampedMessage.TIMESTAMP_UNKNOWN);
-        tradePackage.setSymbol(symbol);
+            final @Decimal long size) {
 
-        trade.setPrice(price);
-        trade.setSize(size);
-
-        output.send(tradePackage);
+        onTrade(TimeStampedMessage.TIMESTAMP_UNKNOWN, symbol, price, size);
     }
 
     public void onTrade(
         final long originalTimestamp,
         final CharSequence symbol,
         final @Decimal long price,
-        final @Decimal long size)
-    {
+        final @Decimal long size) {
+
         tradePackage.setOriginalTimestamp(originalTimestamp);
         tradePackage.setSymbol(symbol);
 

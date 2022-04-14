@@ -7,7 +7,6 @@ import com.epam.deltix.data.connectors.commons.annotations.ConnectorSettings;
 public class HuobiSpotConnectorSettings extends DataConnectorSettings {
 
     private String wsUrl = "wss://api.huobi.pro/ws";
-    private int depth = 20;
 
     public HuobiSpotConnectorSettings() {
         super();
@@ -26,11 +25,4 @@ public class HuobiSpotConnectorSettings extends DataConnectorSettings {
         this.wsUrl = wsUrl;
     }
 
-    public int getDepth() {
-        return depth;
-    }
-
-    public void setDepth(int depth) {
-        this.depth = depth;
-    }
 }
