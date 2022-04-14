@@ -1,4 +1,4 @@
-# Timebase Data Connectors
+# TimeBase Data Connectors
 
 With [TimeBase Community Edition](https://github.com/finos/TimeBase-CE) you get access to a number of [market data connectors](#available-connectors) for the most popular vendors that allow receiving data and recording it in [TimeBase streams](https://kb.timebase.info/community/overview/streams). 
 
@@ -94,13 +94,11 @@ In this section we will describe the architecture of our single-WebSocket data c
 
 ### 1. Create Settings
 
-Create settings class:
+Create a data connector settings class:
 
-* Inherit from `DataConnectorSettings`.
+* Inherit your data connector settings class from `DataConnectorSettings` class.
 * Annotate with `@ConnectorSettings("You Connector Name")`.
 * Add specific connector settings.
-
-> Example of a [Coinbase Data Connector settings](https://github.com/epam/TimebaseCryptoConnectors/blob/01bbb8f3d9e3add9c0b710832a40afcc29e008a4/java/connectors/coinbase/src/main/java/com/epam/deltix/data/connectors/coinbase/CoinbaseConnectorSettings.java). 
 
 #### TimeBase Default Settings
 
@@ -112,7 +110,7 @@ Create settings class:
 
 > Refer to the [application.yaml](https://github.com/epam/TimebaseCryptoConnectors/blob/main/java/runner/src/main/resources/application.yaml#:~:text=timebase%3A,dxtick%3A//localhost%3A8011).
 
-#### Connector Settings 
+#### Common Settings for Connectors
 
 > Can be unique for each connector. 
 
@@ -120,19 +118,28 @@ Create settings class:
 |---------|-----------|--------|
 |type|Data connector type. You can run multiple instances of each connector with different parameters (e.g. to read different set of instruments from different URLs or to save dta in different TimeBase streams). In this case, each instance of the connector will have a different `name` but share the same `type` e.g. coinbase. `Type` must match the `"You Connector Name"`. Can avoid `type` if the connector instance `name` is the same as `type` name.|no|
 |stream|TimeBase [stream](https://kb.timebase.info/community/overview/streams) name where all data will be stored.|yes|
-|wsUrl|Vendor URLs|yes|
-|depth|Number of levels in the Order Book.|no|
 |instruments|A list of trading instruments that will be received from the vendor.|yes|
 |model|Data model type.|yes|
 
 > Refer to [application.yaml](https://github.com/epam/TimebaseCryptoConnectors/blob/main/java/runner/src/main/resources/application.yaml#:~:text=connectors%3A,USDT%2CLTC%2DUSD%22).
 
-### 2. Create WS Feed 
+#### Connector-Specific Settings 
 
-Create class inherited from `DataConnector<T>`:
+> Can be unique for each connector. Here we describe a Coinbase connector settings for example purposes. 
+
+|Parameter|Description|Required|
+|---------|-----------|--------|
+|wsUrl|Vendor URL|yes|
+|depth|Number of levels in the Order Book.|no|
+
+> Example of a [Coinbase Data Connector settings](https://github.com/epam/TimebaseCryptoConnectors/blob/01bbb8f3d9e3add9c0b710832a40afcc29e008a4/java/connectors/coinbase/src/main/java/com/epam/deltix/data/connectors/coinbase/CoinbaseConnectorSettings.java). 
+
+### 2. Create DataConnector Class
+
+Create a class inherited from `DataConnector<T>` where `T` is your settings class created on [step 1](https://github.com/epam/TimebaseCryptoConnectors#1-create-settings).
 
 * Mark with [annotation](https://github.com/epam/TimebaseCryptoConnectors/blob/01bbb8f3d9e3add9c0b710832a40afcc29e008a4/java/connectors/coinbase/src/main/java/com/epam/deltix/data/connectors/coinbase/CoinbaseDataConnector.java#L7) `@Connector("You Connector Name")`
-* Implement method that creates factory of `WsFeed`. Refer to the [source code](https://github.com/epam/TimebaseCryptoConnectors/blob/01bbb8f3d9e3add9c0b710832a40afcc29e008a4/java/commons/src/main/java/com/epam/deltix/data/connectors/commons/DataConnector.java#L88). 
+* Implement method that creates factory of `WsFeed`. Refer to the [source code](https://github.com/epam/TimebaseCryptoConnectors/blob/01bbb8f3d9e3add9c0b710832a40afcc29e008a4/java/connectors/coinbase/src/main/java/com/epam/deltix/data/connectors/coinbase/CoinbaseDataConnector.java#L21). 
 
 ```java
 protected abstract RetriableFactory<MdFeed> doSubscribe(
@@ -143,22 +150,12 @@ String... symbols);
 
 ### 3. Subscribe for Market Data and Parse It
 
-1. Inherit [SingleWsFeed](https://github.com/epam/TimebaseCryptoConnectors/blob/01bbb8f3d9e3add9c0b710832a40afcc29e008a4/java/connectors/coinbase/src/main/java/com/epam/deltix/data/connectors/coinbase/CoinbaseFeed.java#:~:text=public%20class%20CoinbaseFeed%20extends%20SingleWsFeed).
-2. Implement two methods of `SingleWsFeed`:
-
-    * `prepareSubscription` method that **subscribes** for the market data. Refer to the [source code](https://github.com/epam/TimebaseCryptoConnectors/blob/01bbb8f3d9e3add9c0b710832a40afcc29e008a4/java/commons/src/main/java/com/epam/deltix/data/connectors/commons/SingleWsFeed.java#:~:text=protected%20abstract%20void%20prepareSubscription(JsonWriter%20jsonWriter%2C%20String...%20symbols)%3B).
-
-    ```java
-    protected abstract void prepareSubscription(JsonWriter jsonWriter, String... symbols);
-    ```
-    * `onJson` method **to parse** the received data from exchange in JSON format. Refer to the [source code](https://github.com/epam/TimebaseCryptoConnectors/blob/01bbb8f3d9e3add9c0b710832a40afcc29e008a4/java/commons/src/main/java/com/epam/deltix/data/connectors/commons/SingleWsFeed.java#:~:text=protected%20abstract%20void%20onJson(CharSequence%20data%2C%20boolean%20last%2C%20JsonWriter%20jsonWriter)%3B).
-
-    ```java
-    protected abstract void onJson(CharSequence data, boolean last, JsonWriter jsonWriter);
-    ```
+1. Create [WsFeed](https://github.com/epam/TimebaseCryptoConnectors/blob/01bbb8f3d9e3add9c0b710832a40afcc29e008a4/java/connectors/coinbase/src/main/java/com/epam/deltix/data/connectors/coinbase/CoinbaseFeed.java#:~:text=public%20class%20CoinbaseFeed%20extends%20SingleWsFeed) class for your connector that inherits from [SingleWsFeed](https://github.com/epam/TimebaseCryptoConnectors/blob/01bbb8f3d9e3add9c0b710832a40afcc29e008a4/java/commons/src/main/java/com/epam/deltix/data/connectors/commons/SingleWsFeed.java#L21) class.
+2. Implement two methods of `SingleWsFeed` class:
+    * Implement [prepareSubscription](https://github.com/epam/TimebaseCryptoConnectors/blob/01bbb8f3d9e3add9c0b710832a40afcc29e008a4/java/connectors/coinbase/src/main/java/com/epam/deltix/data/connectors/coinbase/CoinbaseFeed.java#L51) method of [SingleWsFeed](https://github.com/epam/TimebaseCryptoConnectors/blob/01bbb8f3d9e3add9c0b710832a40afcc29e008a4/java/commons/src/main/java/com/epam/deltix/data/connectors/commons/SingleWsFeed.java#L214) that **subscribes** for the market data.
+    * Implement [onJson](https://github.com/epam/TimebaseCryptoConnectors/blob/01bbb8f3d9e3add9c0b710832a40afcc29e008a4/java/connectors/coinbase/src/main/java/com/epam/deltix/data/connectors/coinbase/CoinbaseFeed.java#L77) method of [SingleWsFeed](https://github.com/epam/TimebaseCryptoConnectors/blob/01bbb8f3d9e3add9c0b710832a40afcc29e008a4/java/commons/src/main/java/com/epam/deltix/data/connectors/commons/SingleWsFeed.java#L221) class **to parse** the received data from exchange in JSON format and write it to TimeBase stream.
 
 ![](/img/tb-ce-connectors3.png)
-
 
 ## Available Connectors
 
@@ -167,5 +164,12 @@ String... symbols);
 |[BitMEX](https://github.com/epam/TimebaseCryptoConnectors/blob/main/java/connectors/bitmex/README.md)|Quanto Contract, Inverse Perpetual SWAP, Linear Perpetual, Quanto Perpetual, Linear Futures, Quanto Futures, Inverse Futures|
 |[Coinbase](https://github.com/epam/TimebaseCryptoConnectors/blob/main/java/connectors/coinbase/README.md)|SPOT|
 |[FTX](https://github.com/epam/TimebaseCryptoConnectors/blob/main/java/connectors/ftx/README.md)|SPOT, Linear Futures|
-|[HUOBI](https://github.com/epam/TimebaseCryptoConnectors/blob/main/java/connectors/huobi-spot/README.md) SPOT|SPOT|
-|[Kraken](https://github.com/epam/TimebaseCryptoConnectors/blob/main/java/connectors/kraken/README.md) SPOT|SPOT|
+|[HUOBI SPOT](https://github.com/epam/TimebaseCryptoConnectors/blob/main/java/connectors/huobi-spot/README.md) SPOT|SPOT|
+|[HUOBI FUTURES](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/huobi-futures)|Inverse Futures|
+|[Kraken SPOT](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/kraken-spot) SPOT|SPOT|
+|[Kraken FUTURES](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/kraken-futures)|Inverse and Linear Perpetual SWAP, Inverse Futures with Expiration|
+|[BYBIT FUTURES](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/bybit-futures)|Inverse and Linear Futures|
+|[BYBIT SPOT](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/bybit-spot)|SPOT|
+|[OKEX](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/okex)|SPOT, Linear and Inverse SWAP, 
+Inverse SWAP, Inverse and Linear Futures|
+
