@@ -33,11 +33,14 @@ Received market data is organized in so-called Packages. `PackageHeader` class r
 
 ## Quick Start Connector
 
-### Docker Compose 
-
 This is the example of the Docker Compose configuration to launch [TimeBase server](https://github.com/finos/TimeBase-CE), [TimeBase Web Admin](https://github.com/epam/TimebaseWS), and data connectors at once. 
 
+1. [Install and run Docker](https://docs.docker.com/get-docker/) on your machine.
+2. [Install and run Docker Compose](https://docs.docker.com/compose/) with the below docker-compose.yml file.
+3. Having completed two above steps, you should be able to open [TimeBase Web Admin](https://kb.timebase.info/community/development/tools/Web%20Admin/admin_guide#stream-actions-monitor) application at **localhost:8099** in your browser with all the connectors already installed and fetching market data. 
+
 ```yaml
+# docker-compose.yml example
 version: "3"
 services:
   timebase:
