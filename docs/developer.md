@@ -41,7 +41,9 @@ Create a data connector settings class:
 * Annotate with `@ConnectorSettings("You Connector Name")`.
 * Add specific connector settings.
 
-#### TimeBase Default Settings
+#### Default Settings
+
+Default settings for TimeBase. 
 
 |Parameter|Description|Required|
 |---------|-----------|--------|
@@ -49,9 +51,7 @@ Create a data connector settings class:
 |tbUser|TimeBase username|no|
 |tbPassword|TimeBase user password|no|
 
-> Refer to the [application.yaml](https://github.com/epam/TimebaseCryptoConnectors/blob/main/java/runner/src/main/resources/application.yaml#:~:text=timebase%3A,dxtick%3A//localhost%3A8011).
-
-#### Common Settings for Connectors
+Common Settings for Connectors
 
 |Parameter|Description|Required|
 |---------|-----------|--------|
@@ -60,7 +60,7 @@ Create a data connector settings class:
 |instruments|A list of trading instruments that will be received from the vendor.|yes|
 |model|Data model type.|yes|
 
-> Refer to [application.yaml](https://github.com/epam/TimebaseCryptoConnectors/blob/main/java/runner/src/main/resources/application.yaml#:~:text=connectors%3A,USDT%2CLTC%2DUSD%22).
+> Refer to [application.yaml](https://github.com/epam/TimebaseCryptoConnectors/blob/main/java/runner/src/main/resources/application.yaml#:~:text=connectors%3A,USDT%2CLTC%2DUSD%22) to view the default settings the connectors start with.
 
 #### Connector-Specific Settings 
 

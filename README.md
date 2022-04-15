@@ -8,6 +8,8 @@ With [TimeBase Community Edition](https://github.com/finos/TimeBase-CE) you get 
 2. Run `docker-compose up`.
 3. View the data running on [localhost:8099](http://localhost:8099) in [TimeBase Web Admin](https://kb.timebase.info/community/development/tools/Web%20Admin/admin_guide#stream-actions-monitor) application.
 
+By default, we launch with [application.yaml](https://github.com/epam/TimebaseCryptoConnectors/blob/main/java/runner/src/main/resources/application.yaml#:~:text=connectors%3A,USDT%2CLTC%2DUSD%22) configuration to start all the available connectors with the default settings. You can create custom configurations to run just the selected connectors with [specific settings](https://github.com/epam/TimebaseCryptoConnectors/blob/main/docs/developer.md#1-create-settings). 
+
 ![](/img/stream-monitor.png)
 
 > Refer to the [developers tutorials](https://github.com/epam/TimebaseCryptoConnectors/blob/main/docs/developer.md) for more information. 
