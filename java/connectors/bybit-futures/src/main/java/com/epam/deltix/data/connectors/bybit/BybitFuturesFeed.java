@@ -11,7 +11,7 @@ public class BybitFuturesFeed extends SingleWsFeed {
 
     // all fields are used by one single thread of WsFeed's ExecutorService
     private final JsonValueParser jsonParser = new JsonValueParser();
-    private final MarketDataProcessor dataProcessor;
+    private final MarketDataListener marketDataListener;
     private final Iso8601DateTimeParser dtParser = new Iso8601DateTimeParser();
 
     private final int depth;
@@ -33,7 +33,7 @@ public class BybitFuturesFeed extends SingleWsFeed {
         super(uri, 30000, selected, output, errorListener, getPeriodicalJsonTask(), symbols);
 
         this.depth = depth;
-        this.dataProcessor = MarketDataProcessorImpl.create("BYBIT", this, selected(), depth);
+        this.marketDataListener = MarketDataListener.create("BYBIT", this, selected(), depth);
     }
 
     private static PeriodicalJsonTask getPeriodicalJsonTask() {
@@ -106,13 +106,13 @@ public class BybitFuturesFeed extends SingleWsFeed {
                 JsonObject dataObject = object.getObject("data");
                 JsonArray dataArray = object.getArray("data");
                 if (dataObject != null) {
-                    L2BookProcessor l2BookProcessor = dataProcessor.onBookSnapshot(instrument, timestamp);
-                    processSnapshot(l2BookProcessor, dataObject.getArray("order_book"));
-                    l2BookProcessor.onFinish();
+                    QuoteSequenceListener quotesListener = marketDataListener.onBookSnapshot(instrument, timestamp);
+                    processSnapshot(quotesListener, dataObject.getArray("order_book"));
+                    quotesListener.onFinish();
                 } else if (dataArray != null) {
-                    L2BookProcessor l2BookProcessor = dataProcessor.onBookSnapshot(instrument, timestamp);
-                    processSnapshot(l2BookProcessor, dataArray);
-                    l2BookProcessor.onFinish();
+                    QuoteSequenceListener quotesListener = marketDataListener.onBookSnapshot(instrument, timestamp);
+                    processSnapshot(quotesListener, dataArray);
+                    quotesListener.onFinish();
                 }
             } else if ("delta".equalsIgnoreCase(type)) {
                 long timestamp = getTimestamp(object,"timestamp_e6") / 1000;
@@ -121,11 +121,11 @@ public class BybitFuturesFeed extends SingleWsFeed {
                     return;
                 }
 
-                L2BookProcessor l2BookProcessor = dataProcessor.onBookUpdate(instrument, timestamp);
-                processChanges(l2BookProcessor, dataObject.getArray("delete"), UpdateType.delete);
-                processChanges(l2BookProcessor, dataObject.getArray("update"), UpdateType.update);
-                processChanges(l2BookProcessor, dataObject.getArray("insert"), UpdateType.insert);
-                l2BookProcessor.onFinish();
+                QuoteSequenceListener quotesListener = marketDataListener.onBookUpdate(instrument, timestamp);
+                processChanges(quotesListener, dataObject.getArray("delete"), UpdateType.delete);
+                processChanges(quotesListener, dataObject.getArray("update"), UpdateType.update);
+                processChanges(quotesListener, dataObject.getArray("insert"), UpdateType.insert);
+                quotesListener.onFinish();
             }
         } else if (topic.startsWith("trade.")) {
             JsonArray trades = object.getArray("data");
@@ -137,20 +137,20 @@ public class BybitFuturesFeed extends SingleWsFeed {
                     long size = trade.getDecimal64("size");
                     long timestamp = dtParser.set(trade.getStringRequired("timestamp")).millis();
 
-                    dataProcessor.onTrade(instrument, timestamp, price, size);
+                    marketDataListener.onTrade(instrument, timestamp, price, size);
                 }
             }
         }
     }
 
-    private void processSnapshot(L2BookProcessor l2BookProcessor, JsonArray quotes) {
+    private void processSnapshot(QuoteSequenceListener quotesListener, JsonArray quotes) {
         if (quotes == null) {
             return;
         }
 
         for (int i = 0; i < quotes.size(); i++) {
             JsonObject quote = quotes.getObjectRequired(i);
-            l2BookProcessor.onQuote(
+            quotesListener.onQuote(
                 quote.getDecimal64("price"),
                 quote.getDecimal64("size"),
                 "sell".equalsIgnoreCase(quote.getStringRequired("side"))
@@ -158,7 +158,7 @@ public class BybitFuturesFeed extends SingleWsFeed {
         }
     }
 
-    private void processChanges(L2BookProcessor l2BookProcessor, JsonArray changes, UpdateType updateType) {
+    private void processChanges(QuoteSequenceListener quotesListener, JsonArray changes, UpdateType updateType) {
         if (changes == null) {
             return;
         }
@@ -171,7 +171,7 @@ public class BybitFuturesFeed extends SingleWsFeed {
                 size = change.getDecimal64("size");
             }
 
-            l2BookProcessor.onQuote(
+            quotesListener.onQuote(
                 change.getDecimal64("price"),
                 size,
                 "sell".equalsIgnoreCase(change.getStringRequired("side"))

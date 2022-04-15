@@ -16,7 +16,7 @@ public class CoinbaseFeed extends SingleWsFeed {
     // all fields are used by one single thread of WsFeed's ExecutorService
     private final JsonValueParser jsonParser = new JsonValueParser();
     private final Iso8601DateTimeParser dtParser = new Iso8601DateTimeParser();
-    private final MarketDataProcessor dataProcessor;
+    private final MarketDataListener marketDataListener;
 
     public CoinbaseFeed(
             final String uri,
@@ -27,7 +27,7 @@ public class CoinbaseFeed extends SingleWsFeed {
             final String... symbols) {
         super(uri, 5000, selected, output, errorListener, symbols);
 
-        this.dataProcessor = MarketDataProcessorImpl.create("COINBASE", this, selected(), depth);
+        this.marketDataListener = MarketDataListener.create("COINBASE", this, selected(), depth);
     }
 
     @Override
@@ -76,7 +76,7 @@ public class CoinbaseFeed extends SingleWsFeed {
         switch (type) {
             case "ticker": {
                 final String productId = object.getStringRequired("product_id");
-                dataProcessor.onTrade(
+                marketDataListener.onTrade(
                         productId,
                         TimeStampedMessage.TIMESTAMP_UNKNOWN,
                         object.getDecimal64Required("price"),
@@ -86,19 +86,19 @@ public class CoinbaseFeed extends SingleWsFeed {
 
             case "snapshot": {
                 final String instrument = object.getStringRequired("product_id");
-                L2BookProcessor l2BookProcessor = dataProcessor.onBookSnapshot(instrument, TimeStampedMessage.TIMESTAMP_UNKNOWN);
-                processSnapshotSide(l2BookProcessor, object.getArray("bids"), false);
-                processSnapshotSide(l2BookProcessor, object.getArray("asks"), true);
-                l2BookProcessor.onFinish();
+                QuoteSequenceListener quotesListener = marketDataListener.onBookSnapshot(instrument, TimeStampedMessage.TIMESTAMP_UNKNOWN);
+                processSnapshotSide(quotesListener, object.getArray("bids"), false);
+                processSnapshotSide(quotesListener, object.getArray("asks"), true);
+                quotesListener.onFinish();
                 break;
             }
 
             case "l2update": {
                 final String instrument = object.getStringRequired("product_id");
                 dtParser.set(object.getStringRequired("time"));
-                L2BookProcessor l2BookProcessor = dataProcessor.onBookUpdate(instrument, dtParser.millis());
-                processChanges(l2BookProcessor, object.getArrayRequired("changes"));
-                l2BookProcessor.onFinish();
+                QuoteSequenceListener quotesListener = marketDataListener.onBookUpdate(instrument, dtParser.millis());
+                processChanges(quotesListener, object.getArrayRequired("changes"));
+                quotesListener.onFinish();
                 break;
             }
 
@@ -108,7 +108,7 @@ public class CoinbaseFeed extends SingleWsFeed {
     }
 
     private void processSnapshotSide(
-            final L2BookProcessor l2BookProcessor, final JsonArray quotePairs, final boolean ask) {
+            final QuoteSequenceListener quotesListener, final JsonArray quotePairs, final boolean ask) {
 
         if (quotePairs == null) {
             return;
@@ -122,7 +122,7 @@ public class CoinbaseFeed extends SingleWsFeed {
                         + " quote: "
                         + pair.size());
             }
-            l2BookProcessor.onQuote(
+            quotesListener.onQuote(
                 pair.getDecimal64Required(0),
                 pair.getDecimal64Required(1),
                 ask
@@ -130,7 +130,7 @@ public class CoinbaseFeed extends SingleWsFeed {
         }
     }
 
-    private void processChanges(final L2BookProcessor l2BookProcessor, final JsonArray changes) {
+    private void processChanges(final QuoteSequenceListener quotesListener, final JsonArray changes) {
         if (changes == null) {
             return;
         }
@@ -146,7 +146,7 @@ public class CoinbaseFeed extends SingleWsFeed {
                 size = TypeConstants.DECIMAL_NULL; // means delete the price
             }
 
-            l2BookProcessor.onQuote(
+            quotesListener.onQuote(
                 change.getDecimal64Required(1),
                 size,
                 "sell".equals(change.getStringRequired(0))

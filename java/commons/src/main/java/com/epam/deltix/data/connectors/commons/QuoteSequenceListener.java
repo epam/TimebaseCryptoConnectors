@@ -7,7 +7,7 @@ import com.epam.deltix.data.connectors.commons.l2.PriceBook;
 import com.epam.deltix.dfp.Decimal;
 import com.epam.deltix.qsrv.hf.tickdb.pub.TimeConstants;
 
-public class L2BookProcessorImpl implements L2BookProcessor {
+public class QuoteSequenceListener {
 
     private final L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent>
         l2Processor;
@@ -16,7 +16,7 @@ public class L2BookProcessorImpl implements L2BookProcessor {
 
     private boolean packageStarted = false;
 
-    public L2BookProcessorImpl(
+    public QuoteSequenceListener(
         L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent> l2Processor) {
 
         this.l2Processor = l2Processor;
@@ -34,7 +34,6 @@ public class L2BookProcessorImpl implements L2BookProcessor {
         packageStarted = true;
     }
 
-    @Override
     public void onQuote(@Decimal long price, @Decimal long size, boolean isAsk) {
         checkPackageStarted();
 
@@ -43,7 +42,6 @@ public class L2BookProcessorImpl implements L2BookProcessor {
         l2Processor.onEvent(priceBookEvent);
     }
 
-    @Override
     public void onFinish() {
         checkPackageStarted();
         packageStarted = false;

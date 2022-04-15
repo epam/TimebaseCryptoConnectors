@@ -11,7 +11,7 @@ import java.util.Arrays;
 public class KrakenSpotFeed extends SingleWsFeed {
     // all fields are used by one single thread of WsFeed's ExecutorService
     private final JsonValueParser jsonParser = new JsonValueParser();
-    private final MarketDataProcessor dataProcessor;
+    private final MarketDataListener marketDataListener;
 
     private final int depth;
 
@@ -26,7 +26,7 @@ public class KrakenSpotFeed extends SingleWsFeed {
         super(uri, 5000, selected, output, errorListener, symbols);
 
         this.depth = depth;
-        this.dataProcessor = MarketDataProcessorImpl.create("KRAKEN", this, selected(), depth);
+        this.marketDataListener = MarketDataListener.create("KRAKEN", this, selected(), depth);
     }
 
     @Override
@@ -95,22 +95,22 @@ public class KrakenSpotFeed extends SingleWsFeed {
             JsonArray bs = values.getArray("bs");
             JsonArray as = values.getArray("as");
             if (bs != null || as != null) {
-                L2BookProcessor l2BookProcessor = dataProcessor.onBookSnapshot(instrument,
+                QuoteSequenceListener quotesListener = marketDataListener.onBookSnapshot(instrument,
                     computeTimestamp(bs, computeTimestamp(as, TimeConstants.TIMESTAMP_UNKNOWN))
                 );
-                processSnapshotSide(l2BookProcessor, bs, false);
-                processSnapshotSide(l2BookProcessor, as, true);
-                l2BookProcessor.onFinish();
+                processSnapshotSide(quotesListener, bs, false);
+                processSnapshotSide(quotesListener, as, true);
+                quotesListener.onFinish();
             } else {
                 JsonArray b = values.getArray("b");
                 JsonArray a = values.getArray("a");
                 if (b != null || a != null) {
-                    L2BookProcessor l2BookProcessor = dataProcessor.onBookUpdate(instrument,
+                    QuoteSequenceListener quotesListener = marketDataListener.onBookUpdate(instrument,
                         computeTimestamp(a, computeTimestamp(b, TimeConstants.TIMESTAMP_UNKNOWN))
                     );
-                    processChanges(l2BookProcessor, b, false);
-                    processChanges(l2BookProcessor, a, true);
-                    l2BookProcessor.onFinish();
+                    processChanges(quotesListener, b, false);
+                    processChanges(quotesListener, a, true);
+                    quotesListener.onFinish();
                 }
             }
         } else if (type.startsWith("trade")) {
@@ -123,7 +123,7 @@ public class KrakenSpotFeed extends SingleWsFeed {
                     long size = trade.getDecimal64Required(1);
                     long timestamp = Util.parseTime(trade.getString(2));
 
-                    dataProcessor.onTrade(instrument, timestamp, price, size);
+                    marketDataListener.onTrade(instrument, timestamp, price, size);
                 }
             }
         }
@@ -152,7 +152,7 @@ public class KrakenSpotFeed extends SingleWsFeed {
     }
 
     private void processSnapshotSide(
-        final L2BookProcessor l2BookProcessor, final JsonArray quotePairs, final boolean ask) {
+        final QuoteSequenceListener quotesListener, final JsonArray quotePairs, final boolean ask) {
 
         if (quotePairs == null) {
             return;
@@ -167,7 +167,7 @@ public class KrakenSpotFeed extends SingleWsFeed {
                     + pair.size());
             }
 
-            l2BookProcessor.onQuote(
+            quotesListener.onQuote(
                 pair.getDecimal64Required(0),
                 pair.getDecimal64Required(1),
                 ask
@@ -176,7 +176,7 @@ public class KrakenSpotFeed extends SingleWsFeed {
     }
 
     private void processChanges(
-        final L2BookProcessor l2BookProcessor, final JsonArray changes, final boolean ask) {
+        final QuoteSequenceListener quotesListener, final JsonArray changes, final boolean ask) {
 
         if (changes == null) {
             return;
@@ -194,7 +194,7 @@ public class KrakenSpotFeed extends SingleWsFeed {
                 size = TypeConstants.DECIMAL_NULL; // means delete the price
             }
 
-            l2BookProcessor.onQuote(
+            quotesListener.onQuote(
                 change.getDecimal64Required(0),
                 size,
                 ask
