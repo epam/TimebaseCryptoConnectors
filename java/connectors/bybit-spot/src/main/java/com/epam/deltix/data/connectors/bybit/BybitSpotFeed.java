@@ -12,7 +12,7 @@ public class BybitSpotFeed extends SingleWsFeed {
 
     // all fields are used by one single thread of WsFeed's ExecutorService
     private final JsonValueParser jsonParser = new JsonValueParser();
-    private final MarketDataListener marketDataListener;
+    private final MarketDataProcessor marketDataProcessor;
 
     public BybitSpotFeed(
             final String uri,
@@ -24,7 +24,7 @@ public class BybitSpotFeed extends SingleWsFeed {
     {
         super(uri, 30000, selected, output, errorListener, getPeriodicalJsonTask(), symbols);
 
-        this.marketDataListener = MarketDataListener.create("BYBIT", this, selected(), depth);
+        this.marketDataProcessor = MarketDataProcessor.create("BYBIT", this, selected(), depth);
     }
 
     private static PeriodicalJsonTask getPeriodicalJsonTask() {
@@ -93,12 +93,12 @@ public class BybitSpotFeed extends SingleWsFeed {
                 JsonObject jsonData = jsonDataArray.getObjectRequired(i);
                 long timestamp = jsonData.getLong("t");
                 if (first) {
-                    QuoteSequenceListener quotesListener = marketDataListener.onBookSnapshot(instrument, timestamp);
+                    QuoteSequenceProcessor quotesListener = marketDataProcessor.onBookSnapshot(instrument, timestamp);
                     processSnapshotSide(quotesListener, jsonData.getArray("b"), false);
                     processSnapshotSide(quotesListener, jsonData.getArray("a"), true);
                     quotesListener.onFinish();
                 } else {
-                    QuoteSequenceListener quotesListener = marketDataListener.onBookUpdate(instrument, timestamp);
+                    QuoteSequenceProcessor quotesListener = marketDataProcessor.onBookUpdate(instrument, timestamp);
                     processChanges(quotesListener, jsonData.getArray("b"), false);
                     processChanges(quotesListener, jsonData.getArray("a"), true);
                     quotesListener.onFinish();
@@ -113,13 +113,13 @@ public class BybitSpotFeed extends SingleWsFeed {
                     long price = trade.getDecimal64Required("p");
                     long size = trade.getDecimal64Required("q");
 
-                    marketDataListener.onTrade(instrument, timestamp, price, size);
+                    marketDataProcessor.onTrade(instrument, timestamp, price, size);
                 }
             }
         }
     }
 
-    private void processSnapshotSide(QuoteSequenceListener quotesListener, JsonArray quotePairs, boolean ask) {
+    private void processSnapshotSide(QuoteSequenceProcessor quotesListener, JsonArray quotePairs, boolean ask) {
         if (quotePairs == null) {
             return;
         }
@@ -140,7 +140,7 @@ public class BybitSpotFeed extends SingleWsFeed {
         }
     }
 
-    private void processChanges(QuoteSequenceListener quotesListener, JsonArray changes, boolean isAsk) {
+    private void processChanges(QuoteSequenceProcessor quotesListener, JsonArray changes, boolean isAsk) {
         if (changes == null) {
             return;
         }

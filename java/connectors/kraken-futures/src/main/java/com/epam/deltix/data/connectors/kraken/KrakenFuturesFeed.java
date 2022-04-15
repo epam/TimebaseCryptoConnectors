@@ -10,7 +10,7 @@ import java.util.Arrays;
 public class KrakenFuturesFeed extends SingleWsFeed {
     // all fields are used by one single thread of WsFeed's ExecutorService
     private final JsonValueParser jsonParser = new JsonValueParser();
-    private final MarketDataListener marketDataListener;
+    private final MarketDataProcessor marketDataProcessor;
 
     public KrakenFuturesFeed(
             final String uri,
@@ -22,7 +22,7 @@ public class KrakenFuturesFeed extends SingleWsFeed {
     {
         super(uri, 5000, selected, output, errorListener, symbols);
 
-        this.marketDataListener = MarketDataListener.create("KRAKEN", this, selected(), depth);
+        this.marketDataProcessor = MarketDataProcessor.create("KRAKEN", this, selected(), depth);
     }
 
     @Override
@@ -76,14 +76,14 @@ public class KrakenFuturesFeed extends SingleWsFeed {
         if ("book_snapshot".equalsIgnoreCase(feed)) {
             long timestamp = object.getLong("timestamp");
 
-            QuoteSequenceListener quotesListener = marketDataListener.onBookSnapshot(instrument, timestamp);
+            QuoteSequenceProcessor quotesListener = marketDataProcessor.onBookSnapshot(instrument, timestamp);
             processSnapshotSide(quotesListener, object.getArray("bids"), false);
             processSnapshotSide(quotesListener, object.getArray("asks"), true);
             quotesListener.onFinish();
         } else if ("book".equalsIgnoreCase(feed)) {
             long timestamp = object.getLong("timestamp");
 
-            QuoteSequenceListener quotesListener = marketDataListener.onBookUpdate(instrument, timestamp);
+            QuoteSequenceProcessor quotesListener = marketDataProcessor.onBookUpdate(instrument, timestamp);
             long size = object.getDecimal64Required("qty");
             if (Decimal64Utils.isZero(size)) {
                 size = TypeConstants.DECIMAL_NULL; // means delete the price
@@ -95,7 +95,7 @@ public class KrakenFuturesFeed extends SingleWsFeed {
             );
             quotesListener.onFinish();
         } else if ("trade".equalsIgnoreCase(feed)) {
-            marketDataListener.onTrade(instrument,
+            marketDataProcessor.onTrade(instrument,
                 object.getLong("time"),
                 object.getDecimal64Required("price"),
                 object.getDecimal64Required("qty")
@@ -103,7 +103,7 @@ public class KrakenFuturesFeed extends SingleWsFeed {
         }
     }
 
-    private void processSnapshotSide(QuoteSequenceListener quotesListener, JsonArray quotePairs, boolean ask) {
+    private void processSnapshotSide(QuoteSequenceProcessor quotesListener, JsonArray quotePairs, boolean ask) {
         if (quotePairs == null) {
             return;
         }

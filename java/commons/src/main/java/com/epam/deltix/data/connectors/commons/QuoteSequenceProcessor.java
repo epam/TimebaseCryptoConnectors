@@ -7,7 +7,7 @@ import com.epam.deltix.data.connectors.commons.l2.PriceBook;
 import com.epam.deltix.dfp.Decimal;
 import com.epam.deltix.qsrv.hf.tickdb.pub.TimeConstants;
 
-public class QuoteSequenceListener {
+public class QuoteSequenceProcessor {
 
     private final L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent>
         l2Processor;
@@ -16,7 +16,7 @@ public class QuoteSequenceListener {
 
     private boolean packageStarted = false;
 
-    public QuoteSequenceListener(
+    public QuoteSequenceProcessor(
         L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent> l2Processor) {
 
         this.l2Processor = l2Processor;

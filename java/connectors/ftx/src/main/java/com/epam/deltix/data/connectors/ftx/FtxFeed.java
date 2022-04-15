@@ -14,7 +14,7 @@ public class FtxFeed extends SingleWsFeed {
     private static final BigDecimal TIME_MILLIS_SCALE = new BigDecimal(1000);
     // all fields are used by one single thread of WsFeed's ExecutorService
     private final JsonValueParser jsonParser = new JsonValueParser();
-    private final MarketDataListener marketDataListener;
+    private final MarketDataProcessor marketDataProcessor;
 
     public FtxFeed(
             final String uri,
@@ -25,7 +25,7 @@ public class FtxFeed extends SingleWsFeed {
             final String... symbols)
     {
         super(uri, 15000, selected, output, errorListener, getPeriodicalJsonTask(), symbols);
-        this.marketDataListener = MarketDataListener.create("FTX", this, selected(), depth);
+        this.marketDataProcessor = MarketDataProcessor.create("FTX", this, selected(), depth);
     }
 
     private static PeriodicalJsonTask getPeriodicalJsonTask() {
@@ -93,7 +93,7 @@ public class FtxFeed extends SingleWsFeed {
             JsonObject jsonData = object.getObject("data");
             if ("partial".equalsIgnoreCase(type)) {
                 long timestamp = getTimestamp(jsonData.getDecimal("time"));
-                QuoteSequenceListener quotesListener = marketDataListener.onBookSnapshot(instrument, timestamp);
+                QuoteSequenceProcessor quotesListener = marketDataProcessor.onBookSnapshot(instrument, timestamp);
                 processSnapshotSide(quotesListener, jsonData.getArrayRequired("bids"), false);
                 processSnapshotSide(quotesListener, jsonData.getArrayRequired("asks"), true);
                 quotesListener.onFinish();
@@ -102,7 +102,7 @@ public class FtxFeed extends SingleWsFeed {
                 JsonArray asks = jsonData.getArray("asks");
                 if ((bids != null && bids.size() > 0) || (asks != null && asks.size() > 0)) {
                     long timestamp = getTimestamp(jsonData.getDecimal("time"));
-                    QuoteSequenceListener quotesListener = marketDataListener.onBookUpdate(instrument, timestamp);
+                    QuoteSequenceProcessor quotesListener = marketDataProcessor.onBookUpdate(instrument, timestamp);
                     processChanges(quotesListener, bids, false);
                     processChanges(quotesListener, asks, true);
                     quotesListener.onFinish();
@@ -117,14 +117,14 @@ public class FtxFeed extends SingleWsFeed {
                     long price = Decimal64Utils.fromBigDecimal(trade.getDecimalRequired("price"));
                     long size = Decimal64Utils.fromBigDecimal(trade.getDecimalRequired("size"));
                     long timestamp = OffsetDateTime.parse(trade.getString("time")).toInstant().toEpochMilli();
-                    marketDataListener.onTrade(instrument, timestamp, price, size);
+                    marketDataProcessor.onTrade(instrument, timestamp, price, size);
                 }
             }
         }
     }
 
     private void processSnapshotSide(
-            final QuoteSequenceListener quotesListener, final JsonArray quotePairs, final boolean ask) {
+            final QuoteSequenceProcessor quotesListener, final JsonArray quotePairs, final boolean ask) {
 
         if (quotePairs == null) {
             return;
@@ -148,7 +148,7 @@ public class FtxFeed extends SingleWsFeed {
     }
 
     private void processChanges(
-            final QuoteSequenceListener quotesListener, final JsonArray changes, final boolean ask) {
+            final QuoteSequenceProcessor quotesListener, final JsonArray changes, final boolean ask) {
 
         if (changes == null) {
             return;

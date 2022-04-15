@@ -13,7 +13,7 @@ public class HuobiFuturesFeed extends SingleWsFeed {
     private static final AtomicLong ID_GENERATOR = new AtomicLong();
     // all fields are used by one single thread of WsFeed's ExecutorService
     private final JsonValueParser jsonParser = new JsonValueParser();
-    private final MarketDataListener marketDataListener;
+    private final MarketDataProcessor marketDataProcessor;
 
     private final int depth;
 
@@ -28,7 +28,7 @@ public class HuobiFuturesFeed extends SingleWsFeed {
         super(uri, 5000, selected, output, errorListener, symbols);
 
         this.depth = depth;
-        this.marketDataListener = MarketDataListener.create("HUOBI", this, selected(), depth);
+        this.marketDataProcessor = MarketDataProcessor.create("HUOBI", this, selected(), depth);
     }
 
     @Override
@@ -111,12 +111,12 @@ public class HuobiFuturesFeed extends SingleWsFeed {
             }
             String event = tick.getStringRequired("event");
             if ("snapshot".equalsIgnoreCase(event)) {
-                QuoteSequenceListener quotesListener = marketDataListener.onBookSnapshot(instrument, timestamp);
+                QuoteSequenceProcessor quotesListener = marketDataProcessor.onBookSnapshot(instrument, timestamp);
                 processSnapshotSide(quotesListener, tick.getArray("bids"), false);
                 processSnapshotSide(quotesListener, tick.getArray("asks"), true);
                 quotesListener.onFinish();
             } else if ("update".equalsIgnoreCase(event)) {
-                QuoteSequenceListener quotesListener = marketDataListener.onBookUpdate(instrument, timestamp);
+                QuoteSequenceProcessor quotesListener = marketDataProcessor.onBookUpdate(instrument, timestamp);
                 processChanges(quotesListener, tick.getArray("bids"), false);
                 processChanges(quotesListener, tick.getArray("asks"), true);
                 quotesListener.onFinish();
@@ -131,14 +131,14 @@ public class HuobiFuturesFeed extends SingleWsFeed {
                         long price = trade.getDecimal64Required("price");
                         long size = trade.getDecimal64Required("amount");
 
-                        marketDataListener.onTrade(instrument, timestamp, price, size);
+                        marketDataProcessor.onTrade(instrument, timestamp, price, size);
                     }
                 }
             }
         }
     }
 
-    private void processSnapshotSide(QuoteSequenceListener quotesListener, JsonArray quotePairs, boolean ask) {
+    private void processSnapshotSide(QuoteSequenceProcessor quotesListener, JsonArray quotePairs, boolean ask) {
         if (quotePairs == null) {
             return;
         }
@@ -160,7 +160,7 @@ public class HuobiFuturesFeed extends SingleWsFeed {
         }
     }
 
-    private void processChanges(QuoteSequenceListener quotesListener, JsonArray changes, boolean ask) {
+    private void processChanges(QuoteSequenceProcessor quotesListener, JsonArray changes, boolean ask) {
         if (changes == null) {
             return;
         }

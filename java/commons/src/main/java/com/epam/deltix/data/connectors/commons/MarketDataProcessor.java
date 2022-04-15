@@ -7,25 +7,25 @@ import com.epam.deltix.qsrv.hf.pub.ExchangeCodec;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MarketDataListener {
+public class MarketDataProcessor {
 
     private final MessageOutput output;
     private final MdModel.Options selected;
     private final long source;
     private final int bookSize;
 
-    private final Map<String, QuoteSequenceListener> l2Processors = new HashMap<>();
+    private final Map<String, QuoteSequenceProcessor> l2Processors = new HashMap<>();
     private final TradeProducer tradeProducer;
 
-    public static MarketDataListener create(String exchangeId,
+    public static MarketDataProcessor create(String exchangeId,
                                              MessageOutput output,
                                              MdModel.Options selected,
                                              int bookSize) {
 
-        return new MarketDataListener(exchangeId, output, selected, bookSize);
+        return new MarketDataProcessor(exchangeId, output, selected, bookSize);
     }
 
-    private MarketDataListener(String exchangeId, MessageOutput output, MdModel.Options selected, int bookSize) {
+    private MarketDataProcessor(String exchangeId, MessageOutput output, MdModel.Options selected, int bookSize) {
         this.output = output;
         this.selected = selected;
         this.source = ExchangeCodec.codeToLong(exchangeId);
@@ -33,14 +33,14 @@ public class MarketDataListener {
         this.tradeProducer = new TradeProducer(source, output);
     }
 
-    public QuoteSequenceListener onBookSnapshot(String instrument, long timestamp) {
-        QuoteSequenceListener l2BookProcessor = getOrderBookProcessor(instrument);
+    public QuoteSequenceProcessor onBookSnapshot(String instrument, long timestamp) {
+        QuoteSequenceProcessor l2BookProcessor = getOrderBookProcessor(instrument);
         l2BookProcessor.packageStarted(true, timestamp);
         return l2BookProcessor;
     }
 
-    public QuoteSequenceListener onBookUpdate(String instrument, long timestamp) {
-        QuoteSequenceListener l2BookProcessor = getOrderBookProcessor(instrument);
+    public QuoteSequenceProcessor onBookUpdate(String instrument, long timestamp) {
+        QuoteSequenceProcessor l2BookProcessor = getOrderBookProcessor(instrument);
         l2BookProcessor.packageStarted(false, timestamp);
         return l2BookProcessor;
     }
@@ -49,8 +49,8 @@ public class MarketDataListener {
         tradeProducer.onTrade(timestamp, instrument, price, size);
     }
 
-    private QuoteSequenceListener getOrderBookProcessor(String instrument) {
-        QuoteSequenceListener l2Processor = l2Processors.get(instrument);
+    private QuoteSequenceProcessor getOrderBookProcessor(String instrument) {
+        QuoteSequenceProcessor l2Processor = l2Processors.get(instrument);
         if (l2Processor == null) {
             ChainedL2Listener.Builder<DefaultItem<DefaultEvent>, DefaultEvent> builder =
                 ChainedL2Listener.builder();
@@ -62,7 +62,7 @@ public class MarketDataListener {
                 builder.with(new L2Producer<>(output));
             }
 
-            l2Processor = new QuoteSequenceListener(
+            l2Processor = new QuoteSequenceProcessor(
                 L2Processor.builder()
                     .withInstrument(instrument)
                     .withSource(source)

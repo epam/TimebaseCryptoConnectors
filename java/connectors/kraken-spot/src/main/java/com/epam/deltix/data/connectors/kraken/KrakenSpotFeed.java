@@ -11,7 +11,7 @@ import java.util.Arrays;
 public class KrakenSpotFeed extends SingleWsFeed {
     // all fields are used by one single thread of WsFeed's ExecutorService
     private final JsonValueParser jsonParser = new JsonValueParser();
-    private final MarketDataListener marketDataListener;
+    private final MarketDataProcessor marketDataProcessor;
 
     private final int depth;
 
@@ -26,7 +26,7 @@ public class KrakenSpotFeed extends SingleWsFeed {
         super(uri, 5000, selected, output, errorListener, symbols);
 
         this.depth = depth;
-        this.marketDataListener = MarketDataListener.create("KRAKEN", this, selected(), depth);
+        this.marketDataProcessor = MarketDataProcessor.create("KRAKEN", this, selected(), depth);
     }
 
     @Override
@@ -95,7 +95,7 @@ public class KrakenSpotFeed extends SingleWsFeed {
             JsonArray bs = values.getArray("bs");
             JsonArray as = values.getArray("as");
             if (bs != null || as != null) {
-                QuoteSequenceListener quotesListener = marketDataListener.onBookSnapshot(instrument,
+                QuoteSequenceProcessor quotesListener = marketDataProcessor.onBookSnapshot(instrument,
                     computeTimestamp(bs, computeTimestamp(as, TimeConstants.TIMESTAMP_UNKNOWN))
                 );
                 processSnapshotSide(quotesListener, bs, false);
@@ -105,7 +105,7 @@ public class KrakenSpotFeed extends SingleWsFeed {
                 JsonArray b = values.getArray("b");
                 JsonArray a = values.getArray("a");
                 if (b != null || a != null) {
-                    QuoteSequenceListener quotesListener = marketDataListener.onBookUpdate(instrument,
+                    QuoteSequenceProcessor quotesListener = marketDataProcessor.onBookUpdate(instrument,
                         computeTimestamp(a, computeTimestamp(b, TimeConstants.TIMESTAMP_UNKNOWN))
                     );
                     processChanges(quotesListener, b, false);
@@ -123,7 +123,7 @@ public class KrakenSpotFeed extends SingleWsFeed {
                     long size = trade.getDecimal64Required(1);
                     long timestamp = Util.parseTime(trade.getString(2));
 
-                    marketDataListener.onTrade(instrument, timestamp, price, size);
+                    marketDataProcessor.onTrade(instrument, timestamp, price, size);
                 }
             }
         }
@@ -152,7 +152,7 @@ public class KrakenSpotFeed extends SingleWsFeed {
     }
 
     private void processSnapshotSide(
-        final QuoteSequenceListener quotesListener, final JsonArray quotePairs, final boolean ask) {
+            final QuoteSequenceProcessor quotesListener, final JsonArray quotePairs, final boolean ask) {
 
         if (quotePairs == null) {
             return;
@@ -176,7 +176,7 @@ public class KrakenSpotFeed extends SingleWsFeed {
     }
 
     private void processChanges(
-        final QuoteSequenceListener quotesListener, final JsonArray changes, final boolean ask) {
+            final QuoteSequenceProcessor quotesListener, final JsonArray changes, final boolean ask) {
 
         if (changes == null) {
             return;

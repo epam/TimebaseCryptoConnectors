@@ -16,7 +16,7 @@ public class CoinbaseFeed extends SingleWsFeed {
     // all fields are used by one single thread of WsFeed's ExecutorService
     private final JsonValueParser jsonParser = new JsonValueParser();
     private final Iso8601DateTimeParser dtParser = new Iso8601DateTimeParser();
-    private final MarketDataListener marketDataListener;
+    private final MarketDataProcessor marketDataProcessor;
 
     public CoinbaseFeed(
             final String uri,
@@ -27,7 +27,7 @@ public class CoinbaseFeed extends SingleWsFeed {
             final String... symbols) {
         super(uri, 5000, selected, output, errorListener, symbols);
 
-        this.marketDataListener = MarketDataListener.create("COINBASE", this, selected(), depth);
+        this.marketDataProcessor = MarketDataProcessor.create("COINBASE", this, selected(), depth);
     }
 
     @Override
@@ -76,7 +76,7 @@ public class CoinbaseFeed extends SingleWsFeed {
         switch (type) {
             case "ticker": {
                 final String productId = object.getStringRequired("product_id");
-                marketDataListener.onTrade(
+                marketDataProcessor.onTrade(
                         productId,
                         TimeStampedMessage.TIMESTAMP_UNKNOWN,
                         object.getDecimal64Required("price"),
@@ -86,7 +86,7 @@ public class CoinbaseFeed extends SingleWsFeed {
 
             case "snapshot": {
                 final String instrument = object.getStringRequired("product_id");
-                QuoteSequenceListener quotesListener = marketDataListener.onBookSnapshot(instrument, TimeStampedMessage.TIMESTAMP_UNKNOWN);
+                QuoteSequenceProcessor quotesListener = marketDataProcessor.onBookSnapshot(instrument, TimeStampedMessage.TIMESTAMP_UNKNOWN);
                 processSnapshotSide(quotesListener, object.getArray("bids"), false);
                 processSnapshotSide(quotesListener, object.getArray("asks"), true);
                 quotesListener.onFinish();
@@ -96,7 +96,7 @@ public class CoinbaseFeed extends SingleWsFeed {
             case "l2update": {
                 final String instrument = object.getStringRequired("product_id");
                 dtParser.set(object.getStringRequired("time"));
-                QuoteSequenceListener quotesListener = marketDataListener.onBookUpdate(instrument, dtParser.millis());
+                QuoteSequenceProcessor quotesListener = marketDataProcessor.onBookUpdate(instrument, dtParser.millis());
                 processChanges(quotesListener, object.getArrayRequired("changes"));
                 quotesListener.onFinish();
                 break;
@@ -108,7 +108,7 @@ public class CoinbaseFeed extends SingleWsFeed {
     }
 
     private void processSnapshotSide(
-            final QuoteSequenceListener quotesListener, final JsonArray quotePairs, final boolean ask) {
+            final QuoteSequenceProcessor quotesListener, final JsonArray quotePairs, final boolean ask) {
 
         if (quotePairs == null) {
             return;
@@ -130,7 +130,7 @@ public class CoinbaseFeed extends SingleWsFeed {
         }
     }
 
-    private void processChanges(final QuoteSequenceListener quotesListener, final JsonArray changes) {
+    private void processChanges(final QuoteSequenceProcessor quotesListener, final JsonArray changes) {
         if (changes == null) {
             return;
         }

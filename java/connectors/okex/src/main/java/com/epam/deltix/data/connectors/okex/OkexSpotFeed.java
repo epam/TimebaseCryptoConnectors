@@ -11,7 +11,7 @@ import java.util.Arrays;
 public class OkexSpotFeed extends SingleWsFeed {
     // all fields are used by one single thread of WsFeed's ExecutorService
     private final JsonValueParser jsonParser = new JsonValueParser();
-    private final MarketDataListener marketDataListener;
+    private final MarketDataProcessor marketDataProcessor;
 
     public OkexSpotFeed(
             final String uri,
@@ -22,7 +22,7 @@ public class OkexSpotFeed extends SingleWsFeed {
             final String... symbols)
     {
         super(uri, 30000, selected, output, errorListener, symbols);
-        this.marketDataListener = MarketDataListener.create("OKEX", this, selected(), depth);
+        this.marketDataProcessor = MarketDataProcessor.create("OKEX", this, selected(), depth);
     }
 
     @Override
@@ -73,12 +73,12 @@ public class OkexSpotFeed extends SingleWsFeed {
             JsonObject jsonData = arrayData.getObject(0);
             long timestamp = getTimestamp(jsonData.getString("ts"));
             if ("snapshot".equalsIgnoreCase(action)) {
-                QuoteSequenceListener quotesListener = marketDataListener.onBookSnapshot(instrument, timestamp);
+                QuoteSequenceProcessor quotesListener = marketDataProcessor.onBookSnapshot(instrument, timestamp);
                 processSnapshotSide(quotesListener, jsonData.getArray("bids"), false);
                 processSnapshotSide(quotesListener, jsonData.getArray("asks"), true);
                 quotesListener.onFinish();
             } else if ("update".equalsIgnoreCase(action)) {
-                QuoteSequenceListener quotesListener = marketDataListener.onBookUpdate(instrument, timestamp);
+                QuoteSequenceProcessor quotesListener = marketDataProcessor.onBookUpdate(instrument, timestamp);
                 processChanges(quotesListener, jsonData.getArray("bids"), false);
                 processChanges(quotesListener, jsonData.getArray("asks"), true);
                 quotesListener.onFinish();
@@ -91,12 +91,12 @@ public class OkexSpotFeed extends SingleWsFeed {
                 long price = trade.getDecimal64Required("px");
                 long size = trade.getDecimal64Required("sz");
 
-                marketDataListener.onTrade(instrument, timestamp, price, size);
+                marketDataProcessor.onTrade(instrument, timestamp, price, size);
             }
         }
     }
 
-    private void processSnapshotSide(QuoteSequenceListener quotesListener, JsonArray quotePairs, boolean ask) {
+    private void processSnapshotSide(QuoteSequenceProcessor quotesListener, JsonArray quotePairs, boolean ask) {
         if (quotePairs == null) {
             return;
         }
@@ -118,7 +118,7 @@ public class OkexSpotFeed extends SingleWsFeed {
         }
     }
 
-    private void processChanges(QuoteSequenceListener quotesListener, JsonArray changes, boolean isAsk) {
+    private void processChanges(QuoteSequenceProcessor quotesListener, JsonArray changes, boolean isAsk) {
         if (changes == null) {
             return;
         }
