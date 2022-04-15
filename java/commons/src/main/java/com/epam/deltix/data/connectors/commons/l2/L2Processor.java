@@ -171,17 +171,6 @@ public class L2Processor<B extends Book<I, E>, I extends BookItem<E>, E extends 
      * @return a parameter 'to' passed
      */
     public <T extends Appendable> T dump(T to) {
-        return dump(to, false);
-    }
-
-    /**
-     * Dumps a text view of the book. The view can be extended by hashcode of each book item.
-     * @param to to
-     * @param extended dump extended view
-     * @param <T>
-     * @return a parameter 'to' passed
-     */
-    public <T extends Appendable> T dump(T to, boolean extended) {
         try {
             to.append("Book ")
                     .append(symbol)
@@ -190,46 +179,26 @@ public class L2Processor<B extends Book<I, E>, I extends BookItem<E>, E extends 
                     .append(Util.NATIVE_LINE_BREAK);
 
             final Formatter fmt = new Formatter(to);
-            final String divider = extended
-                    ? "---------------------------------------------------------------------------------"
-                    : "-----------------------------------------------------";
+            final String divider = "-----------------------------------------------------";
 
             to.append(divider)
                     .append(Util.NATIVE_LINE_BREAK);
 
-            if (extended) {
-                fmt.format("N | %22s | %11s | %22s | %11s |%n", "Ask", "Hash Code", "Bid", "Hash Code");
-            } else {
-                fmt.format("N | %22s | %22s |%n", "Ask", "Bid");
-            }
+            fmt.format("N | %22s | %22s |%n", "Ask", "Bid");
 
             to.append(divider)
                     .append(Util.NATIVE_LINE_BREAK);
 
             for (int i = 0; i < Math.max(offers.size(), bids.size()); i++) {
-                if (extended) {
-                    fmt.format("%2d| %22s | %11s | %22s | %11s |%n", i, (i < offers.size())
-                            ? offers.getItem(i)
-                            .dump(new StringBuilder()).toString()
-                            : "", (i < offers.size())
-                            ? System.identityHashCode(offers.getItem(i))
-                            : "", (i < bids.size())
-                            ? bids.getItem(i)
-                            .dump(new StringBuilder()).toString()
-                            : "", (i < bids.size())
-                            ? System.identityHashCode(bids.getItem(i))
-                            : "");
-                } else {
-                    fmt.format("%2d| %22s | %22s |%n", i, (i < offers.size())
-                            ? offers.getItem(i)
-                            .dump(new StringBuilder())
-                            .toString()
-                            : "", (i < bids.size())
-                            ? bids.getItem(i)
-                            .dump(new StringBuilder())
-                            .toString()
-                            : "");
-                }
+                fmt.format("%2d| %22s | %22s |%n", i, (i < offers.size())
+                        ? offers.getItem(i)
+                        .dump(new StringBuilder())
+                        .toString()
+                        : "", (i < bids.size())
+                        ? bids.getItem(i)
+                        .dump(new StringBuilder())
+                        .toString()
+                        : "");
             }
 
             to.append(divider)
