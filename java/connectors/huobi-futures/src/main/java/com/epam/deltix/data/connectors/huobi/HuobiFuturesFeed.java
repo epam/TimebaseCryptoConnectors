@@ -13,7 +13,7 @@ public class HuobiFuturesFeed extends SingleWsFeed {
     private static final AtomicLong ID_GENERATOR = new AtomicLong();
     // all fields are used by one single thread of WsFeed's ExecutorService
     private final JsonValueParser jsonParser = new JsonValueParser();
-    private final MarketDataProcessor dataProcessor;
+    private final MarketDataListener marketDataListener;
 
     private final int depth;
 
@@ -28,7 +28,7 @@ public class HuobiFuturesFeed extends SingleWsFeed {
         super(uri, 5000, selected, output, errorListener, symbols);
 
         this.depth = depth;
-        this.dataProcessor = MarketDataProcessorImpl.create("HUOBI", this, selected(), depth);
+        this.marketDataListener = MarketDataListener.create("HUOBI", this, selected(), depth);
     }
 
     @Override
@@ -111,15 +111,15 @@ public class HuobiFuturesFeed extends SingleWsFeed {
             }
             String event = tick.getStringRequired("event");
             if ("snapshot".equalsIgnoreCase(event)) {
-                L2BookProcessor l2BookProcessor = dataProcessor.onBookSnapshot(instrument, timestamp);
-                processSnapshotSide(l2BookProcessor, tick.getArray("bids"), false);
-                processSnapshotSide(l2BookProcessor, tick.getArray("asks"), true);
-                l2BookProcessor.onFinish();
+                QuoteSequenceListener quotesListener = marketDataListener.onBookSnapshot(instrument, timestamp);
+                processSnapshotSide(quotesListener, tick.getArray("bids"), false);
+                processSnapshotSide(quotesListener, tick.getArray("asks"), true);
+                quotesListener.onFinish();
             } else if ("update".equalsIgnoreCase(event)) {
-                L2BookProcessor l2BookProcessor = dataProcessor.onBookUpdate(instrument, timestamp);
-                processChanges(l2BookProcessor, tick.getArray("bids"), false);
-                processChanges(l2BookProcessor, tick.getArray("asks"), true);
-                l2BookProcessor.onFinish();
+                QuoteSequenceListener quotesListener = marketDataListener.onBookUpdate(instrument, timestamp);
+                processChanges(quotesListener, tick.getArray("bids"), false);
+                processChanges(quotesListener, tick.getArray("asks"), true);
+                quotesListener.onFinish();
             }
         } else if ("trade".equalsIgnoreCase(topicElements[2]) && "detail".equalsIgnoreCase(topicElements[3])) {
             JsonObject tick = object.getObject("tick");
@@ -131,14 +131,14 @@ public class HuobiFuturesFeed extends SingleWsFeed {
                         long price = trade.getDecimal64Required("price");
                         long size = trade.getDecimal64Required("amount");
 
-                        dataProcessor.onTrade(instrument, timestamp, price, size);
+                        marketDataListener.onTrade(instrument, timestamp, price, size);
                     }
                 }
             }
         }
     }
 
-    private void processSnapshotSide(L2BookProcessor l2BookProcessor, JsonArray quotePairs, boolean ask) {
+    private void processSnapshotSide(QuoteSequenceListener quotesListener, JsonArray quotePairs, boolean ask) {
         if (quotePairs == null) {
             return;
         }
@@ -152,7 +152,7 @@ public class HuobiFuturesFeed extends SingleWsFeed {
                         + pair.size());
             }
 
-            l2BookProcessor.onQuote(
+            quotesListener.onQuote(
                 pair.getDecimal64Required(0),
                 pair.getDecimal64Required(1),
                 ask
@@ -160,7 +160,7 @@ public class HuobiFuturesFeed extends SingleWsFeed {
         }
     }
 
-    private void processChanges(L2BookProcessor l2BookProcessor, JsonArray changes, boolean ask) {
+    private void processChanges(QuoteSequenceListener quotesListener, JsonArray changes, boolean ask) {
         if (changes == null) {
             return;
         }
@@ -176,7 +176,7 @@ public class HuobiFuturesFeed extends SingleWsFeed {
                 size = TypeConstants.DECIMAL_NULL; // means delete the price
             }
 
-            l2BookProcessor.onQuote(
+            quotesListener.onQuote(
                 change.getDecimal64Required(0),
                 size,
                 ask

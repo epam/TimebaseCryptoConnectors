@@ -12,11 +12,10 @@ import java.util.Map;
 
 public class BitmexFeed extends SingleWsFeed {
     // all fields are used by one single thread of WsFeed's ExecutorService
-    private final MarketDataProcessor dataProcessor;
+    private final MarketDataListener marketDataListener;
     private final JsonValueParser jsonParser = new JsonValueParser();
     private final Iso8601DateTimeParser dtParser = new Iso8601DateTimeParser();
     private final Map<String, LongToLongHashMap> priceLevels = new HashMap<>();
-    private final int depth;
 
     public BitmexFeed(
             final String uri,
@@ -28,8 +27,7 @@ public class BitmexFeed extends SingleWsFeed {
     {
         super(uri, 5000, selected, output, errorListener, symbols);
 
-        this.depth = depth;
-        this.dataProcessor = MarketDataProcessorImpl.create("BITMEX", this, selected(), depth);
+        this.marketDataListener = MarketDataListener.create("BITMEX", this, selected(), depth);
     }
 
     @Override
@@ -78,13 +76,13 @@ public class BitmexFeed extends SingleWsFeed {
                 String instrument = firstObject.getString("symbol");
                 LongToLongHashMap idToPrice = getPriceLevels(instrument);
                 if ("partial".equalsIgnoreCase(action)) {
-                    L2BookProcessor bookProcessor = dataProcessor.onBookSnapshot(instrument, getTimestamp(bookData));
-                    processSnapshot(instrument, bookProcessor, idToPrice, bookData);
-                    bookProcessor.onFinish();
+                    QuoteSequenceListener quotesListener = marketDataListener.onBookSnapshot(instrument, getTimestamp(bookData));
+                    processSnapshot(instrument, quotesListener, idToPrice, bookData);
+                    quotesListener.onFinish();
                 } else {
-                    L2BookProcessor bookProcessor = dataProcessor.onBookUpdate(instrument, getTimestamp(bookData));
-                    processChanges(instrument, bookProcessor, idToPrice, action, bookData);
-                    bookProcessor.onFinish();
+                    QuoteSequenceListener quotesListener = marketDataListener.onBookUpdate(instrument, getTimestamp(bookData));
+                    processChanges(instrument, quotesListener, idToPrice, action, bookData);
+                    quotesListener.onFinish();
                 }
             }
         } else if ("trade".equalsIgnoreCase(type)) {
@@ -99,7 +97,7 @@ public class BitmexFeed extends SingleWsFeed {
                         String symbol = trade.getStringRequired("symbol");
                         long timestamp = dtParser.set(trade.getStringRequired("timestamp")).millis();
 
-                        dataProcessor.onTrade(symbol, timestamp, price, size);
+                        marketDataListener.onTrade(symbol, timestamp, price, size);
                     }
                 }
             }
@@ -128,7 +126,7 @@ public class BitmexFeed extends SingleWsFeed {
     }
 
     private void processSnapshot(
-        String instrument, L2BookProcessor bookProcessor, LongToLongHashMap idToPrice, JsonArray quotePairs) {
+        String instrument, QuoteSequenceListener quotesListener, LongToLongHashMap idToPrice, JsonArray quotePairs) {
 
         if (quotePairs == null) {
             return;
@@ -150,12 +148,12 @@ public class BitmexFeed extends SingleWsFeed {
 
             idToPrice.put(id, price);
 
-            bookProcessor.onQuote(price, size, isOffer);
+            quotesListener.onQuote(price, size, isOffer);
         }
     }
 
     private void processChanges(
-        String instrument, L2BookProcessor bookProcessor,
+        String instrument, QuoteSequenceListener quotesListener,
         LongToLongHashMap idToPrice, String action, JsonArray changes) {
 
         if (changes == null) {
@@ -191,7 +189,7 @@ public class BitmexFeed extends SingleWsFeed {
             }
             boolean isOffer = "sell".equalsIgnoreCase(change.getStringRequired("side"));
 
-            bookProcessor.onQuote(price, size, isOffer);
+            quotesListener.onQuote(price, size, isOffer);
         }
     }
 }

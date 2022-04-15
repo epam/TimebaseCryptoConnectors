@@ -11,7 +11,7 @@ import java.util.Arrays;
 public class OkexSpotFeed extends SingleWsFeed {
     // all fields are used by one single thread of WsFeed's ExecutorService
     private final JsonValueParser jsonParser = new JsonValueParser();
-    private final MarketDataProcessor dataProcessor;
+    private final MarketDataListener marketDataListener;
 
     public OkexSpotFeed(
             final String uri,
@@ -22,7 +22,7 @@ public class OkexSpotFeed extends SingleWsFeed {
             final String... symbols)
     {
         super(uri, 30000, selected, output, errorListener, symbols);
-        this.dataProcessor = MarketDataProcessorImpl.create("OKEX", this, selected(), depth);
+        this.marketDataListener = MarketDataListener.create("OKEX", this, selected(), depth);
     }
 
     @Override
@@ -73,15 +73,15 @@ public class OkexSpotFeed extends SingleWsFeed {
             JsonObject jsonData = arrayData.getObject(0);
             long timestamp = getTimestamp(jsonData.getString("ts"));
             if ("snapshot".equalsIgnoreCase(action)) {
-                L2BookProcessor l2BookProcessor = dataProcessor.onBookSnapshot(instrument, timestamp);
-                processSnapshotSide(l2BookProcessor, jsonData.getArray("bids"), false);
-                processSnapshotSide(l2BookProcessor, jsonData.getArray("asks"), true);
-                l2BookProcessor.onFinish();
+                QuoteSequenceListener quotesListener = marketDataListener.onBookSnapshot(instrument, timestamp);
+                processSnapshotSide(quotesListener, jsonData.getArray("bids"), false);
+                processSnapshotSide(quotesListener, jsonData.getArray("asks"), true);
+                quotesListener.onFinish();
             } else if ("update".equalsIgnoreCase(action)) {
-                L2BookProcessor l2BookProcessor = dataProcessor.onBookUpdate(instrument, timestamp);
-                processChanges(l2BookProcessor, jsonData.getArray("bids"), false);
-                processChanges(l2BookProcessor, jsonData.getArray("asks"), true);
-                l2BookProcessor.onFinish();
+                QuoteSequenceListener quotesListener = marketDataListener.onBookUpdate(instrument, timestamp);
+                processChanges(quotesListener, jsonData.getArray("bids"), false);
+                processChanges(quotesListener, jsonData.getArray("asks"), true);
+                quotesListener.onFinish();
             }
         } else if ("trades".equalsIgnoreCase(channel)) {
             JsonArray jsonDataArray = object.getArrayRequired("data");
@@ -91,12 +91,12 @@ public class OkexSpotFeed extends SingleWsFeed {
                 long price = trade.getDecimal64Required("px");
                 long size = trade.getDecimal64Required("sz");
 
-                dataProcessor.onTrade(instrument, timestamp, price, size);
+                marketDataListener.onTrade(instrument, timestamp, price, size);
             }
         }
     }
 
-    private void processSnapshotSide(L2BookProcessor l2BookProcessor, JsonArray quotePairs, boolean ask) {
+    private void processSnapshotSide(QuoteSequenceListener quotesListener, JsonArray quotePairs, boolean ask) {
         if (quotePairs == null) {
             return;
         }
@@ -110,7 +110,7 @@ public class OkexSpotFeed extends SingleWsFeed {
                     + pair.size());
             }
 
-            l2BookProcessor.onQuote(
+            quotesListener.onQuote(
                 pair.getDecimal64Required(0),
                 pair.getDecimal64Required(1),
                 ask
@@ -118,7 +118,7 @@ public class OkexSpotFeed extends SingleWsFeed {
         }
     }
 
-    private void processChanges(L2BookProcessor l2BookProcessor, JsonArray changes, boolean isAsk) {
+    private void processChanges(QuoteSequenceListener quotesListener, JsonArray changes, boolean isAsk) {
         if (changes == null) {
             return;
         }
@@ -134,7 +134,7 @@ public class OkexSpotFeed extends SingleWsFeed {
                 size = TypeConstants.DECIMAL_NULL; // means delete the price
             }
 
-            l2BookProcessor.onQuote(
+            quotesListener.onQuote(
                 change.getDecimal64Required(0),
                 size,
                 isAsk
