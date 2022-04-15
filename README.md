@@ -6,7 +6,7 @@ With [TimeBase Community Edition](https://github.com/finos/TimeBase-CE) you get 
 
 1. Download sample [docker-compose.yml](https://github.com/epam/TimebaseCryptoConnectors/blob/main/docs/docker-compose.yml).
 2. Launch Timebase crypto connectors using `docker-compose up` command. 
-3. View live and historical data in your browser on [localhost:8099](http://localhost:8099) in [TimeBase](https://kb.timebase.info/community/development/tools/Web%20Admin/admin_guide#stream-actions-monitor):
+3. View live and historical data in your browser on [localhost:8099](http://localhost:8099/app/stream/coinbase) in [TimeBase](https://kb.timebase.info/community/development/tools/Web%20Admin/admin_guide#stream-actions-monitor):
 
 ![](/img/stream-monitor.png)
 
