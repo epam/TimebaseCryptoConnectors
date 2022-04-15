@@ -1,6 +1,6 @@
 # TimeBase Data Connectors
 
-With [TimeBase Community Edition](https://github.com/finos/TimeBase-CE) you get access to a number of [market data connectors](#available-connectors) for the most popular vendors that allow receiving market data and recording it in [TimeBase streams](https://kb.timebase.info/community/overview/streams) **in a matter of minutes**. 
+With [TimeBase Community Edition](https://github.com/finos/TimeBase-CE) you get access to a number of [market data connectors](#available-connectors) that allow receiving normalized market data with any level of granularity from the most popular crypto exchanges and recording it in [TimeBase](https://kb.timebase.info/) **in a matter of minutes**. 
 
 ## Quick Start
 
