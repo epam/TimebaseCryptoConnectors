@@ -127,7 +127,7 @@ public abstract class SingleWsFeed extends MdFeed {
                                 if (state != STARTED_STATE) {
                                     return;
                                 }
-                                periodicalJsonTask.process(jsonSender);
+                                periodicalJsonTask.execute(jsonSender);
                             },
                             periodicalJsonTask.delayMillis(),
                             periodicalJsonTask.delayMillis(),

@@ -4,8 +4,8 @@ import com.epam.deltix.data.connectors.commons.json.JsonWriter;
 
 public interface PeriodicalJsonTask {
 
-    long        delayMillis();
+    long delayMillis();
 
-    void        process(JsonWriter jsonWriter);
+    void execute(JsonWriter jsonWriter);
 
 }

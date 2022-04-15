@@ -44,7 +44,7 @@ public class BybitFuturesFeed extends SingleWsFeed {
             }
 
             @Override
-            public void process(JsonWriter jsonWriter) {
+            public void execute(JsonWriter jsonWriter) {
                 jsonWriter.startObject();
                 jsonWriter.objectMember("op");
                 jsonWriter.stringValue("ping");

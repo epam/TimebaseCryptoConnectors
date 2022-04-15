@@ -12,6 +12,8 @@ import com.epam.deltix.qsrv.hf.tickdb.pub.TickDBFactory;
 import com.epam.deltix.qsrv.hf.tickdb.pub.TickLoader;
 import com.epam.deltix.timebase.messages.InstrumentMessage;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.logging.Logger;
 
 public class TbMessageOutputFactory implements CloseableMessageOutputFactory {
@@ -82,8 +84,14 @@ public class TbMessageOutputFactory implements CloseableMessageOutputFactory {
 
                 @Override
                 public void close() {
-                    Util.closeQuiet(finalLoader);
-                    Util.closeQuiet(finalTb);
+                    try {
+                        finalLoader.flush();
+                    } catch (final IOException e) {
+                        throw new UncheckedIOException(e);
+                    } finally {
+                        Util.closeQuiet(finalLoader);
+                        Util.closeQuiet(finalTb);
+                    }
                 }
             };
         } catch (final Exception e) {
