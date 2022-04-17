@@ -8,10 +8,9 @@ import com.epam.deltix.timebase.messages.TypeConstants;
 
 import java.util.Arrays;
 
-public class KrakenSpotFeed extends SingleWsFeed {
+public class KrakenSpotFeed extends MdSingleWsFeed {
     // all fields are used by one single thread of WsFeed's ExecutorService
     private final JsonValueParser jsonParser = new JsonValueParser();
-    private final MarketDataProcessor marketDataProcessor;
 
     private final int depth;
 
@@ -23,10 +22,9 @@ public class KrakenSpotFeed extends SingleWsFeed {
         final ErrorListener errorListener,
         final String... symbols) {
 
-        super(uri, 5000, selected, output, errorListener, symbols);
+        super("KRAKEN", uri, depth, 5000, selected, output, errorListener, symbols);
 
         this.depth = depth;
-        this.marketDataProcessor = MarketDataProcessor.create("KRAKEN", this, selected(), depth);
     }
 
     @Override
@@ -95,7 +93,7 @@ public class KrakenSpotFeed extends SingleWsFeed {
             JsonArray bs = values.getArray("bs");
             JsonArray as = values.getArray("as");
             if (bs != null || as != null) {
-                QuoteSequenceProcessor quotesListener = marketDataProcessor.onBookSnapshot(instrument,
+                QuoteSequenceProcessor quotesListener = processor().onBookSnapshot(instrument,
                     computeTimestamp(bs, computeTimestamp(as, TimeConstants.TIMESTAMP_UNKNOWN))
                 );
                 processSnapshotSide(quotesListener, bs, false);
@@ -105,7 +103,7 @@ public class KrakenSpotFeed extends SingleWsFeed {
                 JsonArray b = values.getArray("b");
                 JsonArray a = values.getArray("a");
                 if (b != null || a != null) {
-                    QuoteSequenceProcessor quotesListener = marketDataProcessor.onBookUpdate(instrument,
+                    QuoteSequenceProcessor quotesListener = processor().onBookUpdate(instrument,
                         computeTimestamp(a, computeTimestamp(b, TimeConstants.TIMESTAMP_UNKNOWN))
                     );
                     processChanges(quotesListener, b, false);
@@ -123,7 +121,7 @@ public class KrakenSpotFeed extends SingleWsFeed {
                     long size = trade.getDecimal64Required(1);
                     long timestamp = Util.parseTime(trade.getString(2));
 
-                    marketDataProcessor.onTrade(instrument, timestamp, price, size);
+                    processor().onTrade(instrument, timestamp, price, size);
                 }
             }
         }

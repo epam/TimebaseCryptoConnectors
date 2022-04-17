@@ -9,12 +9,11 @@ import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 
-public class FtxFeed extends SingleWsFeed {
+public class FtxFeed extends MdSingleWsFeed {
     private static final long PING_PERIOD = 5000;
     private static final BigDecimal TIME_MILLIS_SCALE = new BigDecimal(1000);
     // all fields are used by one single thread of WsFeed's ExecutorService
     private final JsonValueParser jsonParser = new JsonValueParser();
-    private final MarketDataProcessor marketDataProcessor;
 
     public FtxFeed(
             final String uri,
@@ -22,10 +21,9 @@ public class FtxFeed extends SingleWsFeed {
             final MdModel.Options selected,
             final CloseableMessageOutput output,
             final ErrorListener errorListener,
-            final String... symbols)
-    {
-        super(uri, 15000, selected, output, errorListener, getPeriodicalJsonTask(), symbols);
-        this.marketDataProcessor = MarketDataProcessor.create("FTX", this, selected(), depth);
+            final String... symbols) {
+
+        super("FTX", uri, depth, 15000, selected, output, errorListener, getPeriodicalJsonTask(), symbols);
     }
 
     private static PeriodicalJsonTask getPeriodicalJsonTask() {
@@ -93,7 +91,7 @@ public class FtxFeed extends SingleWsFeed {
             JsonObject jsonData = object.getObject("data");
             if ("partial".equalsIgnoreCase(type)) {
                 long timestamp = getTimestamp(jsonData.getDecimal("time"));
-                QuoteSequenceProcessor quotesListener = marketDataProcessor.onBookSnapshot(instrument, timestamp);
+                QuoteSequenceProcessor quotesListener = processor().onBookSnapshot(instrument, timestamp);
                 processSnapshotSide(quotesListener, jsonData.getArrayRequired("bids"), false);
                 processSnapshotSide(quotesListener, jsonData.getArrayRequired("asks"), true);
                 quotesListener.onFinish();
@@ -102,7 +100,7 @@ public class FtxFeed extends SingleWsFeed {
                 JsonArray asks = jsonData.getArray("asks");
                 if ((bids != null && bids.size() > 0) || (asks != null && asks.size() > 0)) {
                     long timestamp = getTimestamp(jsonData.getDecimal("time"));
-                    QuoteSequenceProcessor quotesListener = marketDataProcessor.onBookUpdate(instrument, timestamp);
+                    QuoteSequenceProcessor quotesListener = processor().onBookUpdate(instrument, timestamp);
                     processChanges(quotesListener, bids, false);
                     processChanges(quotesListener, asks, true);
                     quotesListener.onFinish();
@@ -117,7 +115,7 @@ public class FtxFeed extends SingleWsFeed {
                     long price = Decimal64Utils.fromBigDecimal(trade.getDecimalRequired("price"));
                     long size = Decimal64Utils.fromBigDecimal(trade.getDecimalRequired("size"));
                     long timestamp = OffsetDateTime.parse(trade.getString("time")).toInstant().toEpochMilli();
-                    marketDataProcessor.onTrade(instrument, timestamp, price, size);
+                    processor().onTrade(instrument, timestamp, price, size);
                 }
             }
         }

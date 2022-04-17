@@ -7,11 +7,10 @@ import java.util.Arrays;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class HuobiSpotFeed extends SingleWsFeed {
+public class HuobiSpotFeed extends MdSingleWsFeed {
     private static final AtomicLong ID_GENERATOR = new AtomicLong();
     // all fields are used by one single thread of WsFeed's ExecutorService
     private final JsonValueParser jsonParser = new JsonValueParser();
-    private final MarketDataListener marketDataListener;
 
     public HuobiSpotFeed(
             final String uri,
@@ -19,11 +18,9 @@ public class HuobiSpotFeed extends SingleWsFeed {
             final MdModel.Options selected,
             final CloseableMessageOutput output,
             final ErrorListener errorListener,
-            final String... symbols)
-    {
-        super(uri, 5000, selected, output, errorListener, symbols);
+            final String... symbols) {
 
-        this.marketDataListener = MarketDataListener.create("HUOBI", this, selected(), depth);
+        super("HUOBI", uri, depth, 5000, selected, output, errorListener, symbols);
     }
 
     @Override
@@ -93,10 +90,10 @@ public class HuobiSpotFeed extends SingleWsFeed {
         if ("depth".equalsIgnoreCase(topicElements[2]) && "step0".equalsIgnoreCase(topicElements[3])) {
             JsonObject tick = object.getObject("tick");
             if (tick != null) {
-                QuoteSequenceListener quotesListener = marketDataListener.onBookSnapshot(instrument, timestamp);
-                processSnapshotSide(quotesListener, tick.getArray("bids"), false);
-                processSnapshotSide(quotesListener, tick.getArray("asks"), true);
-                quotesListener.onFinish();
+                QuoteSequenceProcessor quoteProcessor = processor().onBookSnapshot(instrument, timestamp);
+                processSnapshotSide(quoteProcessor, tick.getArray("bids"), false);
+                processSnapshotSide(quoteProcessor, tick.getArray("asks"), true);
+                quoteProcessor.onFinish();
             }
         } else if ("trade".equalsIgnoreCase(topicElements[2]) && "detail".equalsIgnoreCase(topicElements[3])) {
             JsonObject tick = object.getObject("tick");
@@ -108,7 +105,7 @@ public class HuobiSpotFeed extends SingleWsFeed {
                         long price = trade.getDecimal64Required("price");
                         long size = trade.getDecimal64Required("amount");
 
-                        marketDataListener.onTrade(instrument, timestamp, price, size);
+                        processor().onTrade(instrument, timestamp, price, size);
                     }
                 }
             }
@@ -116,7 +113,7 @@ public class HuobiSpotFeed extends SingleWsFeed {
     }
 
     private void processSnapshotSide(
-            final QuoteSequenceListener quotesListener, final JsonArray quotePairs, final boolean ask) {
+            final QuoteSequenceProcessor quotesProcessor, final JsonArray quotePairs, final boolean ask) {
 
         if (quotePairs == null) {
             return;
@@ -131,7 +128,7 @@ public class HuobiSpotFeed extends SingleWsFeed {
                         + pair.size());
             }
 
-            quotesListener.onQuote(
+            quotesProcessor.onQuote(
                 pair.getDecimal64Required(0),
                 pair.getDecimal64Required(1),
                 ask

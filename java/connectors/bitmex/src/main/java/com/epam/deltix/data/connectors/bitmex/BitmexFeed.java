@@ -10,9 +10,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-public class BitmexFeed extends SingleWsFeed {
+public class BitmexFeed extends MdSingleWsFeed {
     // all fields are used by one single thread of WsFeed's ExecutorService
-    private final MarketDataProcessor marketDataProcessor;
     private final JsonValueParser jsonParser = new JsonValueParser();
     private final Iso8601DateTimeParser dtParser = new Iso8601DateTimeParser();
     private final Map<String, LongToLongHashMap> priceLevels = new HashMap<>();
@@ -23,11 +22,9 @@ public class BitmexFeed extends SingleWsFeed {
             final MdModel.Options selected,
             final CloseableMessageOutput output,
             final ErrorListener errorListener,
-            final String... symbols)
-    {
-        super(uri, 5000, selected, output, errorListener, symbols);
+            final String... symbols) {
 
-        this.marketDataProcessor = MarketDataProcessor.create("BITMEX", this, selected(), depth);
+        super("BITMEX", uri, depth, 5000, selected, output, errorListener, symbols);
     }
 
     @Override
@@ -76,11 +73,11 @@ public class BitmexFeed extends SingleWsFeed {
                 String instrument = firstObject.getString("symbol");
                 LongToLongHashMap idToPrice = getPriceLevels(instrument);
                 if ("partial".equalsIgnoreCase(action)) {
-                    QuoteSequenceProcessor quotesListener = marketDataProcessor.onBookSnapshot(instrument, getTimestamp(bookData));
+                    QuoteSequenceProcessor quotesListener = processor().onBookSnapshot(instrument, getTimestamp(bookData));
                     processSnapshot(instrument, quotesListener, idToPrice, bookData);
                     quotesListener.onFinish();
                 } else {
-                    QuoteSequenceProcessor quotesListener = marketDataProcessor.onBookUpdate(instrument, getTimestamp(bookData));
+                    QuoteSequenceProcessor quotesListener = processor().onBookUpdate(instrument, getTimestamp(bookData));
                     processChanges(instrument, quotesListener, idToPrice, action, bookData);
                     quotesListener.onFinish();
                 }
@@ -97,7 +94,7 @@ public class BitmexFeed extends SingleWsFeed {
                         String symbol = trade.getStringRequired("symbol");
                         long timestamp = dtParser.set(trade.getStringRequired("timestamp")).millis();
 
-                        marketDataProcessor.onTrade(symbol, timestamp, price, size);
+                        processor().onTrade(symbol, timestamp, price, size);
                     }
                 }
             }

@@ -14,11 +14,15 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A class
  */
 public abstract class SingleWsFeed extends MdFeed {
+    private static final Logger LOG = Logger.getLogger(SingleWsFeed.class.getName());
+
     private final static int INITIAL_STATE = 0;
     private final static int STARTED_STATE = 1;
     private final static int CLOSED_STATE = 2;
@@ -62,6 +66,7 @@ public abstract class SingleWsFeed extends MdFeed {
             final ErrorListener errorListener,
             final PeriodicalJsonTask periodicalJsonTask,
             final String... symbols) {
+
         super(selected, output, errorListener);
 
         this.uri = uri;
@@ -203,6 +208,12 @@ public abstract class SingleWsFeed extends MdFeed {
             }
             state = CLOSED_STATE;
 
+            try {
+                onClose();
+            } catch (final Throwable t) {
+                LOG.log(Level.WARNING, "Unexpected error in onClose(): " + t.getLocalizedMessage(), t);
+            }
+
             InterruptedException wasInterrupted = null;
 
             try {
@@ -233,6 +244,8 @@ public abstract class SingleWsFeed extends MdFeed {
             Thread.currentThread().interrupt();
         }
     }
+
+    protected void onClose() {};
 
     /**
      *

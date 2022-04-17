@@ -7,12 +7,11 @@ import com.epam.deltix.timebase.messages.TypeConstants;
 
 import java.util.Arrays;
 
-public class BybitSpotFeed extends SingleWsFeed {
+public class BybitSpotFeed extends MdSingleWsFeed {
     private static final long PING_PERIOD = 10000;
 
     // all fields are used by one single thread of WsFeed's ExecutorService
     private final JsonValueParser jsonParser = new JsonValueParser();
-    private final MarketDataProcessor marketDataProcessor;
 
     public BybitSpotFeed(
             final String uri,
@@ -20,11 +19,9 @@ public class BybitSpotFeed extends SingleWsFeed {
             final MdModel.Options selected,
             final CloseableMessageOutput output,
             final ErrorListener errorListener,
-            final String... symbols)
-    {
-        super(uri, 30000, selected, output, errorListener, getPeriodicalJsonTask(), symbols);
+            final String... symbols) {
 
-        this.marketDataProcessor = MarketDataProcessor.create("BYBIT", this, selected(), depth);
+        super("BYBIT", uri, depth, 30000, selected, output, errorListener, getPeriodicalJsonTask(), symbols);
     }
 
     private static PeriodicalJsonTask getPeriodicalJsonTask() {
@@ -93,12 +90,12 @@ public class BybitSpotFeed extends SingleWsFeed {
                 JsonObject jsonData = jsonDataArray.getObjectRequired(i);
                 long timestamp = jsonData.getLong("t");
                 if (first) {
-                    QuoteSequenceProcessor quotesListener = marketDataProcessor.onBookSnapshot(instrument, timestamp);
+                    QuoteSequenceProcessor quotesListener = processor().onBookSnapshot(instrument, timestamp);
                     processSnapshotSide(quotesListener, jsonData.getArray("b"), false);
                     processSnapshotSide(quotesListener, jsonData.getArray("a"), true);
                     quotesListener.onFinish();
                 } else {
-                    QuoteSequenceProcessor quotesListener = marketDataProcessor.onBookUpdate(instrument, timestamp);
+                    QuoteSequenceProcessor quotesListener = processor().onBookUpdate(instrument, timestamp);
                     processChanges(quotesListener, jsonData.getArray("b"), false);
                     processChanges(quotesListener, jsonData.getArray("a"), true);
                     quotesListener.onFinish();
@@ -113,7 +110,7 @@ public class BybitSpotFeed extends SingleWsFeed {
                     long price = trade.getDecimal64Required("p");
                     long size = trade.getDecimal64Required("q");
 
-                    marketDataProcessor.onTrade(instrument, timestamp, price, size);
+                    processor().onTrade(instrument, timestamp, price, size);
                 }
             }
         }

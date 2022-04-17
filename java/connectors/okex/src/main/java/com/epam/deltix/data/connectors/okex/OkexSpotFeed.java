@@ -8,10 +8,9 @@ import com.epam.deltix.timebase.messages.TypeConstants;
 
 import java.util.Arrays;
 
-public class OkexSpotFeed extends SingleWsFeed {
+public class OkexSpotFeed extends MdSingleWsFeed {
     // all fields are used by one single thread of WsFeed's ExecutorService
     private final JsonValueParser jsonParser = new JsonValueParser();
-    private final MarketDataProcessor marketDataProcessor;
 
     public OkexSpotFeed(
             final String uri,
@@ -19,10 +18,9 @@ public class OkexSpotFeed extends SingleWsFeed {
             final MdModel.Options selected,
             final CloseableMessageOutput output,
             final ErrorListener errorListener,
-            final String... symbols)
-    {
-        super(uri, 30000, selected, output, errorListener, symbols);
-        this.marketDataProcessor = MarketDataProcessor.create("OKEX", this, selected(), depth);
+            final String... symbols) {
+
+        super("OKEX", uri, depth, 30000, selected, output, errorListener, symbols);
     }
 
     @Override
@@ -73,12 +71,12 @@ public class OkexSpotFeed extends SingleWsFeed {
             JsonObject jsonData = arrayData.getObject(0);
             long timestamp = getTimestamp(jsonData.getString("ts"));
             if ("snapshot".equalsIgnoreCase(action)) {
-                QuoteSequenceProcessor quotesListener = marketDataProcessor.onBookSnapshot(instrument, timestamp);
+                QuoteSequenceProcessor quotesListener = processor().onBookSnapshot(instrument, timestamp);
                 processSnapshotSide(quotesListener, jsonData.getArray("bids"), false);
                 processSnapshotSide(quotesListener, jsonData.getArray("asks"), true);
                 quotesListener.onFinish();
             } else if ("update".equalsIgnoreCase(action)) {
-                QuoteSequenceProcessor quotesListener = marketDataProcessor.onBookUpdate(instrument, timestamp);
+                QuoteSequenceProcessor quotesListener = processor().onBookUpdate(instrument, timestamp);
                 processChanges(quotesListener, jsonData.getArray("bids"), false);
                 processChanges(quotesListener, jsonData.getArray("asks"), true);
                 quotesListener.onFinish();
@@ -91,7 +89,7 @@ public class OkexSpotFeed extends SingleWsFeed {
                 long price = trade.getDecimal64Required("px");
                 long size = trade.getDecimal64Required("sz");
 
-                marketDataProcessor.onTrade(instrument, timestamp, price, size);
+                processor().onTrade(instrument, timestamp, price, size);
             }
         }
     }

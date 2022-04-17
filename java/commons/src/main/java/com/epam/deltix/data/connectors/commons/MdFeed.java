@@ -7,6 +7,7 @@ public abstract class MdFeed implements CloseableMessageOutput, ErrorListener {
     private final CloseableMessageOutput output;
     private final ErrorListener errorListener;
 
+    private volatile Throwable error;
     private boolean closed; // guarded by this
 
     protected MdFeed(
@@ -16,6 +17,10 @@ public abstract class MdFeed implements CloseableMessageOutput, ErrorListener {
         this.selected = selected;
         this.output = output;
         this.errorListener = errorListener;
+    }
+
+    Throwable error() {
+        return error;
     }
 
     public MdModel.Options selected() {
@@ -47,6 +52,7 @@ public abstract class MdFeed implements CloseableMessageOutput, ErrorListener {
 
     @Override
     public final void onError(final Throwable error) {
+        this.error = error;
         errorListener.onError(error);
     }
 
