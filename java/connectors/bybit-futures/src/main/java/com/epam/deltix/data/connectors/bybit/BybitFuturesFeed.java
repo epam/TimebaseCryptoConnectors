@@ -53,7 +53,7 @@ public class BybitFuturesFeed extends MdSingleWsFeed {
     }
 
     @Override
-    protected void prepareSubscription(JsonWriter jsonWriter, String... symbols) {
+    protected void subscribe(JsonWriter jsonWriter, String... symbols) {
         JsonValue subscriptionJson = JsonValue.newObject();
         JsonObject body = subscriptionJson.asObject();
 

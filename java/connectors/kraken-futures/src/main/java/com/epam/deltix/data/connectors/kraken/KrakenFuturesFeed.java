@@ -23,7 +23,7 @@ public class KrakenFuturesFeed extends MdSingleWsFeed {
     }
 
     @Override
-    protected void prepareSubscription(JsonWriter jsonWriter, String... symbols) {
+    protected void subscribe(JsonWriter jsonWriter, String... symbols) {
         if (selected().level1() || selected().level2()) {
             JsonValue subscriptionJson = JsonValue.newObject();
             JsonObject body = subscriptionJson.asObject();

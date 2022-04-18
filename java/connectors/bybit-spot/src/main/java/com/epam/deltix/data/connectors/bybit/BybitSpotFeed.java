@@ -43,7 +43,7 @@ public class BybitSpotFeed extends MdSingleWsFeed {
     }
 
     @Override
-    protected void prepareSubscription(JsonWriter jsonWriter, String... symbols) {
+    protected void subscribe(JsonWriter jsonWriter, String... symbols) {
         Arrays.asList(symbols).forEach(s -> {
             if (selected().level1() || selected().level2()) {
                 JsonValue subscriptionJson = JsonValue.newObject();

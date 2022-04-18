@@ -29,7 +29,7 @@ public class CoinbaseFeed extends MdSingleWsFeed {
     }
 
     @Override
-    protected void prepareSubscription(
+    protected void subscribe(
             final JsonWriter jsonWriter,
             final String... symbols) {
 

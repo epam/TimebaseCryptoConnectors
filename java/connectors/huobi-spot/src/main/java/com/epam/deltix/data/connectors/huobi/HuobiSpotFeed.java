@@ -24,7 +24,7 @@ public class HuobiSpotFeed extends MdSingleWsFeed {
     }
 
     @Override
-    protected void prepareSubscription(JsonWriter jsonWriter, String... symbols) {
+    protected void subscribe(JsonWriter jsonWriter, String... symbols) {
         if (selected().level1() || selected().level2()) {
             Arrays.asList(symbols).forEach(s -> {
                 JsonValue subscriptionJson = JsonValue.newObject();

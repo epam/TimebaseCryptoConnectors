@@ -112,7 +112,7 @@ public abstract class SingleWsFeed extends MdFeed {
                     jsonSender = new WsJsonFrameSender(webSocket);
 
                     try {
-                        prepareSubscription(jsonSender, symbols);
+                        subscribe(jsonSender, symbols);
                     } catch (final Throwable t) {
                         SingleWsFeed.this.onError(t);
                     }
@@ -252,7 +252,7 @@ public abstract class SingleWsFeed extends MdFeed {
      * @param jsonWriter
      * @param symbols
      */
-    protected abstract void prepareSubscription(JsonWriter jsonWriter, String... symbols);
+    protected abstract void subscribe(JsonWriter jsonWriter, String... symbols);
 
     /**
      *
