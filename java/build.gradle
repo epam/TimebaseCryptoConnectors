@@ -9,6 +9,7 @@ plugins {
 
     id 'com.github.jk1.dependency-license-report' version '2.0'
     id 'com.vanniktech.dependency.graph.generator' version '0.5.0'
+    id 'checkstyle'
 }
 
 ext {
@@ -66,6 +67,7 @@ configure(leafProjects) {
     apply plugin: 'io.spring.dependency-management'
     apply plugin: 'com.github.spotbugs' // Static Code analysis
     apply plugin: 'signing'
+    //apply plugin: 'checkstyle'
 
     compileJava.options.encoding = 'UTF-8'
     compileJava.options.compilerArgs += '--add-exports=java.base/sun.nio.ch=ALL-UNNAMED'
