@@ -10,14 +10,15 @@ def leafProjects = subprojects.findAll { subproject ->
 configure(leafProjects) {
 
     dependencies {
-        implementation project(":java:commons")
+        implementation project(':java:commons')
         implementation group: 'io.github.green4j', name: 'green-jelly'
 
-        implementation "org.finos.timebase-ce:timebase-client"
-        implementation "com.epam.deltix:dfp"
+        implementation 'org.finos.timebase-ce:timebase-client'
+        implementation 'com.epam.deltix:dfp'
 
-        testImplementation "org.junit.jupiter:junit-jupiter-api"
-        testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine"
+        testImplementation 'org.junit.jupiter:junit-jupiter-api'
+        testImplementation(testFixtures(project(':java:commons')))
+        testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
     }
 
     tasks.withType(JavaCompile) {

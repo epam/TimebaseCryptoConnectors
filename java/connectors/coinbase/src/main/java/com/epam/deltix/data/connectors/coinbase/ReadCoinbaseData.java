@@ -12,8 +12,13 @@ import com.epam.deltix.qsrv.hf.tickdb.pub.TimeConstants;
  */
 public class ReadCoinbaseData {
     public static void main(String[] args) {
-        final DXTickDB db = TickDBFactory.createFromUrl("dxtick://localhost:8011");
-        db.open(false);
+        final DXTickDB db = TickDBFactory.createFromUrl("dxtick://localhost:49212");
+        db.open(true);
+        for (final DXTickStream stream : db.listStreams()) {
+            System.out.println(stream.getKey() + " [" + stream.getName() + "]");
+        }
+
+        /*
         final DXTickStream stream = db.getStream("coinbase");
 
         try (TickCursor cursor = stream.select(TimeConstants.USE_CURRENT_TIME,
@@ -22,5 +27,6 @@ public class ReadCoinbaseData {
                 System.out.println(cursor.getMessage());
             }
         }
+         */
     }
 }

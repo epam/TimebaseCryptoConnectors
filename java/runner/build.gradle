@@ -1,3 +1,15 @@
+sourceSets {
+    intTest {
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output
+    }
+}
+
+configurations {
+    intTestImplementation.extendsFrom implementation
+    intTestRuntimeOnly.extendsFrom runtimeOnly
+}
+
 dependencies {
     implementation project(":java:commons")
     implementation project(":java:connectors:bitmex")
@@ -17,6 +29,12 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-actuator"
 
     implementation 'org.reflections:reflections'
+
+    intTestImplementation "org.testcontainers:testcontainers:${testcontainersVersion}"
+    intTestImplementation "org.testcontainers:junit-jupiter:${testcontainersVersion}"
+    intTestImplementation 'org.junit.jupiter:junit-jupiter-api'
+    intTestImplementation(testFixtures(project(':java:commons')))
+    intTestRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
 }
 
 ext {
@@ -39,4 +57,11 @@ task prepareFilesForDocker(type: Copy) {
     }
 
     destinationDir project.file("$buildDir/docker")
+}
+
+task intTest(type: Test) {
+    dependsOn(prepareFilesForDocker)
+    testClassesDirs = sourceSets.intTest.output.classesDirs
+    classpath = sourceSets.intTest.runtimeClasspath
+    useJUnitPlatform()
 }
