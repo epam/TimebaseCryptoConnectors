@@ -11,25 +11,30 @@ configurations {
 }
 
 dependencies {
-    implementation project(":java:commons")
-    implementation project(":java:connectors:bitmex")
-    implementation project(":java:connectors:bybit-futures")
-    implementation project(":java:connectors:bybit-spot")
-    implementation project(":java:connectors:coinbase")
-    implementation project(":java:connectors:ftx")
-    implementation project(":java:connectors:huobi-futures")
-    implementation project(":java:connectors:huobi-spot")
-    implementation project(":java:connectors:kraken-futures")
-    implementation project(":java:connectors:kraken-spot")
-    implementation project(":java:connectors:okex")
+    implementation project(':java:commons')
+    implementation project(':java:connectors:bitmex')
+    implementation project(':java:connectors:bybit-futures')
+    implementation project(':java:connectors:bybit-spot')
+    implementation project(':java:connectors:coinbase')
+    implementation project(':java:connectors:ftx')
+    implementation project(':java:connectors:huobi-futures')
+    implementation project(':java:connectors:huobi-spot')
+    implementation project(':java:connectors:kraken-futures')
+    implementation project(':java:connectors:kraken-spot')
+    implementation project(':java:connectors:okex')
 
     implementation 'javax.annotation:javax.annotation-api'
 
-    implementation "org.springframework.boot:spring-boot-starter-web"
-    implementation "org.springframework.boot:spring-boot-starter-actuator"
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
     implementation 'org.reflections:reflections'
 
+
+    intTestImplementation 'org.finos.timebase-ce:timebase-api'
+    intTestImplementation 'org.finos.timebase-ce:timebase-client'
+    intTestImplementation 'com.epam.deltix:timebase-collections'
+    intTestImplementation 'com.epam.deltix:timebase-messages'
     intTestImplementation "org.testcontainers:testcontainers:${testcontainersVersion}"
     intTestImplementation "org.testcontainers:junit-jupiter:${testcontainersVersion}"
     intTestImplementation 'org.junit.jupiter:junit-jupiter-api'
@@ -45,13 +50,13 @@ task prepareFilesForDocker(type: Copy) {
     group 'docker'
     dependsOn ':build'
 
-    into ("/runner/lib") {
+    into ('/runner/lib') {
         // Runtime dependencies
         from configurations.runtimeClasspath
         // application
         from jar
     }
-    into ("/runner") {
+    into ('/runner') {
         // executables
         from "$rootDir/bin"
     }
