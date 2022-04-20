@@ -217,6 +217,7 @@ configure(leafProjects) {
 
             dependency 'junit:junit:4.13.1'
             dependency "org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion"
+            dependency "org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion"
             // End of version conflict resolution
         }
     }
@@ -230,27 +231,6 @@ configure(leafProjects) {
     repositories {
         mavenCentral()
     }
-
-//    dependencies {
-//        implementation "io.github.green4j:green-jelly"
-//
-//        implementation "org.finos.timebase-ce:timebase-client"
-//        implementation "com.epam.deltix:dfp" // used by :commons and :connectors:*
-//
-//        testImplementation "org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion"
-//        testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion"
-//    }
-
-//    dependencies {
-//        spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.10.1'
-//
-//        compileOnly 'com.google.code.findbugs:jsr305'
-//        compileOnly 'com.google.code.findbugs:annotations'
-//
-//        testCompileOnly 'com.google.code.findbugs:jsr305'
-//        testCompile 'junit:junit:4.13.1'
-//        testCompile 'org.mockito:mockito-core:1.10.19'
-//    }
 
     spotbugs {
         toolVersion = "4.2.3"
