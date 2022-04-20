@@ -1,4 +1,3 @@
-
 # Tutorials for Developers
 
 ## Basic Principles
@@ -31,9 +30,9 @@ Received market data is organized in so-called Packages. `PackageHeader` class r
 
 ## Developing Data Connector
 
-In this section we will describe the architecture of our single-WebSocket data connectors on the example of a Coinbase Data Connector and give you simple guidelines on how to create custom connectors within the terms of the suggested framework.
+In this section we will describe the architecture of our **single-WebSocket data connectors** on the example of a [Coinbase Data Connector](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/coinbase) and give you simple guidelines on how to create custom connectors within the terms of the suggested framework.
 
-### 1. Create Settings
+### 1. Create Settings (Common for all types of connectors.)
 
 Create a data connector settings class:
 
@@ -73,7 +72,7 @@ Common Settings for Connectors
 
 > Example of a [Coinbase Data Connector settings](https://github.com/epam/TimebaseCryptoConnectors/blob/01bbb8f3d9e3add9c0b710832a40afcc29e008a4/java/connectors/coinbase/src/main/java/com/epam/deltix/data/connectors/coinbase/CoinbaseConnectorSettings.java). 
 
-### 2. Create DataConnector Class
+### 2. Create DataConnector Class (Common for all types of connectors.)
 
 Create a class inherited from `DataConnector<T>` where `T` is your settings class created on [step 1](https://github.com/epam/TimebaseCryptoConnectors#1-create-settings).
 
@@ -87,11 +86,11 @@ CloseableMessageOutputFactory outputFactory,
 String... symbols);
 ```
 
-### 3. Subscribe for Market Data and Parse It
+### 3. Subscribe for Market Data and Parse It (Applies to single WebSocket connectors only.)
 
 1. Create [WsFeed](https://github.com/epam/TimebaseCryptoConnectors/blob/01bbb8f3d9e3add9c0b710832a40afcc29e008a4/java/connectors/coinbase/src/main/java/com/epam/deltix/data/connectors/coinbase/CoinbaseFeed.java#:~:text=public%20class%20CoinbaseFeed%20extends%20SingleWsFeed) class for your connector that inherits from [SingleWsFeed](https://github.com/epam/TimebaseCryptoConnectors/blob/01bbb8f3d9e3add9c0b710832a40afcc29e008a4/java/commons/src/main/java/com/epam/deltix/data/connectors/commons/SingleWsFeed.java#L21) class.
 2. Implement two methods of `SingleWsFeed` class:
-    * Implement a [prepareSubscription](https://github.com/epam/TimebaseCryptoConnectors/blob/01bbb8f3d9e3add9c0b710832a40afcc29e008a4/java/connectors/coinbase/src/main/java/com/epam/deltix/data/connectors/coinbase/CoinbaseFeed.java#L51) method of a [SingleWsFeed](https://github.com/epam/TimebaseCryptoConnectors/blob/01bbb8f3d9e3add9c0b710832a40afcc29e008a4/java/commons/src/main/java/com/epam/deltix/data/connectors/commons/SingleWsFeed.java#L214) class that **subscribes** for the market data.
+    * Implement a [Subscribe](https://github.com/epam/TimebaseCryptoConnectors/blob/01bbb8f3d9e3add9c0b710832a40afcc29e008a4/java/connectors/coinbase/src/main/java/com/epam/deltix/data/connectors/coinbase/CoinbaseFeed.java#L51) method of a [SingleWsFeed](https://github.com/epam/TimebaseCryptoConnectors/blob/01bbb8f3d9e3add9c0b710832a40afcc29e008a4/java/commons/src/main/java/com/epam/deltix/data/connectors/commons/SingleWsFeed.java#L214) class that **subscribes** for the market data.
     * Implement a [onJson](https://github.com/epam/TimebaseCryptoConnectors/blob/01bbb8f3d9e3add9c0b710832a40afcc29e008a4/java/connectors/coinbase/src/main/java/com/epam/deltix/data/connectors/coinbase/CoinbaseFeed.java#L77) method of a [SingleWsFeed](https://github.com/epam/TimebaseCryptoConnectors/blob/01bbb8f3d9e3add9c0b710832a40afcc29e008a4/java/commons/src/main/java/com/epam/deltix/data/connectors/commons/SingleWsFeed.java#L221) class **to parse** the received data from exchange in JSON format and write it to TimeBase stream.
 
 ![](/docs/img/tb-ce-connectors3.png)
