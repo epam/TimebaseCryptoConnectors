@@ -1,5 +1,5 @@
 server:
-  port: 8930
+  port: 8055
 
 timebase:
   url: dxtick://localhost:8011
