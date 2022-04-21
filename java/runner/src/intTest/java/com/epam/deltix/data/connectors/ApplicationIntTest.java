@@ -24,15 +24,15 @@ import java.util.stream.Stream;
 
 public class ApplicationIntTest extends TbIntTestPreparation {
 
-    public static GenericContainer APP_CONTAINER = new GenericContainer(
-            new ImageFromDockerfile("localhost/timebase-crypto-connectors:snapshot")
-                    .withFileFromPath("Dockerfile", Path.of("src/main/docker/Dockerfile"))
-                    .withFileFromPath(".", Path.of("build/docker"))).
+    public static final GenericContainer APP_CONTAINER = new GenericContainer(
+            new ImageFromDockerfile("localhost/timebase-crypto-connectors:snapshot").
+                    withFileFromPath("Dockerfile", Path.of("src/main/docker/Dockerfile")).
+                    withFileFromPath(".", Path.of("build/docker"))).
             withReuse(true).
             withNetwork(NETWORK).
-            //withExposedPorts(8055) // uncomment when the service really exposes the port when all DCs have been started
-                    withEnv("JAVA_OPTS", "-Dtimebase.url=dxtick://timebase:8011").
-                    withStartupTimeout(Duration.ofSeconds(240));
+            withEnv("JAVA_OPTS", "-Dtimebase.url=dxtick://timebase:8011").
+            withStartupTimeout(Duration.ofMinutes(5));
+    //withExposedPorts(8055) // uncomment when the service really exposes the port when all DCs have been started
 
     @BeforeAll
     static void beforeAll() throws Exception {

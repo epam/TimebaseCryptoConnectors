@@ -66,7 +66,13 @@ task prepareFilesForDocker(type: Copy) {
 
 task intTest(type: Test) {
     dependsOn(prepareFilesForDocker)
+    useJUnitPlatform()
+    testLogging {
+        showStandardStreams = true
+        exceptionFormat = 'full'
+        events "PASSED", "SKIPPED", "FAILED"
+    }
+
     testClassesDirs = sourceSets.intTest.output.classesDirs
     classpath = sourceSets.intTest.runtimeClasspath
-    useJUnitPlatform()
 }
