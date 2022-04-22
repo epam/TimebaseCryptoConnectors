@@ -48,6 +48,8 @@ public class BitmexFeed extends MdSingleWsFeed {
         }
 
         subscriptionJson.toJsonAndEoj(jsonWriter);
+
+        priceLevels.clear();
     }
 
     @Override

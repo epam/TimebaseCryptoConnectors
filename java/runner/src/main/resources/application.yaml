@@ -116,3 +116,13 @@ connectors:
       - "L2"
       - "TRADES"
     instruments: "BTC-UST=BTC/USD,BTC-USDT-220930"
+
+  bitfinex:
+    stream: bitfinex
+    wsUrl: wss://api.bitfinex.com/ws/2
+    depth: 200
+    model:
+      - "L1"
+      - "L2"
+      - "TRADES"
+    instruments: "tBTCUSD=BTC/USD,tBTCEUR=BTC/EUR,tETCUSD=ETC/USD"

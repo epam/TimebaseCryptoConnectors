@@ -12,6 +12,7 @@ configurations {
 
 dependencies {
     implementation project(':java:commons')
+    implementation project(':java:connectors:bitfinex')
     implementation project(':java:connectors:bitmex')
     implementation project(':java:connectors:bybit-futures')
     implementation project(':java:connectors:bybit-spot')

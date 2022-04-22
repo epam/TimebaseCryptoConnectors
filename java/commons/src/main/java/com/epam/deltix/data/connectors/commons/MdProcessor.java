@@ -8,6 +8,7 @@ import com.epam.deltix.data.connectors.commons.l2.L2Processor;
 import com.epam.deltix.data.connectors.commons.l2.L2Producer;
 import com.epam.deltix.dfp.Decimal;
 import com.epam.deltix.qsrv.hf.pub.ExchangeCodec;
+import com.epam.deltix.qsrv.hf.tickdb.pub.TimeConstants;
 import com.epam.deltix.timebase.messages.InstrumentMessage;
 import com.epam.deltix.timebase.messages.service.FeedStatus;
 import com.epam.deltix.timebase.messages.service.SecurityFeedStatusMessage;
@@ -66,10 +67,18 @@ public class MdProcessor {
         this.bookSize = bookSize;
     }
 
+    public QuoteSequenceProcessor onBookSnapshot(final CharSequence instrument) {
+        return onBookSnapshot(instrument, TimeConstants.TIMESTAMP_UNKNOWN);
+    }
+
     public QuoteSequenceProcessor onBookSnapshot(final CharSequence instrument, final long timestamp) {
         final QuoteSequenceProcessor l2Processor = getProcessors(instrument).level2;
         l2Processor.packageStarted(true, timestamp);
         return l2Processor;
+    }
+
+    public QuoteSequenceProcessor onBookUpdate(final CharSequence instrument) {
+        return onBookUpdate(instrument, TimeConstants.TIMESTAMP_UNKNOWN);
     }
 
     public QuoteSequenceProcessor onBookUpdate(final CharSequence instrument, final long timestamp) {
