@@ -5,18 +5,23 @@ package com.epam.deltix.data.connectors.commons;
  * @param <T>
  */
 public abstract class DataConnector<T extends DataConnectorSettings> implements AutoCloseable {
-    private final String tbUrl;
-    private final String stream;
+    private final T settings;
     private final MdModel model;
 
     protected DataConnector(T settings, MdModel model) {
-        this.tbUrl = settings.getTbUrl();
-        this.stream = settings.getStream();
+        this.settings = settings;
         this.model = model;
     }
 
     private Retrier<MdFeed> retrier; // guarded by this
     private boolean closed; // guarded by this
+
+    /**
+     * @return T - settings of data connector
+     */
+    public T settings() {
+        return settings;
+    }
 
     /**
      *
@@ -43,7 +48,7 @@ public abstract class DataConnector<T extends DataConnectorSettings> implements 
         }
 
         final SymbolMapper symbolMapper = new SymbolMapper(
-                new TbMessageOutputFactory(tbUrl, stream, selected.types()),
+                new TbMessageOutputFactory(settings.getTbUrl(), settings.getStream(), selected.types()),
 /*
                 () -> new CloseableMessageOutput() {
                     @Override

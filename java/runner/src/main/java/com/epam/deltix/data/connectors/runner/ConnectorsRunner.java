@@ -63,8 +63,8 @@ public class ConnectorsRunner {
         });
     }
 
-    public void forEachConnector(BiConsumer<String, DataConnector> consumer) {
-        connectors.forEach(consumer);
+    public void forEachConnector(Consumer<DataConnector<?>> consumer) {
+        connectors.values().forEach(consumer);
     }
 
     private Map<String, DataConnector<?>> discoverAndInstantiateDataConnectors() {
@@ -85,7 +85,7 @@ public class ConnectorsRunner {
 
             ConnectorImplementation<?, ?> implementation = implementations.get(connectorType.toLowerCase());
             if (implementation != null) {
-                DataConnector<?> connector = instantiateDataConnector(implementation, settings);
+                DataConnector<?> connector = instantiateDataConnector(name, implementation, settings);
                 if (connectors.get(name) != null) {
                     throw new RuntimeException("Duplicate connector '" + name + "'");
                 }
@@ -210,13 +210,13 @@ public class ConnectorsRunner {
     }
 
     private DataConnector<?> instantiateDataConnector(
-        ConnectorImplementation<?, ?> implementation, Object settingsMap
+        String name, ConnectorImplementation<?, ?> implementation, Object settingsMap
     ) {
         try {
             return implementation.getConnectorClass()
                 .getConstructor(implementation.getSettingsClass())
                 .newInstance(
-                    instantiateDataConnectorSettings(implementation, settingsMap)
+                    instantiateDataConnectorSettings(name, implementation, settingsMap)
                 );
         } catch (Throwable t) {
             LOG.log(Level.WARNING, "Failed to instantiate data connector " +
@@ -226,12 +226,16 @@ public class ConnectorsRunner {
     }
 
     private DataConnectorSettings instantiateDataConnectorSettings(
-        ConnectorImplementation<?, ?> implementation, Object settingsMap
+        String name, ConnectorImplementation<?, ?> implementation, Object settingsMap
     ) {
         DataConnectorSettings connectorSettings = objectMapper.convertValue(
             settingsMap, implementation.getSettingsClass()
         );
 
+        connectorSettings.setName(name);
+        if (connectorSettings.getType() == null) {
+            connectorSettings.setType(name);
+        }
         connectorSettings.setTbUrl(timebaseSettings.getUrl());
         connectorSettings.setTbUser(timebaseSettings.getUser());
         connectorSettings.setTbPassword(timebaseSettings.getPassword());

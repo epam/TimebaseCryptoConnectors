@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 
 @Controller
 @RequestMapping("/api/v0")
@@ -28,9 +27,13 @@ public class DataConnectorsController {
     @RequestMapping(value = "/connectors", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public List<DataConnectorDto> getConnectors() {
         List<DataConnectorDto> connectors = new ArrayList<>();
-        runner.forEachConnector((name, connector) -> {
+        runner.forEachConnector((connector) -> {
             connectors.add(
-                new DataConnectorDto(name, "UNKNOWN") // todo: get status
+                new DataConnectorDto(
+                    connector.settings().getType(),
+                    connector.settings().getName(),
+                    "UNKNOWN" // todo: get status
+                )
             );
         });
 

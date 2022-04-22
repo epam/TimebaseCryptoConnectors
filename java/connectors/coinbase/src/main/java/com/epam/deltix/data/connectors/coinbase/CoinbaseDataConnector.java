@@ -5,18 +5,12 @@ import com.epam.deltix.data.connectors.commons.annotations.Connector;
 
 @Connector("Coinbase")
 public class CoinbaseDataConnector extends DataConnector<CoinbaseConnectorSettings> {
-    private String wsUrl;
-    private int depth;
-
     public CoinbaseDataConnector(CoinbaseConnectorSettings settings) {
         super(settings, MdModel.availability()
                 .withTrades()
                 .withLevel1()
                 .withLevel2().build()
         );
-
-        this.wsUrl = settings.getWsUrl();
-        this.depth = settings.getDepth();
     }
 
     @Override
@@ -26,8 +20,9 @@ public class CoinbaseDataConnector extends DataConnector<CoinbaseConnectorSettin
             final String... symbols) {
 
         return errorListener -> {
-            final CoinbaseFeed result = new CoinbaseFeed(wsUrl,
-                    depth,
+            final CoinbaseFeed result = new CoinbaseFeed(
+                    settings().getWsUrl(),
+                    settings().getDepth(),
                     selected,
                     outputFactory.create(),
                     errorListener,

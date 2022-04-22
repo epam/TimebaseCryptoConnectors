@@ -5,18 +5,12 @@ import com.epam.deltix.data.connectors.commons.annotations.Connector;
 
 @Connector("BITFINEX")
 public class BitfinexSpotDataConnector extends DataConnector<BitfinexSpotConnectorSettings> {
-    private String wsUrl;
-    private int depth;
-
     public BitfinexSpotDataConnector(BitfinexSpotConnectorSettings settings) {
         super(settings, MdModel.availability()
             .withTrades()
             .withLevel1()
             .withLevel2().build()
         );
-
-        this.wsUrl = settings.getWsUrl();
-        this.depth = settings.getDepth();
     }
 
     @Override
@@ -26,7 +20,9 @@ public class BitfinexSpotDataConnector extends DataConnector<BitfinexSpotConnect
             final String... symbols) {
 
         return errorListener -> {
-            final BitfinexSpotFeed result = new BitfinexSpotFeed(wsUrl, depth,
+            final BitfinexSpotFeed result = new BitfinexSpotFeed(
+                settings().getWsUrl(),
+                settings().getDepth(),
                 selected,
                 outputFactory.create(),
                 errorListener,

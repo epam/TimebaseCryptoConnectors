@@ -5,18 +5,12 @@ import com.epam.deltix.data.connectors.commons.annotations.Connector;
 
 @Connector("Bybit-Spot")
 public class BybitSpotDataConnector extends DataConnector<BybitSpotConnectorSettings> {
-    private String wsUrl;
-    private int depth;
-
     public BybitSpotDataConnector(BybitSpotConnectorSettings settings) {
         super(settings, MdModel.availability()
             .withTrades()
             .withLevel1()
             .withLevel2().build()
         );
-
-        this.wsUrl = settings.getWsUrl();
-        this.depth = settings.getDepth();
     }
 
     @Override
@@ -26,7 +20,9 @@ public class BybitSpotDataConnector extends DataConnector<BybitSpotConnectorSett
             final String... symbols) {
 
         return errorListener -> {
-            final BybitSpotFeed result = new BybitSpotFeed(wsUrl, depth,
+            final BybitSpotFeed result = new BybitSpotFeed(
+                settings().getWsUrl(),
+                settings().getDepth(),
                 selected,
                 outputFactory.create(),
                 errorListener,

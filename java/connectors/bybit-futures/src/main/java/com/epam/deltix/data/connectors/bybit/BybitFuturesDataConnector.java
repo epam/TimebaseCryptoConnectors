@@ -5,18 +5,12 @@ import com.epam.deltix.data.connectors.commons.annotations.Connector;
 
 @Connector("Bybit-Futures")
 public class BybitFuturesDataConnector extends DataConnector<BybitFuturesConnectorSettings> {
-    private String wsUrl;
-    private int depth;
-
     public BybitFuturesDataConnector(BybitFuturesConnectorSettings settings) {
         super(settings, MdModel.availability()
             .withTrades()
             .withLevel1()
             .withLevel2().build()
         );
-
-        this.wsUrl = settings.getWsUrl();
-        this.depth = settings.getDepth();
     }
 
     @Override
@@ -26,7 +20,9 @@ public class BybitFuturesDataConnector extends DataConnector<BybitFuturesConnect
             final String... symbols) {
 
         return errorListener -> {
-            final BybitFuturesFeed result = new BybitFuturesFeed(wsUrl, depth,
+            final BybitFuturesFeed result = new BybitFuturesFeed(
+                settings().getWsUrl(),
+                settings().getDepth(),
                 selected,
                 outputFactory.create(),
                 errorListener,

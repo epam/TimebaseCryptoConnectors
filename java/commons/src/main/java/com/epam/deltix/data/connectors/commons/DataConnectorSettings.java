@@ -2,6 +2,8 @@ package com.epam.deltix.data.connectors.commons;
 
 public class DataConnectorSettings {
 
+    private String type;
+    private String name;
     private String tbUrl = "dxtick://localhost:8011";
     private String tbUser;
     private String tbPassword;
@@ -14,6 +16,22 @@ public class DataConnectorSettings {
     public DataConnectorSettings(String tbUrl, String stream) {
         this.tbUrl = tbUrl;
         this.stream = stream;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getTbUrl() {

@@ -120,7 +120,7 @@ connectors:
   bitfinex:
     stream: bitfinex
     wsUrl: wss://api.bitfinex.com/ws/2
-    depth: 200
+    depth: 20
     model:
       - "L1"
       - "L2"
