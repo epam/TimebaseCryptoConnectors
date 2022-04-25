@@ -1,5 +1,7 @@
 # TimeBase Crypto Market Data Connectors
 
+[![Build CI](https://github.com/epam/TimebaseCryptoConnectors/actions/workflows/build.yml/badge.svg)](https://github.com/epam/TimebaseCryptoConnectors/actions/workflows/build.yml)
+
 With [TimeBase Community Edition](https://github.com/finos/TimeBase-CE) you get access to a number of [market data connectors](#available-connectors) that allow receiving normalized market data with any level of granularity from the most popular crypto exchanges and recording it in [TimeBase](https://kb.timebase.info/) **in a matter of minutes**. 
 
 ## Quick Start - setup market data collection in 60 seconds:
