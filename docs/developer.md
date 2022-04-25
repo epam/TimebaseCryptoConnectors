@@ -2,11 +2,17 @@
 
 ## Basic Principles
 
-Most of the featured connectors share common design and implementation principles. 
+Most of the featured connectors share common design and implementation principles: 
+
+![](/docs/img/tb-ce-connectors1.png)
+
+Data connectors basically facilitate the market data flow from the specific exchange to [TimeBase](https://github.com/finos/TimeBase-CE).
+
+In this document we will cover a specific single WebSocket data connector implementation. 
 
 ![](/docs/img/tb-ce-connectors2.png)
 
-On the above illustration you see, that connectors use a special framework to subscribe for market data via a WebSocket connection with a specific data vendor and to write it to [TimeBase](https://github.com/finos/TimeBase-CE). In TimeBase, all data is organized in [streams](https://kb.timebase.info/community/overview/streams) in a form of chronologically arranged [messages](https://kb.timebase.info/community/overview/messages). In object-oriented programing languages messages can be seen as classes, each with a specific set of fields.
+On the above illustration you see, that single WebSocket connectors use a special `SingleWsFeed` framework to subscribe for market data via a WebSocket connection with a specific crypto exchange and to write it to [TimeBase](https://github.com/finos/TimeBase-CE). In TimeBase, all data is organized in [streams](https://kb.timebase.info/community/overview/streams) in a form of chronologically arranged [messages](https://kb.timebase.info/community/overview/messages). In object-oriented programing languages messages can be seen as classes, each with a specific set of fields.
 
 We have developed a Universal Format [API](https://github.com/epam/TimebaseCryptoConnectors/blob/main/docs/universal.md) to consume market data from different vendors of any level of granularity and effectively map it on the TimeBase [data model](#data-model). It includes classes that represent L1, L2, and even L3 market data, you can use later to build your Order Book. 
 
@@ -19,7 +25,7 @@ Received market data is organized in so-called Packages. `PackageHeader` class r
     - `PERIODICAL_SNAPSHOT`: runtime market data snapshot collected by the data connector.
     - `VENDOR_SNAPSHOT`: marked data snapshots received directly from the vendor.
 * Message body is represented by `Entries` objects, which can be one of the following types:
-    - L1 represents both exchange-local top of the book (BBO) as well as National Best Bid Offer (NBBO).
+    - L1 represents both exchange-local top of the book (BBO - Best Bid Offer).
     - L2 (market by level) market data snapshot provides an aggregated Order Book by price levels.
     - L3 (market by order) market data snapshot provides a detailed view into the full depth of the Order Book, individual orders size and position at every price level.
     - `TradeEntry` includes basic information about market trades, not specific to any granularity level. TradeEntry can be sent within L1, L2 or L3.
@@ -30,7 +36,7 @@ Received market data is organized in so-called Packages. `PackageHeader` class r
 
 ## Developing Data Connector
 
-In this section we will describe the architecture of our **single-WebSocket data connectors** on the example of a [Coinbase Data Connector](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/coinbase) and give you simple guidelines on how to create custom connectors within the terms of the suggested framework.
+In this section we will describe the architecture of our **single WebSocket data connectors** on the example of a [Coinbase Data Connector](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/coinbase) and give you simple guidelines on how to create custom connectors within the terms of the suggested framework.
 
 ### 1. Create Settings (Common for all types of connectors.)
 
@@ -42,7 +48,7 @@ Create a data connector settings class:
 
 #### Default Settings
 
-Default settings for TimeBase. 
+Default settings for TimeBase:
 
 |Parameter|Description|Required|
 |---------|-----------|--------|
@@ -50,7 +56,7 @@ Default settings for TimeBase.
 |tbUser|TimeBase username|no|
 |tbPassword|TimeBase user password|no|
 
-Common Settings for Connectors
+Common settings for all connectors:
 
 |Parameter|Description|Required|
 |---------|-----------|--------|
@@ -91,6 +97,6 @@ String... symbols);
 1. Create [WsFeed](https://github.com/epam/TimebaseCryptoConnectors/blob/01bbb8f3d9e3add9c0b710832a40afcc29e008a4/java/connectors/coinbase/src/main/java/com/epam/deltix/data/connectors/coinbase/CoinbaseFeed.java#:~:text=public%20class%20CoinbaseFeed%20extends%20SingleWsFeed) class for your connector that inherits from [SingleWsFeed](https://github.com/epam/TimebaseCryptoConnectors/blob/01bbb8f3d9e3add9c0b710832a40afcc29e008a4/java/commons/src/main/java/com/epam/deltix/data/connectors/commons/SingleWsFeed.java#L21) class.
 2. Implement two methods of `SingleWsFeed` class:
     * Implement a [Subscribe](https://github.com/epam/TimebaseCryptoConnectors/blob/01bbb8f3d9e3add9c0b710832a40afcc29e008a4/java/connectors/coinbase/src/main/java/com/epam/deltix/data/connectors/coinbase/CoinbaseFeed.java#L51) method of a [SingleWsFeed](https://github.com/epam/TimebaseCryptoConnectors/blob/01bbb8f3d9e3add9c0b710832a40afcc29e008a4/java/commons/src/main/java/com/epam/deltix/data/connectors/commons/SingleWsFeed.java#L214) class that **subscribes** for the market data.
-    * Implement a [onJson](https://github.com/epam/TimebaseCryptoConnectors/blob/01bbb8f3d9e3add9c0b710832a40afcc29e008a4/java/connectors/coinbase/src/main/java/com/epam/deltix/data/connectors/coinbase/CoinbaseFeed.java#L77) method of a [SingleWsFeed](https://github.com/epam/TimebaseCryptoConnectors/blob/01bbb8f3d9e3add9c0b710832a40afcc29e008a4/java/commons/src/main/java/com/epam/deltix/data/connectors/commons/SingleWsFeed.java#L221) class **to parse** the received data from exchange in JSON format and write it to TimeBase stream.
+    * Implement a [onJson](https://github.com/epam/TimebaseCryptoConnectors/blob/01bbb8f3d9e3add9c0b710832a40afcc29e008a4/java/connectors/coinbase/src/main/java/com/epam/deltix/data/connectors/coinbase/CoinbaseFeed.java#L77) method of a [SingleWsFeed](/java/com/epam/deltix/data/connectors/commons/SingleWsFeed.java#L221) class **to parse** the received data from exchange in JSON format and write it to TimeBase stream.
 
 ![](/docs/img/tb-ce-connectors3.png)
