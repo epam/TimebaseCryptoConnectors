@@ -136,3 +136,13 @@ connectors:
       - "L2"
       - "TRADES"
     instruments: "BTC_USDT=BTC/USD,DOGE_USDC=DOGE/USD,ETH_USDT=ETH/USD"
+
+  bitpanda:
+    stream: bitpanda
+    wsUrl: wss://streams.exchange.bitpanda.com
+    depth: 20
+    model:
+      - "L1"
+      - "L2"
+      - "TRADES"
+    instruments: "BTC_EUR=BTC/EUR,ETH_EUR=ETH/EUR"

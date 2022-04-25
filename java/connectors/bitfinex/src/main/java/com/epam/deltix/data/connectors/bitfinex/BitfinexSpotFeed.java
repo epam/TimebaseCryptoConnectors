@@ -3,6 +3,7 @@ package com.epam.deltix.data.connectors.bitfinex;
 import com.epam.deltix.data.connectors.commons.*;
 import com.epam.deltix.data.connectors.commons.json.*;
 import com.epam.deltix.dfp.Decimal64Utils;
+import com.epam.deltix.timebase.messages.TypeConstants;
 import com.epam.deltix.util.collections.generated.LongToObjectHashMap;
 
 import java.util.Arrays;
@@ -203,6 +204,9 @@ public class BitfinexSpotFeed extends MdSingleWsFeed {
         long price = quote.getDecimal64(0);
         long size = quote.getDecimal64(2);
         boolean isAsk = Decimal64Utils.isLess(size, Decimal64Utils.ZERO);
+        if (Decimal64Utils.isZero(quote.getDecimal64Required(1))) {
+            size = TypeConstants.DECIMAL_NULL; // means delete the price
+        }
 
         quotesListener.onQuote(price, Decimal64Utils.abs(size), isAsk);
     }

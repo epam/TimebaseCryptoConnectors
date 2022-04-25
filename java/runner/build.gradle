@@ -15,6 +15,7 @@ dependencies {
     implementation project(':java:connectors:bitfinex')
     implementation project(':java:connectors:bitmart')
     implementation project(':java:connectors:bitmex')
+    implementation project(':java:connectors:bitpanda')
     implementation project(':java:connectors:bybit-futures')
     implementation project(':java:connectors:bybit-spot')
     implementation project(':java:connectors:coinbase')
