@@ -18,7 +18,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        java: [ '11.0.15' ]
+        java: [ '11', '14' ]
         os: [ 'ubuntu-18.04']
     steps:
       - name: Checkout code
@@ -44,7 +44,7 @@ jobs:
       - name: Build with gradle
         run: ./gradlew build checkLicense
       - name: Build docker
-        run: ./gradlew :java:runner:dockerBuildImageAll --no-daemon
+        run: ./gradlew :java:runner:dockerBuildImageAll
         env:
           DOCKER_REGISTRY_URL: ${{ secrets.DOCKER_REGISTRY_URL }}
           DOCKER_REGISTRY_USERNAME: ${{ secrets.DOCKER_HUB_USER }}
