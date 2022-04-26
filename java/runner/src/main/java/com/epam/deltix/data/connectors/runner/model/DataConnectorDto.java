@@ -4,14 +4,16 @@ public class DataConnectorDto {
 
     private String type;
     private String name;
+    private String stream;
     private String status;
 
     public DataConnectorDto() {
     }
 
-    public DataConnectorDto(String type, String name, String status) {
+    public DataConnectorDto(String type, String name, String stream, String status) {
         this.type = type;
         this.name = name;
+        this.stream = stream;
         this.status = status;
     }
 
@@ -29,6 +31,14 @@ public class DataConnectorDto {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getStream() {
+        return stream;
+    }
+
+    public void setStream(final String stream) {
+        this.stream = stream;
     }
 
     public String getStatus() {

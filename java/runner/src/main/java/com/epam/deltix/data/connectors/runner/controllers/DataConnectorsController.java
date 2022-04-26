@@ -1,5 +1,6 @@
 package com.epam.deltix.data.connectors.runner.controllers;
 
+import com.epam.deltix.data.connectors.commons.DataConnectorSettings;
 import com.epam.deltix.data.connectors.runner.ConnectorsRunner;
 import com.epam.deltix.data.connectors.runner.model.DataConnectorDto;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,10 +29,12 @@ public class DataConnectorsController {
     public List<DataConnectorDto> getConnectors() {
         List<DataConnectorDto> connectors = new ArrayList<>();
         runner.forEachConnector((connector) -> {
+            final DataConnectorSettings settings = connector.settings();
             connectors.add(
                 new DataConnectorDto(
-                    connector.settings().getType(),
-                    connector.settings().getName(),
+                    settings.getType(),
+                    settings.getName(),
+                    settings.getStream(),
                     "UNKNOWN" // todo: get status
                 )
             );

@@ -71,7 +71,8 @@ task intTest(type: Test) {
     dependsOn(prepareFilesForDocker)
     useJUnitPlatform()
     testLogging {
-        showStandardStreams = true
+        //showStandardStreams = true
+        displayGranularity = -1
         exceptionFormat = 'full'
         events "PASSED", "SKIPPED", "FAILED"
     }
