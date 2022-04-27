@@ -146,3 +146,13 @@ connectors:
       - "L2"
       - "TRADES"
     instruments: "BTC_EUR=BTC/EUR,ETH_EUR=ETH/EUR"
+
+  coinflex:
+    stream: coinflex
+    wsUrl: wss://v2api.coinflex.com/v2/websocket
+    depth: 20
+    model:
+      - "L1"
+      - "L2"
+      - "TRADES"
+    instruments: "USDT-USD-SWAP-LIN,BTC-USD-220930-LIN,BTC-USD,DOGE-USD"

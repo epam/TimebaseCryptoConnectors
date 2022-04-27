@@ -19,6 +19,7 @@ dependencies {
     implementation project(':java:connectors:bybit-futures')
     implementation project(':java:connectors:bybit-spot')
     implementation project(':java:connectors:coinbase')
+    implementation project(':java:connectors:coinflex')
     implementation project(':java:connectors:ftx')
     implementation project(':java:connectors:huobi-futures')
     implementation project(':java:connectors:huobi-spot')
