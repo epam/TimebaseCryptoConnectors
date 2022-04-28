@@ -28,6 +28,7 @@ dependencies {
     implementation project(':java:connectors:kraken-futures')
     implementation project(':java:connectors:kraken-spot')
     implementation project(':java:connectors:okex')
+    implementation project(':java:connectors:poloniex')
 
     implementation 'javax.annotation:javax.annotation-api'
 

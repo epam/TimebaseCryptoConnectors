@@ -213,6 +213,17 @@ public class JsonObject {
         });
     }
 
+    public void forEachString(BiConsumer<String, String> consumer) {
+        membersByName.forEach((key, value) -> {
+            if (value != null) {
+                String string = value.asString();
+                if (string != null) {
+                    consumer.accept(key, string);
+                }
+            }
+        });
+    }
+
     public void putNull(final String member) {
         putMember(member, null);
     }

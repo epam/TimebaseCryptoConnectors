@@ -176,3 +176,13 @@ connectors:
       - "L2"
       - "TRADES"
     instruments: "BTCUSDT=BTC/USDT, ETHBTC=ETH/BTC"
+
+  poloniex:
+    stream: poloniex
+    wsUrl: wss://api2.poloniex.com
+    depth: 20
+    model:
+      - "L1"
+      - "L2"
+      - "TRADES"
+    instruments: "BTC_DASH=BTC/DASH, BTC_ETC=BTC/ETC"
