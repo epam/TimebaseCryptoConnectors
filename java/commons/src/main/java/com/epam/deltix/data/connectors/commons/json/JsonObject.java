@@ -9,6 +9,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * Similar to JSON.simple library. When we don't worry about memory and CPU and
@@ -186,6 +189,28 @@ public class JsonObject {
         return jsonValue != null ?
                 jsonValue.asBooleanRequired() :
                 NULL_VALUE.asBooleanRequired();
+    }
+
+    public void forEachObject(BiConsumer<String, JsonObject> consumer) {
+        membersByName.forEach((key, value) -> {
+            if (value != null) {
+                JsonObject jsonObject = value.asObject();
+                if (jsonObject != null) {
+                    consumer.accept(key, jsonObject);
+                }
+            }
+        });
+    }
+
+    public void forEachArray(BiConsumer<String, JsonArray> consumer) {
+        membersByName.forEach((key, value) -> {
+            if (value != null) {
+                JsonArray jsonArray = value.asArray();
+                if (jsonArray != null) {
+                    consumer.accept(key, jsonArray);
+                }
+            }
+        });
     }
 
     public void putNull(final String member) {

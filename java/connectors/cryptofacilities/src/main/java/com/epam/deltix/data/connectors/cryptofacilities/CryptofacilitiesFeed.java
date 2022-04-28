@@ -7,7 +7,6 @@ import com.epam.deltix.data.connectors.commons.json.JsonValue;
 import com.epam.deltix.data.connectors.commons.json.JsonValueParser;
 import com.epam.deltix.data.connectors.commons.json.JsonWriter;
 import com.epam.deltix.dfp.Decimal64Utils;
-import com.epam.deltix.timebase.messages.TimeStampedMessage;
 import com.epam.deltix.timebase.messages.TypeConstants;
 
 import java.util.Arrays;
@@ -15,7 +14,6 @@ import java.util.Arrays;
 public class CryptofacilitiesFeed extends MdSingleWsFeed {
     // all fields are used by one single thread of WsFeed's ExecutorService
     private final JsonValueParser jsonParser = new JsonValueParser();
-    private final Iso8601DateTimeParser dtParser = new Iso8601DateTimeParser();
 
     public CryptofacilitiesFeed(
             final String uri,
