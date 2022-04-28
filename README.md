@@ -34,3 +34,4 @@ By default, we launch with [application.yaml](https://github.com/epam/TimebaseCr
 |[BITPANDA](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/bitpanda)|SPOT|
 |[BITMART](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/bitmart)|SPOT|
 |[COINFLEX](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/coinflex)|SPOT, Linear Futures|
+|[CRYPTOFACILITIES](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/cryptofacilities)|Linear Futures|
