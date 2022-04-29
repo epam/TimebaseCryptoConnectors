@@ -52,7 +52,7 @@ public class CoinbaseDataConnector extends DataConnector<CoinbaseConnectorSettin
                         .withLevel1()
                         .withLevel2()
                         .build(),
-                "ETH-USD=ETH/USD", "ETH-EUR"
+                "ETH-USD=ETH/USD"/*, "ETH-EUR"*/
         );
 
         System.in.read();

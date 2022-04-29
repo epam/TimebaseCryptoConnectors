@@ -164,13 +164,26 @@ public class L2Processor<B extends Book<I, E>, I extends BookItem<E>, E extends 
         return offers;
     }
 
+    public CharSequence dump() {
+        return dump(outputBookSize);
+    }
+
+    public CharSequence dumpFull() {
+        return dump(new StringBuilder(), Integer.MAX_VALUE);
+    }
+
+    public CharSequence dump(final int maxLevels) {
+        return dump(new StringBuilder(), maxLevels);
+    }
+
     /**
      * Dumps a text view of the book
+     *
      * @param to to
      * @param <T>
      * @return a parameter 'to' passed
      */
-    public <T extends Appendable> T dump(T to) {
+    public <T extends Appendable> T dump(final T to, final int maxLevels) {
         try {
             to.append("Book ")
                     .append(symbol)
@@ -189,7 +202,7 @@ public class L2Processor<B extends Book<I, E>, I extends BookItem<E>, E extends 
             to.append(divider)
                     .append(Util.NATIVE_LINE_BREAK);
 
-            for (int i = 0; i < Math.max(offers.size(), bids.size()); i++) {
+            for (int i = 0; i < Math.min(Math.max(offers.size(), bids.size()), maxLevels); i++) {
                 fmt.format("%2d| %22s | %22s |%n", i, (i < offers.size())
                         ? offers.getItem(i)
                         .dump(new StringBuilder())
@@ -387,8 +400,9 @@ public class L2Processor<B extends Book<I, E>, I extends BookItem<E>, E extends 
 
     private class BookListener
             implements com.epam.deltix.data.connectors.commons.l2.BookListener<I, E> {
+
         @Override
-        public void onInsert(final Book<I, E> book, final int depth, final I item) {
+        public boolean beforeInsert(final Book<I, E> book, final int depth, final E event) {
             if (depth == 0) {
                 if (book.isOffer()) {
                     wasTopOfferUpdated = true;
@@ -399,17 +413,22 @@ public class L2Processor<B extends Book<I, E>, I extends BookItem<E>, E extends 
 
             // for a snapshot we push all visible levels in onPackageFinished()
             if (isSnapshotMode) {
-                return;
+                return false;
             }
 
             if (depth >= outputBookSize) {
-                return;
+                return false;
             }
 
             if (incrementActionsNotified == 0) {
                 l2Listener.onIncrementStarted(L2Processor.this, timestamp, originalTimestamp);
             }
 
+            return true;
+        }
+
+        @Override
+        public void onInsert(final Book<I, E> book, final int depth, final I item) {
             // remove last visible level the completely filled output book
             // book.size() now is the size after an insert just happened
             if (book.size() > outputBookSize) {
@@ -425,7 +444,7 @@ public class L2Processor<B extends Book<I, E>, I extends BookItem<E>, E extends 
         }
 
         @Override
-        public void onUpdate(final Book<I, E> book, final int depth, final I item) {
+        public boolean beforeUpdate(final Book<I, E> book, final int depth, final E event) {
             if (depth == 0) {
                 if (book.isOffer()) {
                     wasTopOfferUpdated = true;
@@ -436,24 +455,29 @@ public class L2Processor<B extends Book<I, E>, I extends BookItem<E>, E extends 
 
             // for a snapshot we push all visible levels in onPackageFinished()
             if (isSnapshotMode) {
-                return;
+                return false;
             }
 
             if (depth >= outputBookSize) {
-                return;
+                return false;
             }
 
             if (incrementActionsNotified == 0) {
                 l2Listener.onIncrementStarted(L2Processor.this, timestamp, originalTimestamp);
             }
 
+            return true;
+        }
+
+        @Override
+        public void onUpdate(final Book<I, E> book, final int depth, final I item) {
             incrementActionsNotified++;
 
             l2Listener.onUpdate(book, depth, item);
         }
 
         @Override
-        public void onDelete(final Book<I, E> book, final int depth, final I item) {
+        public boolean beforeDelete(final Book<I, E> book, final int depth) {
             if (depth == 0) {
                 if (book.isOffer()) {
                     wasTopOfferUpdated = true;
@@ -464,17 +488,22 @@ public class L2Processor<B extends Book<I, E>, I extends BookItem<E>, E extends 
 
             // for a snapshot we push all visible levels in onPackageFinished()
             if (isSnapshotMode) {
-                return;
+                return false;
             }
 
             if (depth >= outputBookSize) {
-                return;
+                return false;
             }
 
             if (incrementActionsNotified == 0) {
                 l2Listener.onIncrementStarted(L2Processor.this, timestamp, originalTimestamp);
             }
 
+            return true;
+        }
+
+        @Override
+        public void onDelete(final Book<I, E> book, final int depth, final I item) {
             incrementActionsNotified++;
 
             l2Listener.onDelete(book, depth, item);
@@ -491,7 +520,7 @@ public class L2Processor<B extends Book<I, E>, I extends BookItem<E>, E extends 
         }
 
         @Override
-        public void onReset(final Book<I, E> book) {
+        public boolean beforeReset(final Book<I, E> book) {
             assert isSnapshotMode;
 
             if (book.size() > 0) {
@@ -502,6 +531,11 @@ public class L2Processor<B extends Book<I, E>, I extends BookItem<E>, E extends 
                 }
             }
 
+            return true;
+        }
+
+        @Override
+        public void onReset(final Book<I, E> book) {
             l2Listener.onReset(book);
         }
     }

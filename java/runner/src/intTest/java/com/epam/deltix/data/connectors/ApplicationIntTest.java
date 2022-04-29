@@ -1,6 +1,7 @@
 package com.epam.deltix.data.connectors;
 
 import com.epam.deltix.data.connectors.commons.json.JsonArray;
+import com.epam.deltix.data.connectors.commons.json.JsonObject;
 import com.epam.deltix.data.connectors.commons.json.JsonValue;
 import com.epam.deltix.data.connectors.commons.json.JsonValueParser;
 import com.epam.deltix.data.connectors.test.fixtures.integration.TbIntTestPreparation;
@@ -76,19 +77,17 @@ public class ApplicationIntTest extends TbIntTestPreparation {
 
         final ConnectorStream[] connectorStreams = connectors.items().
                 map(JsonValue::asObjectRequired).
-                map(o -> new ConnectorStream(
-                        o.getStringRequired("name"),
-                        o.getStringRequired("stream")
-                        )).toArray(ConnectorStream[]::new);
+                map(o -> new ConnectorStream(o)).
+                toArray(ConnectorStream[]::new);
 
-        return Arrays.stream(connectorStreams).map(connector -> DynamicTest.dynamicTest(
-                connector.connector,
-                () -> tryReadSomeData(connector)
-        ));
+        return Arrays.stream(connectorStreams).
+                map(c -> DynamicTest.dynamicTest(
+                        c.connector,
+                        () -> tryReadSomeData(c)
+                ));
     }
 
     void tryReadSomeData(final ConnectorStream connector) {
-        System.out.println("Test " + connector);
         // we are trying to read 10 messages
         final int expectedNumOfPackageHeader = 10;
         final int timeoutSeconds = 5;
@@ -107,21 +106,21 @@ public class ApplicationIntTest extends TbIntTestPreparation {
                         break;
                     }
                 }
-            }, "Cannot read data for " + connector);
+            }, "Cannot read data for the " + connector);
         }
     }
 
     private static JsonValue rest(final String url) throws Exception {
-        final HttpClient client = HttpClient.newBuilder()
-                .connectTimeout(Duration.ofMillis(5000))
-                .followRedirects(HttpClient.Redirect.NORMAL)
-                .build();
+        final HttpClient client = HttpClient.newBuilder().
+                connectTimeout(Duration.ofMillis(5000)).
+                followRedirects(HttpClient.Redirect.NORMAL).
+                build();
 
-        final HttpRequest request = HttpRequest.newBuilder()
-                .uri(new URI(url))
-                .GET()
-                .timeout(Duration.ofSeconds(3))
-                .build();
+        final HttpRequest request = HttpRequest.newBuilder().
+                uri(new URI(url)).
+                GET().
+                timeout(Duration.ofSeconds(3)).
+                build();
 
         final HttpResponse<String> response =
                 client.send(request, HttpResponse.BodyHandlers.ofString());
@@ -133,6 +132,11 @@ public class ApplicationIntTest extends TbIntTestPreparation {
         private final String connector;
         private final String stream;
 
+        private ConnectorStream(final JsonObject fromJsom) {
+            this(fromJsom.getStringRequired("name"),
+                    fromJsom.getStringRequired("stream"));
+        }
+
         private ConnectorStream(final String connector, final String stream) {
             this.connector = connector;
             this.stream = stream;
@@ -140,8 +144,7 @@ public class ApplicationIntTest extends TbIntTestPreparation {
 
         @Override
         public String toString() {
-            return "connector='" + connector + '\'' +
-                    ", stream='" + stream + '\'';
+            return "connector='" + connector + "', stream='" + stream + '\'';
         }
     }
 }
