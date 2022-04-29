@@ -186,3 +186,14 @@ connectors:
       - "L2"
       - "TRADES"
     instruments: "BTC_DASH=BTC/DASH, BTC_ETC=BTC/ETC"
+
+  okcoin:
+    stream: okcoin
+    wsUrl: wss://real.okcoin.com:8443/ws/v3
+    depth: 20
+    model:
+      - "L1"
+      - "L2"
+      - "TRADES"
+    instruments: "BTC-USD=BTC/USD, ETH-USD=ETH/USD"
+

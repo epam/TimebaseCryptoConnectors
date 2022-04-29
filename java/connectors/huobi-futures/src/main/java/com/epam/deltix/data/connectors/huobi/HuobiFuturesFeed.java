@@ -24,7 +24,7 @@ public class HuobiFuturesFeed extends MdSingleWsFeed {
             final ErrorListener errorListener,
             final String... symbols) {
 
-        super("HUOBI", uri, depth, 5000, selected, output, errorListener, symbols);
+        super("HUOBI", uri, depth, 5000, selected, output, errorListener, null, true, symbols);
 
         this.depth = depth;
     }

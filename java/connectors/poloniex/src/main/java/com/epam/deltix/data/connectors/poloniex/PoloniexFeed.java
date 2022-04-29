@@ -1,4 +1,4 @@
-package com.epam.deltix.data.connectors.coinbase;
+package com.epam.deltix.data.connectors.poloniex;
 
 import com.epam.deltix.data.connectors.commons.*;
 import com.epam.deltix.data.connectors.commons.json.JsonArray;

@@ -47,6 +47,8 @@ public abstract class SingleWsFeed extends MdFeed {
 
     private final PeriodicalJsonTask periodicalJsonTask;
 
+    private final boolean skipGzipHeader;
+
     protected SingleWsFeed(
         final String uri,
         final int idleTimeoutMillis,
@@ -59,12 +61,25 @@ public abstract class SingleWsFeed extends MdFeed {
     }
 
     protected SingleWsFeed(
+        final String uri,
+        final int idleTimeoutMillis,
+        final MdModel.Options selected,
+        final CloseableMessageOutput output,
+        final ErrorListener errorListener,
+        final PeriodicalJsonTask periodicalJsonTask,
+        final String... symbols) {
+
+        this(uri, idleTimeoutMillis, selected, output, errorListener, periodicalJsonTask, false, symbols);
+    }
+
+    protected SingleWsFeed(
             final String uri,
             final int idleTimeoutMillis,
             final MdModel.Options selected,
             final CloseableMessageOutput output,
             final ErrorListener errorListener,
             final PeriodicalJsonTask periodicalJsonTask,
+            final boolean skipGzipHeader,
             final String... symbols) {
 
         super(selected, output, errorListener);
@@ -73,6 +88,7 @@ public abstract class SingleWsFeed extends MdFeed {
         this.idleTimeoutMillis = idleTimeoutMillis;
         this.symbols = symbols;
         this.periodicalJsonTask = periodicalJsonTask;
+        this.skipGzipHeader = skipGzipHeader;
 
         mgmtService =
                 Executors.newSingleThreadScheduledExecutor(
@@ -103,7 +119,7 @@ public abstract class SingleWsFeed extends MdFeed {
                             } : null;
 
             final WebSocket.Listener wsListener = new WebSocket.Listener() {
-                private final ZlibAsciiTextDecompressor decompressor = new ZlibAsciiTextDecompressor(); // TODO: configurable decoder?
+                private final ZlibAsciiTextDecompressor decompressor = new ZlibAsciiTextDecompressor(skipGzipHeader); // TODO: configurable decoder?
                 private WsJsonFrameSender jsonSender;
 
                 @Override

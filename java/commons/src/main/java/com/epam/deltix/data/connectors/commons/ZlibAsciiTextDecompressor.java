@@ -11,6 +11,12 @@ public class ZlibAsciiTextDecompressor {
     private byte[] receivedData = new byte[2048];
     private byte[] unzippedData = new byte[2048];
 
+    private final int skipHeaderSize;
+
+    public ZlibAsciiTextDecompressor(boolean skipGzipHeader) {
+        this.skipHeaderSize = skipGzipHeader ? 10 : 0;
+    }
+
     public CharSequence decompress(final ByteBuffer data) throws DataFormatException {
         int copiedBytes = copyReceivedData(data);
         int decompressedBytes = decompress(receivedData, copiedBytes);
@@ -32,8 +38,7 @@ public class ZlibAsciiTextDecompressor {
 
     private int decompress(final byte[] input, final int length) throws DataFormatException {
         try {
-            inflater.setInput(input, 10, length - 10);
-
+            inflater.setInput(input, skipHeaderSize, length - skipHeaderSize);
             int total = 0;
             while (!inflater.finished()) {
                 final int count = inflater.inflate(unzippedDataPortion);

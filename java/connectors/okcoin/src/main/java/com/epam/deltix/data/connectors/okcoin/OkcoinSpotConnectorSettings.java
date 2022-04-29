@@ -1,18 +1,18 @@
-package com.epam.deltix.data.connectors.coinbase;
+package com.epam.deltix.data.connectors.okcoin;
 
 import com.epam.deltix.data.connectors.commons.DataConnectorSettings;
 import com.epam.deltix.data.connectors.commons.annotations.ConnectorSettings;
 
-@ConnectorSettings("Poloniex")
-public class PoloniexConnectorSettings extends DataConnectorSettings {
+@ConnectorSettings("OKCOIN")
+public class OkcoinSpotConnectorSettings extends DataConnectorSettings {
 
-    private String wsUrl = "wss://api2.poloniex.com";
+    private String wsUrl = "wss://real.okcoin.com:8443/ws/v3";
 
-    public PoloniexConnectorSettings() {
+    public OkcoinSpotConnectorSettings() {
         super();
     }
 
-    public PoloniexConnectorSettings(String wsUrl, String tbUrl, String stream) {
+    public OkcoinSpotConnectorSettings(String tbUrl, String stream, String wsUrl) {
         super(tbUrl, stream);
         this.wsUrl = wsUrl;
     }
@@ -24,4 +24,5 @@ public class PoloniexConnectorSettings extends DataConnectorSettings {
     public void setWsUrl(String wsUrl) {
         this.wsUrl = wsUrl;
     }
+
 }
