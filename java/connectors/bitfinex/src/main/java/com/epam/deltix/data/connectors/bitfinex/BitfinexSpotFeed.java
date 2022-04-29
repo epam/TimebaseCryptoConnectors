@@ -152,11 +152,11 @@ public class BitfinexSpotFeed extends MdSingleWsFeed {
 
                     if (!channel.snapshotReceived()) {
                         QuoteSequenceProcessor quotesListener = processor().onBookSnapshot(channel.symbol);
-                        processQuotes(quotesListener, array.getArray(1));
+                        processQuotes(quotesListener, array.getArray(1), true);
                         quotesListener.onFinish();
                     } else {
                         QuoteSequenceProcessor quotesListener = processor().onBookUpdate(channel.symbol);
-                        processQuotes(quotesListener, array.getArray(1));
+                        processQuotes(quotesListener, array.getArray(1), false);
                         quotesListener.onFinish();
                     }
                 } else if (channel.type() == ChannelType.TRADES) {
@@ -186,17 +186,17 @@ public class BitfinexSpotFeed extends MdSingleWsFeed {
         }
     }
 
-    private void processQuotes(QuoteSequenceProcessor quotesListener, JsonArray quotes) {
+    private void processQuotes(QuoteSequenceProcessor quotesListener, JsonArray quotes, boolean snapshot) {
         if (quotes.getArray(0) != null) {
             for (int i = 0; i < quotes.size(); ++i) {
-                processQuote(quotesListener, quotes.getArray(i));
+                processQuote(quotesListener, quotes.getArray(i), snapshot);
             }
         } else {
-            processQuote(quotesListener, quotes);
+            processQuote(quotesListener, quotes, snapshot);
         }
     }
 
-    private void processQuote(QuoteSequenceProcessor quotesListener, JsonArray quote) {
+    private void processQuote(QuoteSequenceProcessor quotesListener, JsonArray quote, boolean snapshot) {
         if (quote.size() < 3) {
             throw new RuntimeException("Invalid quote size: " + quote.size());
         }
@@ -204,11 +204,12 @@ public class BitfinexSpotFeed extends MdSingleWsFeed {
         long price = quote.getDecimal64(0);
         long size = quote.getDecimal64(2);
         boolean isAsk = Decimal64Utils.isLess(size, Decimal64Utils.ZERO);
-        if (Decimal64Utils.isZero(quote.getDecimal64Required(1))) {
+        size = Decimal64Utils.abs(size);
+        if (!snapshot && Decimal64Utils.isZero(quote.getDecimal64Required(1))) {
             size = TypeConstants.DECIMAL_NULL; // means delete the price
         }
 
-        quotesListener.onQuote(price, Decimal64Utils.abs(size), isAsk);
+        quotesListener.onQuote(price, size, isAsk);
     }
 
 }
