@@ -21,9 +21,19 @@ public class FtxFeed extends MdSingleWsFeed {
             final MdModel.Options selected,
             final CloseableMessageOutput output,
             final ErrorListener errorListener,
+            final Logger logger,
             final String... symbols) {
 
-        super("FTX", uri, depth, 15000, selected, output, errorListener, getPeriodicalJsonTask(), symbols);
+        super("FTX",
+                uri,
+                depth,
+                15000,
+                selected,
+                output,
+                errorListener,
+                logger,
+                getPeriodicalJsonTask(),
+                symbols);
     }
 
     private static PeriodicalJsonTask getPeriodicalJsonTask() {

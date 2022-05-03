@@ -18,9 +18,18 @@ public class OkcoinSpotFeed extends MdSingleWsFeed {
             final MdModel.Options selected,
             final CloseableMessageOutput output,
             final ErrorListener errorListener,
+            final Logger logger,
             final String... symbols) {
 
-        super("OKCOIN", uri, depth, 60000, selected, output, errorListener, symbols);
+        super("OKCOIN",
+                uri,
+                depth,
+                60000,
+                selected,
+                output,
+                errorListener,
+                logger,
+                symbols);
     }
 
     @Override

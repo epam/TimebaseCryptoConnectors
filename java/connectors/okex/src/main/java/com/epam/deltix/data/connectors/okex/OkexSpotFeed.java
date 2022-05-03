@@ -18,9 +18,18 @@ public class OkexSpotFeed extends MdSingleWsFeed {
             final MdModel.Options selected,
             final CloseableMessageOutput output,
             final ErrorListener errorListener,
+            final Logger logger,
             final String... symbols) {
 
-        super("OKEX", uri, depth, 30000, selected, output, errorListener, symbols);
+        super("OKEX",
+                uri,
+                depth,
+                30000,
+                selected,
+                output,
+                errorListener,
+                logger,
+                symbols);
     }
 
     @Override

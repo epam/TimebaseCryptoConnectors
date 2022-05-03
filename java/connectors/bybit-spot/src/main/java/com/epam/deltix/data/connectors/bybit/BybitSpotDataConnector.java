@@ -21,12 +21,13 @@ public class BybitSpotDataConnector extends DataConnector<BybitSpotConnectorSett
 
         return errorListener -> {
             final BybitSpotFeed result = new BybitSpotFeed(
-                settings().getWsUrl(),
-                settings().getDepth(),
-                selected,
-                outputFactory.create(),
-                errorListener,
-                symbols);
+                    settings().getWsUrl(),
+                    settings().getDepth(),
+                    selected,
+                    outputFactory.create(),
+                    errorListener,
+                    logger(),
+                    symbols);
             result.start();
             return result;
         };

@@ -21,12 +21,13 @@ public class OkcoinSpotDataConnector extends DataConnector<OkcoinSpotConnectorSe
 
         return errorListener -> {
             final OkcoinSpotFeed result = new OkcoinSpotFeed(
-                settings().getWsUrl(),
-                settings().getDepth(),
-                selected,
-                outputFactory.create(),
-                errorListener,
-                symbols);
+                    settings().getWsUrl(),
+                    settings().getDepth(),
+                    selected,
+                    outputFactory.create(),
+                    errorListener,
+                    logger(),
+                    symbols);
             result.start();
             return result;
         };

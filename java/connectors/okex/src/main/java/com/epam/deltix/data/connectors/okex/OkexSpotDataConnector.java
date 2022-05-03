@@ -21,12 +21,13 @@ public class OkexSpotDataConnector extends DataConnector<OkexSpotConnectorSettin
 
         return errorListener -> {
             final OkexSpotFeed result = new OkexSpotFeed(
-                settings().getWsUrl(),
-                settings().getDepth(),
-                selected,
-                outputFactory.create(),
-                errorListener,
-                symbols);
+                    settings().getWsUrl(),
+                    settings().getDepth(),
+                    selected,
+                    outputFactory.create(),
+                    errorListener,
+                    logger(),
+                    symbols);
             result.start();
             return result;
         };

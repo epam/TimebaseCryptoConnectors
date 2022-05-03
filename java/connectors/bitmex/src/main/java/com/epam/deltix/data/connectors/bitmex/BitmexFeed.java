@@ -22,9 +22,18 @@ public class BitmexFeed extends MdSingleWsFeed {
             final MdModel.Options selected,
             final CloseableMessageOutput output,
             final ErrorListener errorListener,
+            final Logger logger,
             final String... symbols) {
 
-        super("BITMEX", uri, depth, 5000, selected, output, errorListener, symbols);
+        super("BITMEX",
+                uri,
+                depth,
+                5000,
+                selected,
+                output,
+                errorListener,
+                logger,
+                symbols);
     }
 
     @Override

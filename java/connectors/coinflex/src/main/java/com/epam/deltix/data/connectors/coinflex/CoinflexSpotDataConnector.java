@@ -21,12 +21,13 @@ public class CoinflexSpotDataConnector extends DataConnector<CoinflexSpotConnect
 
         return errorListener -> {
             final CoinflexSpotFeed result = new CoinflexSpotFeed(
-                settings().getWsUrl(),
-                settings().getDepth(),
-                selected,
-                outputFactory.create(),
-                errorListener,
-                symbols);
+                    settings().getWsUrl(),
+                    settings().getDepth(),
+                    selected,
+                    outputFactory.create(),
+                    errorListener,
+                    logger(),
+                    symbols);
             result.start();
             return result;
         };

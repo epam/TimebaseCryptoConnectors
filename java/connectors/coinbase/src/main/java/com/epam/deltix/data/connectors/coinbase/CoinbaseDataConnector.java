@@ -26,6 +26,7 @@ public class CoinbaseDataConnector extends DataConnector<CoinbaseConnectorSettin
                     selected,
                     outputFactory.create(),
                     errorListener,
+                    logger(),
                     symbols);
             result.start();
             return result;
@@ -35,6 +36,7 @@ public class CoinbaseDataConnector extends DataConnector<CoinbaseConnectorSettin
     public static void main(String[] args) throws Exception {
         final CoinbaseDataConnector dataConnector = new CoinbaseDataConnector(
                 new CoinbaseConnectorSettings(
+                        "coinbase",
                         "wss://ws-feed.pro.coinbase.com",
                         "dxtick://localhost:8011",
                         "coinbase"
@@ -44,14 +46,14 @@ public class CoinbaseDataConnector extends DataConnector<CoinbaseConnectorSettin
         final MdModel model = dataConnector.model();
 
         final MdModel.Availability availability = model.available();
-        System.out.println(availability);
+        dataConnector.logger().info(() -> availability.toString());
 
         dataConnector.subscribe(
-                model.select()
-                        .withTrades()
-                        .withLevel1()
-                        .withLevel2()
-                        .build(),
+                model.select().
+                        withTrades().
+                        withLevel1().
+                        withLevel2().
+                        build(),
                 "ETH-USD=ETH/USD"/*, "ETH-EUR"*/
         );
 
@@ -59,6 +61,6 @@ public class CoinbaseDataConnector extends DataConnector<CoinbaseConnectorSettin
 
         dataConnector.close();
 
-        System.out.println("CLOSED");
+        dataConnector.logger().info(() -> "CLOSED");
     }
 }

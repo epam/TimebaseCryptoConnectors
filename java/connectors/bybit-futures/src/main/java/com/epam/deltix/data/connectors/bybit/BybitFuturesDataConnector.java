@@ -21,12 +21,13 @@ public class BybitFuturesDataConnector extends DataConnector<BybitFuturesConnect
 
         return errorListener -> {
             final BybitFuturesFeed result = new BybitFuturesFeed(
-                settings().getWsUrl(),
-                settings().getDepth(),
-                selected,
-                outputFactory.create(),
-                errorListener,
-                symbols);
+                    settings().getWsUrl(),
+                    settings().getDepth(),
+                    selected,
+                    outputFactory.create(),
+                    errorListener,
+                    logger(),
+                    symbols);
             result.start();
             return result;
         };

@@ -20,9 +20,18 @@ public class HitbtcFeed extends MdSingleWsFeed {
             final MdModel.Options selected,
             final CloseableMessageOutput output,
             final ErrorListener errorListener,
+            final Logger logger,
             final String... symbols) {
 
-        super("HITBTC", uri, depth, 20000, selected, output, errorListener, symbols);
+        super("HITBTC",
+                uri,
+                depth,
+                20000,
+                selected,
+                output,
+                errorListener,
+                logger,
+                symbols);
     }
 
     @Override

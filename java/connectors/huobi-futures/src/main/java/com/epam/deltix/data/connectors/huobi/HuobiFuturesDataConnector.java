@@ -21,12 +21,13 @@ public class HuobiFuturesDataConnector extends DataConnector<HuobiFuturesConnect
 
         return errorListener -> {
             final HuobiFuturesFeed result = new HuobiFuturesFeed(
-                settings().getWsUrl(),
-                settings().getDepth(),
-                selected,
-                outputFactory.create(),
-                errorListener,
-                symbols);
+                    settings().getWsUrl(),
+                    settings().getDepth(),
+                    selected,
+                    outputFactory.create(),
+                    errorListener,
+                    logger(),
+                    symbols);
             result.start();
             return result;
         };

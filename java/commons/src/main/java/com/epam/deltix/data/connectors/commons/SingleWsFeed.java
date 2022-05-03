@@ -14,15 +14,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * A class
  */
 public abstract class SingleWsFeed extends MdFeed {
-    private static final Logger LOG = Logger.getLogger(SingleWsFeed.class.getName());
-
     private final static int INITIAL_STATE = 0;
     private final static int STARTED_STATE = 1;
     private final static int CLOSED_STATE = 2;
@@ -55,9 +51,17 @@ public abstract class SingleWsFeed extends MdFeed {
         final MdModel.Options selected,
         final CloseableMessageOutput output,
         final ErrorListener errorListener,
+        final Logger logger,
         final String... symbols) {
 
-        this(uri, idleTimeoutMillis, selected, output, errorListener, null, symbols);
+        this(uri,
+                idleTimeoutMillis,
+                selected,
+                output,
+                errorListener,
+                logger,
+                null,
+                symbols);
     }
 
     protected SingleWsFeed(
@@ -66,10 +70,19 @@ public abstract class SingleWsFeed extends MdFeed {
         final MdModel.Options selected,
         final CloseableMessageOutput output,
         final ErrorListener errorListener,
+        final Logger logger,
         final PeriodicalJsonTask periodicalJsonTask,
         final String... symbols) {
 
-        this(uri, idleTimeoutMillis, selected, output, errorListener, periodicalJsonTask, false, symbols);
+        this(uri,
+                idleTimeoutMillis,
+                selected,
+                output,
+                errorListener,
+                logger,
+                periodicalJsonTask,
+                false,
+                symbols);
     }
 
     protected SingleWsFeed(
@@ -78,11 +91,12 @@ public abstract class SingleWsFeed extends MdFeed {
             final MdModel.Options selected,
             final CloseableMessageOutput output,
             final ErrorListener errorListener,
+            final Logger logger,
             final PeriodicalJsonTask periodicalJsonTask,
             final boolean skipGzipHeader,
             final String... symbols) {
 
-        super(selected, output, errorListener);
+        super(selected, output, errorListener, logger);
 
         this.uri = uri;
         this.idleTimeoutMillis = idleTimeoutMillis;
@@ -203,12 +217,12 @@ public abstract class SingleWsFeed extends MdFeed {
                 }
             };
             try {
-                webSocket = HttpClient.newBuilder()
-                        .executor(wsExecutorService)
-                        .build()
-                        .newWebSocketBuilder()
-                        .connectTimeout(Duration.ofSeconds(10))
-                        .buildAsync(URI.create(uri),
+                webSocket = HttpClient.newBuilder().
+                        executor(wsExecutorService).
+                        build().
+                        newWebSocketBuilder().
+                        connectTimeout(Duration.ofSeconds(10)).
+                        buildAsync(URI.create(uri),
                                 wsListener).join();
             } catch (final Throwable t) {
                 SingleWsFeed.this.onError(t);
@@ -227,7 +241,7 @@ public abstract class SingleWsFeed extends MdFeed {
             try {
                 onClose();
             } catch (final Throwable t) {
-                LOG.log(Level.WARNING, "Unexpected error in onClose(): " + t.getLocalizedMessage(), t);
+                logger().warning(() -> "Unexpected error in onClose(): " + t.getLocalizedMessage(), t);
             }
 
             InterruptedException wasInterrupted = null;

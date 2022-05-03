@@ -21,9 +21,18 @@ public class BitmartSpotFeed extends MdSingleWsFeed {
             final MdModel.Options selected,
             final CloseableMessageOutput output,
             final ErrorListener errorListener,
+            final Logger logger,
             final String... symbols) {
 
-        super("BITMART", uri, depth, 10000, selected, output, errorListener, symbols);
+        super("BITMART",
+                uri,
+                depth,
+                10000,
+                selected,
+                output,
+                errorListener,
+                logger,
+                symbols);
         this.depth = depth;
     }
 

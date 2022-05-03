@@ -21,12 +21,13 @@ public class HuobiSpotDataConnector extends DataConnector<HuobiSpotConnectorSett
 
         return errorListener -> {
             final HuobiSpotFeed result = new HuobiSpotFeed(
-                settings().getWsUrl(),
-                settings().getDepth(),
-                selected,
-                outputFactory.create(),
-                errorListener,
-                symbols);
+                    settings().getWsUrl(),
+                    settings().getDepth(),
+                    selected,
+                    outputFactory.create(),
+                    errorListener,
+                    logger(),
+                    symbols);
             result.start();
             return result;
         };

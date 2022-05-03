@@ -26,6 +26,7 @@ public class HitbtcDataConnector extends DataConnector<HitbtcConnectorSettings> 
                 selected,
                 outputFactory.create(),
                 errorListener,
+                logger(),
                 symbols);
             result.start();
             return result;

@@ -26,6 +26,7 @@ public class PoloniexDataConnector extends DataConnector<PoloniexConnectorSettin
                     selected,
                     outputFactory.create(),
                     errorListener,
+                    logger(),
                     symbols);
             result.start();
             return result;

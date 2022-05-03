@@ -21,12 +21,13 @@ public class BitpandaSpotDataConnector extends DataConnector<BitpandaSpotConnect
 
         return errorListener -> {
             final BitpandaSpotFeed result = new BitpandaSpotFeed(
-                settings().getWsUrl(),
-                settings().getDepth(),
-                selected,
-                outputFactory.create(),
-                errorListener,
-                symbols);
+                    settings().getWsUrl(),
+                    settings().getDepth(),
+                    selected,
+                    outputFactory.create(),
+                    errorListener,
+                    logger(),
+                    symbols);
             result.start();
             return result;
         };
