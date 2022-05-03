@@ -10,6 +10,10 @@ public interface Logger {
 
     void info(Supplier<String> msgSupplier);
 
+    boolean isDebugEnabled();
+
+    void debug(final String msg);
+
     void debug(Supplier<String> msgSupplier);
 
 }

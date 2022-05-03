@@ -47,12 +47,19 @@ public class JulLogger implements Logger {
         jul.log(Level.INFO, prefix + msgSupplier.get());
     }
 
+    public boolean isDebugEnabled() {
+        return jul.isLoggable(Level.FINE);
+    }
+
+    public void debug(final String msg) {
+        jul.log(Level.FINE, prefix + msg);
+    }
+
     @Override
     public void debug(final Supplier<String> msgSupplier) {
-        if (!jul.isLoggable(Level.FINE)) {
+        if (!isDebugEnabled()) {
             return;
         }
-
         jul.log(Level.FINE, prefix + msgSupplier.get());
     }
 }

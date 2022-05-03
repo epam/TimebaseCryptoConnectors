@@ -138,6 +138,11 @@ public abstract class SingleWsFeed extends MdFeed {
 
                 @Override
                 public void onOpen(final WebSocket webSocket) {
+                    final Logger logger = logger();
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("WebSocket onOpen");
+                    }
+
                     lastReceiveTime = System.nanoTime();
                     jsonSender = new WsJsonFrameSender(webSocket);
 
@@ -172,6 +177,11 @@ public abstract class SingleWsFeed extends MdFeed {
 
                 @Override
                 public CompletionStage<?> onText(final WebSocket webSocket, final CharSequence data, final boolean last) {
+                    final Logger logger = logger();
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("WebSocket onText (last=" + last + ") " + data);
+                    }
+
                     lastReceiveTime = System.nanoTime();
 
                     try {
@@ -190,6 +200,11 @@ public abstract class SingleWsFeed extends MdFeed {
                     try {
                         final CharSequence json = decompressor.decompress(data);
                         if (json != null) {
+                            final Logger logger = logger();
+                            if (logger.isDebugEnabled()) {
+                                logger.debug("WebSocket onBinary (last=" + last + ") [DECODED] " + json);
+                            }
+
                             onJson(json, last, jsonSender);
                         }
                     } catch (final Throwable t) {
@@ -200,6 +215,11 @@ public abstract class SingleWsFeed extends MdFeed {
 
                 @Override
                 public CompletionStage<?> onPing(final WebSocket webSocket, final ByteBuffer message) {
+                    final Logger logger = logger();
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("WebSocket onPing " + message);
+                    }
+
                     lastReceiveTime = System.nanoTime();
 
                     return WebSocket.Listener.super.onPing(webSocket, message);
@@ -207,11 +227,21 @@ public abstract class SingleWsFeed extends MdFeed {
 
                 @Override
                 public void onError(final WebSocket webSocket, final Throwable error) {
+                    final Logger logger = logger();
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("WebSocket onError " + error.getLocalizedMessage());
+                    }
+
                     SingleWsFeed.this.onError(error);
                 }
 
                 @Override
                 public CompletionStage<?> onClose(final WebSocket webSocket, final int statusCode, final String reason) {
+                    final Logger logger = logger();
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("WebSocket onClose [" + statusCode + "] " + reason);
+                    }
+
                     waitForWsClose.countDown();
                     return WebSocket.Listener.super.onClose(webSocket, statusCode, reason);
                 }
