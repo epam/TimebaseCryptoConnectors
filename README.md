@@ -16,7 +16,7 @@ By default, we launch with [application.yaml](https://github.com/epam/TimebaseCr
 
 > Refer to the [developers tutorials](https://github.com/epam/TimebaseCryptoConnectors/blob/main/docs/developer.md) for more information. 
 
-## Available Crypto Connectors
+## Supported Crypto Exchanges
 
 |Vendor|Types of Contracts|
 |------|------------------|
