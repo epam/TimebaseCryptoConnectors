@@ -2,13 +2,13 @@
 
 [![Build CI](https://github.com/epam/TimebaseCryptoConnectors/actions/workflows/build.yml/badge.svg)](https://github.com/epam/TimebaseCryptoConnectors/actions/workflows/build.yml)
 
-With [TimeBase Community Edition](https://github.com/finos/TimeBase-CE) you get access to a number of [market data connectors](#available-connectors) that allow receiving normalized market data with any level of granularity from the most popular crypto exchanges and recording it in [TimeBase](https://kb.timebase.info/) **in a matter of minutes**. 
+With [TimeBase Community Edition](https://github.com/finos/TimeBase-CE) you get access free [market data connectors](#available-connectors) you can use receive normalized market data with any level of granularity (top of the book, L2) from the most popular crypto exchanges and recording it in [TimeBase](https://kb.timebase.info/) **in a matter of minutes**. 
 
 ## Quick Start - setup market data collection in 60 seconds:
 
 1. Download sample [docker-compose.yml](https://github.com/epam/TimebaseCryptoConnectors/blob/main/docs/docker-compose.yml).
-2. Launch Timebase crypto connectors using `docker-compose up` command. 
-3. View live and historical data in your browser on [localhost:8099](http://localhost:8099/app/stream/coinbase) in [TimeBase](https://kb.timebase.info/community/development/tools/Web%20Admin/admin_guide#stream-actions-monitor):
+2. Run `docker-compose up` command to launch TimeBase crypto connectors. 
+3. View live and historical market data in your browser on [localhost:8099](http://localhost:8099/app/stream/coinbase) in [TimeBase](https://kb.timebase.info/community/development/tools/Web%20Admin/admin_guide#stream-actions-monitor):
 
 ![](/img/stream-monitor.png)
 
@@ -18,7 +18,7 @@ By default, we launch with [application.yaml](https://github.com/epam/TimebaseCr
 
 ## Supported Crypto Exchanges
 
-|Vendor|Types of Contracts|
+|Exchange|Supported Contracts|
 |------|------------------|
 |[BitMEX](java/connectors/bitmex/README.md)|Quanto Contract, Inverse Perpetual SWAP, Linear Perpetual, Quanto Perpetual, Linear Futures, Quanto Futures, Inverse Futures|
 |[Coinbase](https://github.com/epam/TimebaseCryptoConnectors/blob/main/java/connectors/coinbase/README.md)|SPOT|
