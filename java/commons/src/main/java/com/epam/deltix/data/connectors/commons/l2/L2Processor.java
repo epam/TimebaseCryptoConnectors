@@ -44,6 +44,7 @@ public class L2Processor<B extends Book<I, E>, I extends BookItem<E>, E extends 
 
     private final long source;
     private final String symbol;
+    private final int fixedBookSize;
     private final int outputBookSize;
     private final B bids;
     private final B offers;
@@ -67,7 +68,14 @@ public class L2Processor<B extends Book<I, E>, I extends BookItem<E>, E extends 
             final L2Listener<I, E> listener) {
         this.source = builder.source;
         this.symbol = builder.symbol;
+
+        this.fixedBookSize = builder.fixedBookSize;
         this.outputBookSize = builder.outputBookSize;
+
+        if (fixedBookSize > outputBookSize) {
+            throw new IllegalArgumentException("Output size > fixed size");
+        }
+
         this.bids = bids;
         this.offers = offers;
         this.l2Listener = listener;
@@ -311,6 +319,11 @@ public class L2Processor<B extends Book<I, E>, I extends BookItem<E>, E extends 
         if (isSnapshotMode || incrementActionsNotified > 0) {
             l2Listener.onFinished(this);
         }
+
+        if (fixedBookSize < UNLIMITED_BOOK_SIZE) {
+            bids.trim(fixedBookSize);
+            offers.trim(fixedBookSize);
+        }
     }
 
     private void snapshotSide(final B side) {
@@ -327,6 +340,7 @@ public class L2Processor<B extends Book<I, E>, I extends BookItem<E>, E extends 
     public static class L2Builder {
         private long source = ExchangeCodec.NULL;
         private String symbol;
+        private int fixedBookSize = UNLIMITED_BOOK_SIZE;
         private int initialBookSize = 10;
         private int outputBookSize = UNLIMITED_BOOK_SIZE;
 
@@ -343,15 +357,19 @@ public class L2Processor<B extends Book<I, E>, I extends BookItem<E>, E extends 
             return this;
         }
 
-        /**
-         * <p>Sets value of initial book size. <br>
-         * This value is used by book sides to create array with book items of specified size.</p>
-         *
-         * @param bookSize initial value for book size
-         * @return link to this builder to use it in so called fluent api
-         */
-        public L2Builder withInitialBookSize(final int bookSize) {
-            this.initialBookSize = bookSize;
+        public L2Builder withFixedBookSize(final int fixedBookSize) {
+            this.fixedBookSize = fixedBookSize;
+            return this;
+        }
+
+        public L2Builder withFixedBookSize(final int fixedBookSize, final int initialBookSize) {
+            this.fixedBookSize = fixedBookSize;
+            this.initialBookSize = initialBookSize;
+            return this;
+        }
+
+        public L2Builder withInitialBookSize(final int initialBookSize) {
+            this.initialBookSize = initialBookSize;
             return this;
         }
 
