@@ -2,7 +2,7 @@
 
 [![Build CI](https://github.com/epam/TimebaseCryptoConnectors/actions/workflows/build.yml/badge.svg)](https://github.com/epam/TimebaseCryptoConnectors/actions/workflows/build.yml)
 
-With [TimeBase Community Edition](https://github.com/finos/TimeBase-CE) you get access free [market data connectors](#supported-crypto-exchanges) you can use receive normalized market data with any level of granularity (top of the book, L2) from the most popular crypto exchanges and recording it in [TimeBase](https://kb.timebase.info/) **in a matter of minutes**. 
+With [TimeBase Community Edition](https://github.com/finos/TimeBase-CE) you get access to free [market data connectors](#supported-crypto-exchanges) you can use to receive normalized market data with any level of granularity (top of the book, L2) from the most popular crypto exchanges and recording it in [TimeBase](https://kb.timebase.info/) **in a matter of minutes**. 
 
 ## Quick Start - setup market data collection in 60 seconds:
 
