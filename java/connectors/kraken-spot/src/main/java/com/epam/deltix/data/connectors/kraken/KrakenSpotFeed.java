@@ -26,14 +26,31 @@ public class KrakenSpotFeed extends MdSingleWsFeed {
         super("KRAKEN",
                 uri,
                 depth,
+                getKrakenBookSize(depth),
                 5000,
                 selected,
                 output,
                 errorListener,
                 logger,
+                null,
+                false,
                 symbols);
 
         this.depth = depth;
+    }
+
+    private static int getKrakenBookSize(int depth) {
+        if (depth <= 10) {
+            return 10;
+        } else if (depth <= 25) {
+            return 25;
+        } else if (depth <= 100) {
+            return 100;
+        } else if (depth <= 500) {
+            return 500;
+        } else {
+            return 1000;
+        }
     }
 
     @Override
@@ -46,7 +63,7 @@ public class KrakenSpotFeed extends MdSingleWsFeed {
             Arrays.asList(symbols).forEach(pairs::addString);
             JsonObject subscription = body.putObject("subscription");
             subscription.putString("name", "book");
-            subscription.putInteger("depth", getKrakenAvailableDepth());
+            subscription.putInteger("depth", getKrakenBookSize(depth));
             subscriptionJson.toJsonAndEoj(jsonWriter);
         }
 
@@ -59,20 +76,6 @@ public class KrakenSpotFeed extends MdSingleWsFeed {
             JsonObject subscription = body.putObject("subscription");
             subscription.putString("name", "trade");
             subscriptionJson.toJsonAndEoj(jsonWriter);
-        }
-    }
-
-    private int getKrakenAvailableDepth() {
-        if (depth <= 10) {
-            return 10;
-        } else if (depth <= 25) {
-            return 25;
-        } else if (depth <= 100) {
-            return 100;
-        } else if (depth <= 500) {
-            return 500;
-        } else {
-            return 1000;
         }
     }
 
@@ -191,7 +194,6 @@ public class KrakenSpotFeed extends MdSingleWsFeed {
 
         for (int i = 0; i < changes.size(); i++) {
             final JsonArray change = changes.getArrayRequired(i);
-            // todo: process republish?
             if (change.size() != 3 && change.size() != 4) {
                 throw new IllegalArgumentException("Unexpected size of a change :" + change.size());
             }

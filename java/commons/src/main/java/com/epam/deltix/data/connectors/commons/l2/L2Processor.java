@@ -72,7 +72,7 @@ public class L2Processor<B extends Book<I, E>, I extends BookItem<E>, E extends 
         this.fixedBookSize = builder.fixedBookSize;
         this.outputBookSize = builder.outputBookSize;
 
-        if (fixedBookSize > outputBookSize) {
+        if (outputBookSize > fixedBookSize) {
             throw new IllegalArgumentException("Output size > fixed size");
         }
 
