@@ -1,5 +1,5 @@
 server:
-  port: 8930
+  port: 8055
 
 timebase:
   url: dxtick://localhost:8011
@@ -7,12 +7,13 @@ timebase:
 connectors:
   coinbase:
     stream: coinbase
+    depth: 20
     wsUrl: wss://ws-feed.pro.coinbase.com
     model:
       - "L1"
       - "L2"
       - "TRADES"
-    instruments: "ETH-USD,BTC-USD,BTC-USDT,LTC-USD"
+    instruments: "ETH-USD=ETH/USD,BTC-USD=BTC/USD,BTC-USDT=BTC/USDT,LTC-USD=LTC/USD"
 
   kraken-spot:
     stream: kraken-spot
@@ -22,7 +23,7 @@ connectors:
       - "L1"
       - "L2"
       - "TRADES"
-    instruments: "XBT/USD,XBT/USDT,ETH/USD,ETH/USDT,USDT/USD"
+    instruments: "XBT/USD=BTC/USD,XBT/USDT=BTC/USDT,ETH/USD,ETH/USDT,USDT/USD"
 
   kraken-futures:
     stream: kraken-futures
@@ -42,7 +43,7 @@ connectors:
       - "L1"
       - "L2"
       - "TRADES"
-    instruments: "XBTUSD,ETHUSD"
+    instruments: "XBTUSD=BTC/USD,ETHUSD=ETH/USD"
 
   huobi-spot:
     stream: huobi-spot
@@ -52,7 +53,7 @@ connectors:
       - "L1"
       - "L2"
       - "TRADES"
-    instruments: "btcusdt,ethbtc"
+    instruments: "btcusdt=BTC/USDT,ethbtc=ETH/BTC"
 
   huobi-futures:
     stream: huobi-futures
@@ -83,7 +84,7 @@ connectors:
       - "L1"
       - "L2"
       - "TRADES"
-    instruments: "LTCUSDT,ADAUSDT"
+    instruments: "LTCUSDT=LTC/USDT,ADAUSDT=ADA/USDT"
 
   bybit-inverse-futures:
     type: bybit-futures
@@ -94,7 +95,7 @@ connectors:
       - "L1"
       - "L2"
       - "TRADES"
-    instruments: "MANAUSD,LUNAUSD"
+    instruments: "MANAUSD=MANA/USD,LUNAUSD=LUNA/USD"
 
   bybit-spot:
     stream: bybit-spot
@@ -104,7 +105,7 @@ connectors:
       - "L1"
       - "L2"
       - "TRADES"
-    instruments: "BTCUSDT,ETHUSDT"
+    instruments: "BTCUSDT=BTC/USDT,ETHUSDT=ETH/USDT"
 
   okex:
     stream: okex
@@ -114,4 +115,85 @@ connectors:
       - "L1"
       - "L2"
       - "TRADES"
-    instruments: "BTC-UST,BTC-USDT-220930"
+    instruments: "BTC-UST=BTC/USD,BTC-USDT-220930"
+
+  bitfinex:
+    stream: bitfinex
+    wsUrl: wss://api.bitfinex.com/ws/2
+    depth: 20
+    model:
+      - "L1"
+      - "L2"
+      - "TRADES"
+    instruments: "tBTCUSD=BTC/USD,tBTCEUR=BTC/EUR,tETCUSD=ETC/USD,tBTCF0:USTF0=BTCPC"
+
+  bitmart:
+    stream: bitmart
+    wsUrl: wss://ws-manager-compress.bitmart.com/api?protocol=1.1
+    depth: 20
+    model:
+      - "L1"
+      - "L2"
+      - "TRADES"
+    instruments: "BTC_USDT=BTC/USD,DOGE_USDC=DOGE/USD,ETH_USDT=ETH/USD"
+
+  bitpanda:
+    stream: bitpanda
+    wsUrl: wss://streams.exchange.bitpanda.com
+    depth: 20
+    model:
+      - "L1"
+      - "L2"
+      - "TRADES"
+    instruments: "BTC_EUR=BTC/EUR,ETH_EUR=ETH/EUR"
+
+  coinflex:
+    stream: coinflex
+    wsUrl: wss://v2api.coinflex.com/v2/websocket
+    depth: 20
+    model:
+      - "L1"
+      - "L2"
+      - "TRADES"
+    instruments: "USDT-USD-SWAP-LIN,BTC-USD-220930-LIN,BTC-USD,DOGE-USD"
+
+  cryptofacilities:
+    stream: cryptofacilities
+    wsUrl: wss://www.cryptofacilities.com/ws/v1
+    depth: 20
+    model:
+      - "L1"
+      - "L2"
+      - "TRADES"
+    instruments: "PI_XBTUSD, PF_LTCUSD, PF_ETHUSD"
+
+  hitbtc:
+    stream: hitbtc
+    wsUrl: wss://api.hitbtc.com/api/3/ws/public
+    depth: 20
+    model:
+      - "L1"
+      - "L2"
+      - "TRADES"
+    instruments: "BTCUSDT=BTC/USDT, ETHBTC=ETH/BTC"
+
+  poloniex:
+    stream: poloniex
+    wsUrl: wss://api2.poloniex.com
+    depth: 20
+    model:
+      - "L1"
+      - "L2"
+      - "TRADES"
+    instruments: "BTC_DASH=BTC/DASH, BTC_ETC=BTC/ETC"
+
+  okcoin:
+    stream: okcoin
+    wsUrl: wss://real.okcoin.com:8443/ws/v3
+    depth: 20
+    model:
+      - "L1"
+      - "L2"
+      - "TRADES"
+    instruments: "BTC-USD=BTC/USD, ETH-USD=ETH/USD"
+

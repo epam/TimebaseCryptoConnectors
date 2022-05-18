@@ -4,14 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ChainedL2Listener<I extends BookItem<E>, E extends BookEvent> implements L2Listener<I, E> {
-    public static <I extends BookItem<E>, E extends BookEvent> L2Listener<I, E> chain(final L2Listener<I, E>... listeners) {
+    public static <I extends BookItem<E>, E extends BookEvent> L2Listener<I, E> chain(final L2Listener<I, E>[] listeners) {
         if (listeners == null || listeners.length == 0) {
             return null;
         }
         if (listeners.length == 1) {
             return listeners[0];
         }
-        return new ChainedL2Listener(listeners);
+        return new ChainedL2Listener<>(listeners);
     }
 
     public static <I extends BookItem<E>, E extends BookEvent> Builder<I, E> builder() {
@@ -26,6 +26,7 @@ public class ChainedL2Listener<I extends BookItem<E>, E extends BookEvent> imple
             return this;
         }
 
+        @SuppressWarnings("unchecked")
         public L2Listener<I, E> build() {
             return chain(listeners.toArray(new L2Listener[] {}));
         }
@@ -33,7 +34,7 @@ public class ChainedL2Listener<I extends BookItem<E>, E extends BookEvent> imple
 
     private final L2Listener<I, E>[] listeners;
 
-    public ChainedL2Listener(final L2Listener<I, E>... listeners) {
+    public ChainedL2Listener(final L2Listener<I, E>[] listeners) {
         this.listeners = listeners;
     }
 

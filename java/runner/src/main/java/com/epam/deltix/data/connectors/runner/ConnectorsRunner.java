@@ -13,13 +13,12 @@ import com.epam.deltix.data.connectors.runner.settings.RunnerSettings;
 import com.epam.deltix.data.connectors.runner.settings.TimebaseSettings;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.reflections.Reflections;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -33,7 +32,7 @@ public class ConnectorsRunner {
     private final ConnectorsSettingsProvider connectorsSettings;
     private final ObjectMapper objectMapper;
 
-    private final Map<String, DataConnector<?>> connectors = new HashMap<>();
+    private final Map<String, DataConnector<?>> connectors;
 
     public ConnectorsRunner(RunnerSettings runnerSettings,
                             TimebaseSettings timebaseSettings,
@@ -44,10 +43,33 @@ public class ConnectorsRunner {
         this.timebaseSettings = timebaseSettings;
         this.connectorsSettings = connectorsSettings;
         this.objectMapper = objectMapper;
+
+        this.connectors = discoverAndInstantiateDataConnectors();
     }
 
     @PostConstruct
-    public void discoverAndInstantiateDataConnectors() {
+    public void start() {
+        startConnectors();
+    }
+
+    @PreDestroy
+    public void stopConnectors() {
+        connectors.forEach((name, connector) -> {
+            try {
+                connector.close();
+            } catch (Throwable t) {
+                LOG.warning("Failed to close data connector '" + name + "'");
+            }
+        });
+    }
+
+    public void forEachConnector(Consumer<DataConnector<?>> consumer) {
+        connectors.values().forEach(consumer);
+    }
+
+    private Map<String, DataConnector<?>> discoverAndInstantiateDataConnectors() {
+        Map<String, DataConnector<?>> connectors = new LinkedHashMap<>();
+
         Map<String, ConnectorImplementation<?, ?>> implementations = discoverImplementations(
             discoverSettings()
         );
@@ -63,7 +85,7 @@ public class ConnectorsRunner {
 
             ConnectorImplementation<?, ?> implementation = implementations.get(connectorType.toLowerCase());
             if (implementation != null) {
-                DataConnector<?> connector = instantiateDataConnector(implementation, settings);
+                DataConnector<?> connector = instantiateDataConnector(name, implementation, settings);
                 if (connectors.get(name) != null) {
                     throw new RuntimeException("Duplicate connector '" + name + "'");
                 }
@@ -76,10 +98,11 @@ public class ConnectorsRunner {
                         connectorType + "'.");
             }
         });
+
+        return connectors;
     }
 
-    @EventListener(ApplicationReadyEvent.class)
-    public void startConnectors() {
+    private void startConnectors() {
         connectors.forEach((name, connector) -> {
             MdModel.Options model = buildModel(connector.model().select(), name);
             LOG.info("Connector '" + name + "' subscribe model: " + model);
@@ -90,17 +113,6 @@ public class ConnectorsRunner {
 
             connector.subscribe(model, instruments);
             LOG.info("Connector '" + name + "' started");
-        });
-    }
-
-    @PreDestroy
-    public void stopConnectors() {
-        connectors.forEach((name, connector) -> {
-            try {
-                connector.close();
-            } catch (Throwable t) {
-                LOG.warning("Failed to close data connector '" + name + "'");
-            }
         });
     }
 
@@ -198,13 +210,13 @@ public class ConnectorsRunner {
     }
 
     private DataConnector<?> instantiateDataConnector(
-        ConnectorImplementation<?, ?> implementation, Object settingsMap
+        String name, ConnectorImplementation<?, ?> implementation, Object settingsMap
     ) {
         try {
             return implementation.getConnectorClass()
                 .getConstructor(implementation.getSettingsClass())
                 .newInstance(
-                    instantiateDataConnectorSettings(implementation, settingsMap)
+                    instantiateDataConnectorSettings(name, implementation, settingsMap)
                 );
         } catch (Throwable t) {
             LOG.log(Level.WARNING, "Failed to instantiate data connector " +
@@ -214,12 +226,16 @@ public class ConnectorsRunner {
     }
 
     private DataConnectorSettings instantiateDataConnectorSettings(
-        ConnectorImplementation<?, ?> implementation, Object settingsMap
+        String name, ConnectorImplementation<?, ?> implementation, Object settingsMap
     ) {
         DataConnectorSettings connectorSettings = objectMapper.convertValue(
             settingsMap, implementation.getSettingsClass()
         );
 
+        connectorSettings.setName(name);
+        if (connectorSettings.getType() == null) {
+            connectorSettings.setType(name);
+        }
         connectorSettings.setTbUrl(timebaseSettings.getUrl());
         connectorSettings.setTbUser(timebaseSettings.getUser());
         connectorSettings.setTbPassword(timebaseSettings.getPassword());

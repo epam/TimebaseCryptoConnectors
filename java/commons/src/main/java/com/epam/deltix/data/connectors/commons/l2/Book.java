@@ -79,6 +79,25 @@ public abstract class Book<I extends BookItem<E>, E extends BookEvent> {
     }
 
     /**
+     * Trim the book to new size
+     * @param newSize
+     * @return new size of the book
+     */
+    int trim(final int newSize) {
+        if ((newSize < 0) && (newSize > currentSize)) {
+            throw new IndexOutOfBoundsException(newSize + " for the current size " + currentSize);
+        }
+
+        for (int i = newSize; i < currentSize; i++) {
+            pool.release(items[i]);
+        }
+
+        currentSize = newSize;
+
+        return currentSize;
+    }
+
+    /**
      * <p>Makes this book to process the given event. <br>
      * Usually book changes it's state in response of getting an event. <br>
      * If you try to apply event with invalid value of price, size etc. book will ignore this event.</p>
@@ -101,12 +120,18 @@ public abstract class Book<I extends BookItem<E>, E extends BookEvent> {
      * After calling this method book side will be empty.</p>
      */
     public void clear() {
+        final boolean notifyReset = listener != null ?
+                listener.beforeReset(this) : false;
+
         for (int i = 0; i < currentSize; i++) {
             pool.release(items[i]);
         }
 
         currentSize = 0;
-        listener.onReset(this);
+
+        if (notifyReset) {
+            listener.onReset(this);
+        }
     }
 
     /**
@@ -160,6 +185,9 @@ public abstract class Book<I extends BookItem<E>, E extends BookEvent> {
             return;
         }
 
+        final boolean notifyInsert = listener != null ?
+            listener.beforeInsert(this, depth, event) : false;
+
         if (currentSize == items.length) {
             if (items.length >= BOOK_SIZE_LIMIT) {
                 throw new IllegalStateException("Unbelievable book size " + items.length);
@@ -186,7 +214,7 @@ public abstract class Book<I extends BookItem<E>, E extends BookEvent> {
         items[depth] = item;
         currentSize++;
 
-        if (listener != null) {
+        if (notifyInsert) {
             listener.onInsert(this, depth, item);
         }
     }
@@ -209,9 +237,12 @@ public abstract class Book<I extends BookItem<E>, E extends BookEvent> {
             return;
         }
 
+        final boolean notifyUpdate = listener != null ?
+                listener.beforeUpdate(this, depth, event) : false;
+
         item.set(event);
 
-        if (listener != null) {
+        if (notifyUpdate) {
             listener.onUpdate(this, depth, item);
         }
     }
@@ -233,6 +264,9 @@ public abstract class Book<I extends BookItem<E>, E extends BookEvent> {
             return;
         }
 
+        final boolean notifyDelete = listener != null ?
+                listener.beforeDelete(this, depth) : false;
+
         final int tail = currentSize - depth - 1;
 
         if (tail > 0) {
@@ -242,7 +276,7 @@ public abstract class Book<I extends BookItem<E>, E extends BookEvent> {
         currentSize--;
 
         try {
-            if (listener != null) {
+            if (notifyDelete) {
                 listener.onDelete(this, depth, item);
             }
         } finally {

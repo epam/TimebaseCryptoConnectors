@@ -2,26 +2,15 @@ package com.epam.deltix.data.connectors.okex;
 
 import com.epam.deltix.data.connectors.commons.*;
 import com.epam.deltix.data.connectors.commons.json.*;
-import com.epam.deltix.data.connectors.commons.l2.*;
 import com.epam.deltix.dfp.Decimal64Utils;
-import com.epam.deltix.qsrv.hf.pub.ExchangeCodec;
 import com.epam.deltix.qsrv.hf.tickdb.pub.TimeConstants;
 import com.epam.deltix.timebase.messages.TypeConstants;
 
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
-public class OkexSpotFeed extends SingleWsFeed {
-    private static final long OKEX_EXCHANGE_CODE = ExchangeCodec.codeToLong("OKEX");
+public class OkexSpotFeed extends MdSingleWsFeed {
     // all fields are used by one single thread of WsFeed's ExecutorService
     private final JsonValueParser jsonParser = new JsonValueParser();
-    private final Map<String, L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent>>
-            l2Processors = new HashMap<>();
-    private final DefaultEvent priceBookEvent = new DefaultEvent();
-    private final TradeProducer tradeProducer;
-
-    private final int depth;
 
     public OkexSpotFeed(
             final String uri,
@@ -29,16 +18,22 @@ public class OkexSpotFeed extends SingleWsFeed {
             final MdModel.Options selected,
             final CloseableMessageOutput output,
             final ErrorListener errorListener,
-            final String... symbols)
-    {
-        super(uri, 30000, selected, output, errorListener, symbols);
+            final Logger logger,
+            final String... symbols) {
 
-        this.depth = depth;
-        tradeProducer = new TradeProducer(OKEX_EXCHANGE_CODE, output);
+        super("OKEX",
+                uri,
+                depth,
+                30000,
+                selected,
+                output,
+                errorListener,
+                logger,
+                symbols);
     }
 
     @Override
-    protected void prepareSubscription(JsonWriter jsonWriter, String... symbols) {
+    protected void subscribe(JsonWriter jsonWriter, String... symbols) {
         JsonValue subscriptionJson = JsonValue.newObject();
         JsonObject body = subscriptionJson.asObject();
         body.putString("op", "subscribe");
@@ -81,67 +76,34 @@ public class OkexSpotFeed extends SingleWsFeed {
         }
 
         if ("books".equalsIgnoreCase(channel)) {
-            L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent> l2Processor
-                = getPriceBookProcessor(instrument);
             String action = object.getStringRequired("action");
             JsonObject jsonData = arrayData.getObject(0);
             long timestamp = getTimestamp(jsonData.getString("ts"));
             if ("snapshot".equalsIgnoreCase(action)) {
-                l2Processor.onSnapshotPackageStarted(TimeConstants.TIMESTAMP_UNKNOWN, timestamp);
-                processSnapshotSide(l2Processor, jsonData.getArray("bids"), false);
-                processSnapshotSide(l2Processor, jsonData.getArray("asks"), true);
-                l2Processor.onPackageFinished();
+                QuoteSequenceProcessor quotesListener = processor().onBookSnapshot(instrument, timestamp);
+                processSnapshotSide(quotesListener, jsonData.getArray("bids"), false);
+                processSnapshotSide(quotesListener, jsonData.getArray("asks"), true);
+                quotesListener.onFinish();
             } else if ("update".equalsIgnoreCase(action)) {
-                l2Processor.onIncrementalPackageStarted(timestamp);
-                processChanges(l2Processor, jsonData.getArray("bids"), false);
-                processChanges(l2Processor, jsonData.getArray("asks"), true);
-                l2Processor.onPackageFinished();
+                QuoteSequenceProcessor quotesListener = processor().onBookUpdate(instrument, timestamp);
+                processChanges(quotesListener, jsonData.getArray("bids"), false);
+                processChanges(quotesListener, jsonData.getArray("asks"), true);
+                quotesListener.onFinish();
             }
         } else if ("trades".equalsIgnoreCase(channel)) {
             JsonArray jsonDataArray = object.getArrayRequired("data");
             for (int i = 0; i < jsonDataArray.size(); ++i) {
                 JsonObject trade = jsonDataArray.getObjectRequired(i);
                 long timestamp = getTimestamp(trade.getString("ts"));
-                long price = Decimal64Utils.parse(trade.getStringRequired("px"));
-                long size = Decimal64Utils.parse(trade.getStringRequired("sz"));
+                long price = trade.getDecimal64Required("px");
+                long size = trade.getDecimal64Required("sz");
 
-                tradeProducer.onTrade(timestamp, instrument, price, size);
+                processor().onTrade(instrument, timestamp, price, size);
             }
         }
     }
 
-    private L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent>
-        getPriceBookProcessor(String instrument)
-    {
-        L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent>
-                result = l2Processors.get(instrument);
-        if (result == null) {
-            ChainedL2Listener.Builder<DefaultItem<DefaultEvent>, DefaultEvent> builder =
-                ChainedL2Listener.builder();
-
-            if (selected().level1()) {
-                builder.with(new BestBidOfferProducer<>(this));
-            }
-            if (selected().level2()) {
-                builder.with(new L2Producer<>(this));
-            }
-
-            result = L2Processor.builder()
-                .withInstrument(instrument)
-                .withSource(OKEX_EXCHANGE_CODE)
-                .withBookOutputSize(depth)
-                .buildWithPriceBook(
-                    builder.build()
-                );
-            l2Processors.put(instrument, result);
-        }
-        return result;
-    }
-
-    private void processSnapshotSide(
-        L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent> l2Processor,
-        JsonArray quotePairs, boolean ask)
-    {
+    private void processSnapshotSide(QuoteSequenceProcessor quotesListener, JsonArray quotePairs, boolean ask) {
         if (quotePairs == null) {
             return;
         }
@@ -154,20 +116,16 @@ public class OkexSpotFeed extends SingleWsFeed {
                     + " quote: "
                     + pair.size());
             }
-            priceBookEvent.reset();
-            priceBookEvent.set(
-                ask,
-                Decimal64Utils.parse(pair.getStringRequired(0)),
-                Decimal64Utils.parse(pair.getStringRequired(1))
+
+            quotesListener.onQuote(
+                pair.getDecimal64Required(0),
+                pair.getDecimal64Required(1),
+                ask
             );
-            l2Processor.onEvent(priceBookEvent);
         }
     }
 
-    private void processChanges(
-        L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent> l2Processor,
-        JsonArray changes, boolean isAsk)
-    {
+    private void processChanges(QuoteSequenceProcessor quotesListener, JsonArray changes, boolean isAsk) {
         if (changes == null) {
             return;
         }
@@ -177,20 +135,17 @@ public class OkexSpotFeed extends SingleWsFeed {
             if (change.size() < 2) {
                 throw new IllegalArgumentException("Unexpected size of a change :" + change.size());
             }
-            priceBookEvent.reset();
 
-            long size = Decimal64Utils.parse(change.getStringRequired(1));
+            long size = change.getDecimal64Required(1);
             if (Decimal64Utils.isZero(size)) {
                 size = TypeConstants.DECIMAL_NULL; // means delete the price
             }
 
-            priceBookEvent.set(
-                isAsk,
-                Decimal64Utils.parse(change.getStringRequired(0)),
-                size
+            quotesListener.onQuote(
+                change.getDecimal64Required(0),
+                size,
+                isAsk
             );
-
-            l2Processor.onEvent(priceBookEvent);
         }
     }
 

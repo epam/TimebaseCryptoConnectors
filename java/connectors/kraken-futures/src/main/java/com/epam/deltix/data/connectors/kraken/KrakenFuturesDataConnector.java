@@ -5,18 +5,12 @@ import com.epam.deltix.data.connectors.commons.annotations.Connector;
 
 @Connector("Kraken-Futures")
 public class KrakenFuturesDataConnector extends DataConnector<KrakenFuturesConnectorSettings> {
-    private String wsUrl;
-    private int depth;
-
     public KrakenFuturesDataConnector(KrakenFuturesConnectorSettings settings) {
         super(settings, MdModel.availability()
             .withTrades()
             .withLevel1()
             .withLevel2().build()
         );
-
-        this.wsUrl = settings.getWsUrl();
-        this.depth = settings.getDepth();
     }
 
     @Override
@@ -26,10 +20,13 @@ public class KrakenFuturesDataConnector extends DataConnector<KrakenFuturesConne
             final String... symbols) {
 
         return errorListener -> {
-            final KrakenFuturesFeed result = new KrakenFuturesFeed(wsUrl, depth,
+            final KrakenFuturesFeed result = new KrakenFuturesFeed(
+                settings().getWsUrl(),
+                settings().getDepth(),
                 selected,
                 outputFactory.create(),
                 errorListener,
+                logger(),
                 symbols);
             result.start();
             return result;

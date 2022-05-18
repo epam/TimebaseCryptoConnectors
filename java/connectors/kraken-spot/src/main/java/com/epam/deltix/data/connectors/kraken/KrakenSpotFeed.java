@@ -2,24 +2,15 @@ package com.epam.deltix.data.connectors.kraken;
 
 import com.epam.deltix.data.connectors.commons.*;
 import com.epam.deltix.data.connectors.commons.json.*;
-import com.epam.deltix.data.connectors.commons.l2.*;
 import com.epam.deltix.dfp.Decimal64Utils;
-import com.epam.deltix.qsrv.hf.pub.ExchangeCodec;
 import com.epam.deltix.qsrv.hf.tickdb.pub.TimeConstants;
 import com.epam.deltix.timebase.messages.TypeConstants;
 
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
-public class KrakenSpotFeed extends SingleWsFeed {
-    private static final long KRAKEN_EXCHANGE_CODE = ExchangeCodec.codeToLong("KRAKEN");
+public class KrakenSpotFeed extends MdSingleWsFeed {
     // all fields are used by one single thread of WsFeed's ExecutorService
     private final JsonValueParser jsonParser = new JsonValueParser();
-    private final Map<String, L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent>>
-        l2Processors = new HashMap<>();
-    private final DefaultEvent priceBookEvent = new DefaultEvent();
-    private final TradeProducer tradeProducer;
 
     private final int depth;
 
@@ -29,16 +20,41 @@ public class KrakenSpotFeed extends SingleWsFeed {
         final MdModel.Options selected,
         final CloseableMessageOutput output,
         final ErrorListener errorListener,
+        final Logger logger,
         final String... symbols) {
 
-        super(uri, 5000, selected, output, errorListener, symbols);
+        super("KRAKEN",
+                uri,
+                depth,
+                getKrakenBookSize(depth),
+                5000,
+                selected,
+                output,
+                errorListener,
+                logger,
+                null,
+                false,
+                symbols);
 
         this.depth = depth;
-        tradeProducer = new TradeProducer(KRAKEN_EXCHANGE_CODE, output);
+    }
+
+    private static int getKrakenBookSize(int depth) {
+        if (depth <= 10) {
+            return 10;
+        } else if (depth <= 25) {
+            return 25;
+        } else if (depth <= 100) {
+            return 100;
+        } else if (depth <= 500) {
+            return 500;
+        } else {
+            return 1000;
+        }
     }
 
     @Override
-    protected void prepareSubscription(JsonWriter jsonWriter, String... symbols) {
+    protected void subscribe(JsonWriter jsonWriter, String... symbols) {
         if (selected().level1() || selected().level2()) {
             JsonValue subscriptionJson = JsonValue.newObject();
             JsonObject body = subscriptionJson.asObject();
@@ -47,7 +63,7 @@ public class KrakenSpotFeed extends SingleWsFeed {
             Arrays.asList(symbols).forEach(pairs::addString);
             JsonObject subscription = body.putObject("subscription");
             subscription.putString("name", "book");
-            subscription.putInteger("depth", getKrakenAvailableDepth());
+            subscription.putInteger("depth", getKrakenBookSize(depth));
             subscriptionJson.toJsonAndEoj(jsonWriter);
         }
 
@@ -60,20 +76,6 @@ public class KrakenSpotFeed extends SingleWsFeed {
             JsonObject subscription = body.putObject("subscription");
             subscription.putString("name", "trade");
             subscriptionJson.toJsonAndEoj(jsonWriter);
-        }
-    }
-
-    private int getKrakenAvailableDepth() {
-        if (depth <= 10) {
-            return 10;
-        } else if (depth <= 25) {
-            return 25;
-        } else if (depth <= 100) {
-            return 100;
-        } else if (depth <= 500) {
-            return 500;
-        } else {
-            return 1000;
         }
     }
 
@@ -92,83 +94,62 @@ public class KrakenSpotFeed extends SingleWsFeed {
             return;
         }
 
-        String type = array.getString(2);
+        String type = array.getString(array.size() - 2);
         if (type == null) {
             return;
         }
 
+        String instrument = array.getString(array.size() - 1);
+        if (instrument == null) {
+            return;
+        }
+
         if (type.startsWith("book-")) {
-            L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent> l2Processor
-                = getPriceBookProcessor(array.getString(3));
             JsonObject values = array.getObject(1);
             JsonArray bs = values.getArray("bs");
             JsonArray as = values.getArray("as");
             if (bs != null || as != null) {
-                l2Processor.onSnapshotPackageStarted(
-                    TimeConstants.TIMESTAMP_UNKNOWN,
-                    computeTimestamp(
-                        bs, computeTimestamp(as, TimeConstants.TIMESTAMP_UNKNOWN)
-                    )
+                QuoteSequenceProcessor quotesListener = processor().onBookSnapshot(instrument,
+                    computeTimestamp(bs, computeTimestamp(as, TimeConstants.TIMESTAMP_UNKNOWN))
                 );
-                processSnapshotSide(l2Processor, bs, false);
-                processSnapshotSide(l2Processor, as, true);
-                l2Processor.onPackageFinished();
+                processSnapshotSide(quotesListener, bs, false);
+                processSnapshotSide(quotesListener, as, true);
+                quotesListener.onFinish();
             } else {
                 JsonArray b = values.getArray("b");
                 JsonArray a = values.getArray("a");
+                JsonObject values2 = array.getObject(2);
+                if (values2 != null) {
+                    if (b == null) {
+                        b = values2.getArray("b");
+                    }
+                    if (a == null) {
+                        a = values2.getArray("a");
+                    }
+                }
+
                 if (b != null || a != null) {
-                    l2Processor.onIncrementalPackageStarted(
-                        computeTimestamp(
-                            a, computeTimestamp(b, TimeConstants.TIMESTAMP_UNKNOWN)
-                        )
+                    QuoteSequenceProcessor quotesListener = processor().onBookUpdate(instrument,
+                        computeTimestamp(a, computeTimestamp(b, TimeConstants.TIMESTAMP_UNKNOWN))
                     );
-                    processChanges(l2Processor, b, false);
-                    processChanges(l2Processor, a, true);
-                    l2Processor.onPackageFinished();
+                    processChanges(quotesListener, b, false);
+                    processChanges(quotesListener, a, true);
+                    quotesListener.onFinish();
                 }
             }
         } else if (type.startsWith("trade")) {
-            String instrument = array.getString(3);
             JsonArray trades = array.getArray(1);
             if (trades != null) {
                 for (int i = 0; i < trades.size(); ++i) {
                     JsonArray trade = trades.getArray(i);
-                    long price = Decimal64Utils.parse(trade.getString(0));
-                    long size = Decimal64Utils.parse(trade.getString(1));
+                    long price = trade.getDecimal64Required(0);
+                    long size = trade.getDecimal64Required(1);
                     long timestamp = Util.parseTime(trade.getString(2));
 
-                    tradeProducer.onTrade(timestamp, instrument, price, size);
+                    processor().onTrade(instrument, timestamp, price, size);
                 }
             }
         }
-    }
-
-    private L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent>
-        getPriceBookProcessor(String instrument) {
-
-        L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent>
-            result = l2Processors.get(instrument);
-        if (result == null) {
-            ChainedL2Listener.Builder<DefaultItem<DefaultEvent>, DefaultEvent> builder =
-                ChainedL2Listener.builder();
-
-            if (selected().level1()) {
-                builder.with(new BestBidOfferProducer<>(this));
-            }
-            if (selected().level2()) {
-                builder.with(new L2Producer<>(this));
-            }
-
-            result = L2Processor.builder()
-                .withInstrument(instrument)
-                .withSource(KRAKEN_EXCHANGE_CODE)
-                .withBookOutputSize(depth)
-                .buildWithPriceBook(
-                    builder.build()
-                );
-            l2Processors.put(instrument, result);
-        }
-        return result;
     }
 
     private long computeTimestamp(JsonArray quotes, long startTimestamp) {
@@ -194,9 +175,7 @@ public class KrakenSpotFeed extends SingleWsFeed {
     }
 
     private void processSnapshotSide(
-        final L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent> l2Processor,
-        final JsonArray quotePairs,
-        final boolean ask) {
+            final QuoteSequenceProcessor quotesListener, final JsonArray quotePairs, final boolean ask) {
 
         if (quotePairs == null) {
             return;
@@ -210,20 +189,17 @@ public class KrakenSpotFeed extends SingleWsFeed {
                     + " quote: "
                     + pair.size());
             }
-            priceBookEvent.reset();
-            priceBookEvent.set(
-                ask,
-                Decimal64Utils.parse(pair.getStringRequired(0)),
-                Decimal64Utils.parse(pair.getStringRequired(1))
+
+            quotesListener.onQuote(
+                pair.getDecimal64Required(0),
+                pair.getDecimal64Required(1),
+                ask
             );
-            l2Processor.onEvent(priceBookEvent);
         }
     }
 
     private void processChanges(
-        final L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent> l2Processor,
-        final JsonArray changes,
-        final boolean ask) {
+            final QuoteSequenceProcessor quotesListener, final JsonArray changes, final boolean ask) {
 
         if (changes == null) {
             return;
@@ -231,23 +207,24 @@ public class KrakenSpotFeed extends SingleWsFeed {
 
         for (int i = 0; i < changes.size(); i++) {
             final JsonArray change = changes.getArrayRequired(i);
-            // todo: process republish?
             if (change.size() != 3 && change.size() != 4) {
                 throw new IllegalArgumentException("Unexpected size of a change :" + change.size());
             }
-            priceBookEvent.reset();
 
-            long size = Decimal64Utils.parse(change.getStringRequired(1));
+            long size = change.getDecimal64Required(1);
             if (Decimal64Utils.isZero(size)) {
                 size = TypeConstants.DECIMAL_NULL; // means delete the price
             }
 
-            priceBookEvent.set(
-                ask,
-                Decimal64Utils.parse(change.getStringRequired(0)),
-                size
-            );
-            l2Processor.onEvent(priceBookEvent);
+            try {
+                quotesListener.onQuote(
+                    change.getDecimal64Required(0),
+                    size,
+                    ask
+                );
+            } catch (Throwable t) {
+                int k = 3;
+            }
         }
     }
 }

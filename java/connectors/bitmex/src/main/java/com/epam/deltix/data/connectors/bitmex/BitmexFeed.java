@@ -2,9 +2,6 @@ package com.epam.deltix.data.connectors.bitmex;
 
 import com.epam.deltix.data.connectors.commons.*;
 import com.epam.deltix.data.connectors.commons.json.*;
-import com.epam.deltix.data.connectors.commons.l2.*;
-import com.epam.deltix.dfp.Decimal64Utils;
-import com.epam.deltix.qsrv.hf.pub.ExchangeCodec;
 import com.epam.deltix.qsrv.hf.tickdb.pub.TimeConstants;
 import com.epam.deltix.timebase.messages.TypeConstants;
 import com.epam.deltix.util.collections.generated.LongToLongHashMap;
@@ -13,20 +10,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-public class BitmexFeed extends SingleWsFeed {
-    private static final long BITMEX_EXCHANGE_CODE = ExchangeCodec.codeToLong("BITMEX");
+public class BitmexFeed extends MdSingleWsFeed {
     // all fields are used by one single thread of WsFeed's ExecutorService
     private final JsonValueParser jsonParser = new JsonValueParser();
     private final Iso8601DateTimeParser dtParser = new Iso8601DateTimeParser();
-
-    private final Map<String, L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent>>
-        l2Processors = new HashMap<>();
     private final Map<String, LongToLongHashMap> priceLevels = new HashMap<>();
-
-    private final DefaultEvent priceBookEvent = new DefaultEvent();
-    private final TradeProducer tradeProducer;
-
-    private final int depth;
 
     public BitmexFeed(
             final String uri,
@@ -34,16 +22,22 @@ public class BitmexFeed extends SingleWsFeed {
             final MdModel.Options selected,
             final CloseableMessageOutput output,
             final ErrorListener errorListener,
-            final String... symbols)
-    {
-        super(uri, 5000, selected, output, errorListener, symbols);
+            final Logger logger,
+            final String... symbols) {
 
-        this.depth = depth;
-        tradeProducer = new TradeProducer(BITMEX_EXCHANGE_CODE, output);
+        super("BITMEX",
+                uri,
+                depth,
+                5000,
+                selected,
+                output,
+                errorListener,
+                logger,
+                symbols);
     }
 
     @Override
-    protected void prepareSubscription(JsonWriter jsonWriter, String... symbols) {
+    protected void subscribe(JsonWriter jsonWriter, String... symbols) {
         JsonValue subscriptionJson = JsonValue.newObject();
         JsonObject body = subscriptionJson.asObject();
 
@@ -63,6 +57,8 @@ public class BitmexFeed extends SingleWsFeed {
         }
 
         subscriptionJson.toJsonAndEoj(jsonWriter);
+
+        priceLevels.clear();
     }
 
     @Override
@@ -86,17 +82,15 @@ public class BitmexFeed extends SingleWsFeed {
             if (bookData != null && bookData.size() > 0) {
                 JsonObject firstObject = bookData.getObject(0);
                 String instrument = firstObject.getString("symbol");
-                L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent> l2Processor
-                    = getPriceBookProcessor(instrument);
                 LongToLongHashMap idToPrice = getPriceLevels(instrument);
                 if ("partial".equalsIgnoreCase(action)) {
-                    l2Processor.onSnapshotPackageStarted(TimeConstants.TIMESTAMP_UNKNOWN, getTimestamp(bookData));
-                    processSnapshot(instrument, l2Processor, idToPrice, bookData);
-                    l2Processor.onPackageFinished();
+                    QuoteSequenceProcessor quotesListener = processor().onBookSnapshot(instrument, getTimestamp(bookData));
+                    processSnapshot(instrument, quotesListener, idToPrice, bookData);
+                    quotesListener.onFinish();
                 } else {
-                    l2Processor.onIncrementalPackageStarted(getTimestamp(bookData));
-                    processChanges(action, instrument, l2Processor, idToPrice, bookData);
-                    l2Processor.onPackageFinished();
+                    QuoteSequenceProcessor quotesListener = processor().onBookUpdate(instrument, getTimestamp(bookData));
+                    processChanges(instrument, quotesListener, idToPrice, action, bookData);
+                    quotesListener.onFinish();
                 }
             }
         } else if ("trade".equalsIgnoreCase(type)) {
@@ -106,44 +100,16 @@ public class BitmexFeed extends SingleWsFeed {
                 if (tradeData != null) {
                     for (int i = 0; i < tradeData.size(); ++i) {
                         JsonObject trade = tradeData.getObject(i);
-                        long price = Decimal64Utils.fromBigDecimal(trade.getDecimalRequired("price"));
-                        long size = Decimal64Utils.fromBigDecimal(trade.getDecimalRequired("size"));
+                        long price = trade.getDecimal64Required("price");
+                        long size = trade.getDecimal64Required("size");
                         String symbol = trade.getStringRequired("symbol");
                         long timestamp = dtParser.set(trade.getStringRequired("timestamp")).millis();
 
-                        tradeProducer.onTrade(timestamp, symbol, price, size);
+                        processor().onTrade(symbol, timestamp, price, size);
                     }
                 }
             }
         }
-    }
-
-    private L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent>
-        getPriceBookProcessor(String instrument)
-    {
-        L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent>
-                result = l2Processors.get(instrument);
-        if (result == null) {
-            ChainedL2Listener.Builder<DefaultItem<DefaultEvent>, DefaultEvent> builder =
-                ChainedL2Listener.builder();
-
-            if (selected().level1()) {
-                builder.with(new BestBidOfferProducer<>(this));
-            }
-            if (selected().level2()) {
-                builder.with(new L2Producer<>(this));
-            }
-
-            result = L2Processor.builder()
-                .withInstrument(instrument)
-                .withSource(BITMEX_EXCHANGE_CODE)
-                .withBookOutputSize(depth)
-                .buildWithPriceBook(
-                    builder.build()
-                );
-            l2Processors.put(instrument, result);
-        }
-        return result;
     }
 
     private LongToLongHashMap getPriceLevels(String instrument) {
@@ -168,11 +134,8 @@ public class BitmexFeed extends SingleWsFeed {
     }
 
     private void processSnapshot(
-        String instrument,
-        L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent> l2Processor,
-        LongToLongHashMap idToPrice,
-        JsonArray quotePairs)
-    {
+            String instrument, QuoteSequenceProcessor quotesListener, LongToLongHashMap idToPrice, JsonArray quotePairs) {
+
         if (quotePairs == null) {
             return;
         }
@@ -187,24 +150,20 @@ public class BitmexFeed extends SingleWsFeed {
             }
 
             long id = pair.getLong("id");
-            long size = Decimal64Utils.fromBigDecimal(pair.getDecimalRequired("size"));
-            long price = Decimal64Utils.fromBigDecimal(pair.getDecimalRequired("price"));
+            long size = pair.getDecimal64Required("size");
+            long price = pair.getDecimal64Required("price");
             boolean isOffer = "sell".equalsIgnoreCase(pair.getStringRequired("side"));
 
             idToPrice.put(id, price);
 
-            priceBookEvent.reset();
-            priceBookEvent.set(isOffer, price, size);
-            l2Processor.onEvent(priceBookEvent);
+            quotesListener.onQuote(price, size, isOffer);
         }
     }
 
     private void processChanges(
-        String action, String instrument,
-        L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent> l2Processor,
-        LongToLongHashMap idToPrice,
-        JsonArray changes)
-    {
+        String instrument, QuoteSequenceProcessor quotesListener,
+        LongToLongHashMap idToPrice, String action, JsonArray changes) {
+
         if (changes == null) {
             return;
         }
@@ -221,8 +180,8 @@ public class BitmexFeed extends SingleWsFeed {
             long size = TypeConstants.DECIMAL_NULL;
             long price = TypeConstants.DECIMAL_NULL;
             if ("insert".equalsIgnoreCase(action)) {
-                price = Decimal64Utils.fromBigDecimal(change.getDecimalRequired("price"));
-                size = Decimal64Utils.fromBigDecimal(change.getDecimalRequired("size"));
+                price = change.getDecimal64Required("price");
+                size = change.getDecimal64Required("size");
                 idToPrice.put(id, price);
             } else if ("delete".equalsIgnoreCase(action)) {
                 price = idToPrice.remove(id, Long.MIN_VALUE);
@@ -231,16 +190,14 @@ public class BitmexFeed extends SingleWsFeed {
                 }
             } else if ("update".equalsIgnoreCase(action)) {
                 price = idToPrice.get(id, Long.MIN_VALUE);
-                size = Decimal64Utils.fromBigDecimal(change.getDecimalRequired("size"));
+                size = change.getDecimal64Required("size");
                 if (price == Long.MIN_VALUE) {
                     throw new RuntimeException("Unknown price with id: " + id);
                 }
             }
             boolean isOffer = "sell".equalsIgnoreCase(change.getStringRequired("side"));
 
-            priceBookEvent.reset();
-            priceBookEvent.set(isOffer, price, size);
-            l2Processor.onEvent(priceBookEvent);
+            quotesListener.onQuote(price, size, isOffer);
         }
     }
 }

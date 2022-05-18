@@ -2,6 +2,7 @@ package com.epam.deltix.data.connectors.commons;
 
 import com.epam.deltix.qsrv.hf.pub.md.Introspector;
 import com.epam.deltix.qsrv.hf.pub.md.RecordClassDescriptor;
+import com.epam.deltix.timebase.messages.service.SecurityFeedStatusMessage;
 import com.epam.deltix.timebase.messages.universal.PackageHeader;
 
 import java.util.Arrays;
@@ -22,17 +23,20 @@ public class MdModel {
     private static final RecordClassDescriptor[] EMPTY_RCDS = new RecordClassDescriptor[] {};
 
     private static final RecordClassDescriptor PACKAGE_HEADER_RCD;
+    private static final RecordClassDescriptor SECURITY_FEED_STATUS_RCD;
     private static final RecordClassDescriptor[] DEFAULT_RCDS;
 
     static {
         final Introspector introspector = Introspector.createEmptyMessageIntrospector();
         try {
             PACKAGE_HEADER_RCD = introspector.introspectRecordClass(PackageHeader.class);
+            SECURITY_FEED_STATUS_RCD = introspector.introspectRecordClass(SecurityFeedStatusMessage.class);
         } catch (Introspector.IntrospectionException e) {
             throw new Error(e);
         }
         DEFAULT_RCDS = new RecordClassDescriptor[]{
-                PACKAGE_HEADER_RCD
+                PACKAGE_HEADER_RCD,
+                SECURITY_FEED_STATUS_RCD
         };
     }
 

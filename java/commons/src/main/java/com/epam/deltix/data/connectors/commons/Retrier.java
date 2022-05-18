@@ -3,21 +3,19 @@ package com.epam.deltix.data.connectors.commons;
 import java.io.Closeable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class Retrier<C extends Closeable> implements AutoCloseable {
-    private static final Logger LOG = Logger.getLogger(Retrier.class.getName());
-
     private final RetriableFactory<C> factory;
+    private final Logger logger;
 
     private final Thread retrier;
 
     private boolean started; // guarded by this
     private volatile boolean closed;
 
-    public Retrier(final RetriableFactory<C> factory, final int retryPauseMillis) {
+    public Retrier(final RetriableFactory<C> factory, final int retryPauseMillis, final Logger logger) {
         this.factory = factory;
+        this.logger = logger;
 
         retrier = new Thread(Retrier.class.getSimpleName()) {
 
@@ -51,7 +49,7 @@ public class Retrier<C extends Closeable> implements AutoCloseable {
                         if (closed) {
                             break;
                         }
-                        LOG.log(Level.WARNING, "An error happened: " + t.getLocalizedMessage(), t);
+                        logger.warning(() -> "An error happened: " + t.getLocalizedMessage(), t);
                     } finally {
                         Util.closeQuiet(retriable);
                     }

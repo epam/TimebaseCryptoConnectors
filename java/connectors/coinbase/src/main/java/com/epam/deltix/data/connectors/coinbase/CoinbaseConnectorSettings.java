@@ -12,8 +12,9 @@ public class CoinbaseConnectorSettings extends DataConnectorSettings {
         super();
     }
 
-    public CoinbaseConnectorSettings(String wsUrl, String tbUrl, String stream) {
+    public CoinbaseConnectorSettings(String name, String wsUrl, String tbUrl, String stream) {
         super(tbUrl, stream);
+        setName(name);
         this.wsUrl = wsUrl;
     }
 

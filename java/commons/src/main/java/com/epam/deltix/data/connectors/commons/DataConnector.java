@@ -5,18 +5,25 @@ package com.epam.deltix.data.connectors.commons;
  * @param <T>
  */
 public abstract class DataConnector<T extends DataConnectorSettings> implements AutoCloseable {
-    private final String tbUrl;
-    private final String stream;
+    private final T settings;
     private final MdModel model;
+    private final Logger logger;
 
-    protected DataConnector(T settings, MdModel model) {
-        this.tbUrl = settings.getTbUrl();
-        this.stream = settings.getStream();
+    protected DataConnector(final T settings, final MdModel model) {
+        this.settings = settings;
         this.model = model;
+        this.logger = JulLogger.forConnector(settings().getName());
     }
 
     private Retrier<MdFeed> retrier; // guarded by this
     private boolean closed; // guarded by this
+
+    /**
+     * @return T - settings of data connector
+     */
+    public T settings() {
+        return settings;
+    }
 
     /**
      *
@@ -24,6 +31,10 @@ public abstract class DataConnector<T extends DataConnectorSettings> implements 
      */
     public MdModel model() {
         return model;
+    }
+
+    public Logger logger() {
+        return logger;
     }
 
     /**
@@ -42,9 +53,12 @@ public abstract class DataConnector<T extends DataConnectorSettings> implements 
             throw new IllegalArgumentException("Empty model selection");
         }
 
-        retrier = new Retrier<>(doSubscribe(
-                selected,
-                new TbMessageOutputFactory(tbUrl, stream, selected.types()),
+        final SymbolMapper symbolMapper = new SymbolMapper(
+                new TbMessageOutputFactory(
+                        settings.getTbUrl(),
+                        settings.getStream(),
+                        selected.types(),
+                        logger),
 /*
                 () -> new CloseableMessageOutput() {
                     @Override
@@ -58,8 +72,14 @@ public abstract class DataConnector<T extends DataConnectorSettings> implements 
                     }
                 },
 */
-                symbols
-        ), 10_000);
+                symbols);
+
+        retrier = new Retrier<>(doSubscribe(
+                selected,
+                symbolMapper,
+                symbolMapper.normalized()),
+                10_000,
+                logger);
 
         retrier.start();
     }

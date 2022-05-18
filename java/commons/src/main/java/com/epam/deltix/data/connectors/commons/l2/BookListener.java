@@ -14,6 +14,8 @@ package com.epam.deltix.data.connectors.commons.l2;
  */
 public interface BookListener<I extends BookItem<E>, E extends BookEvent> {
 
+    boolean beforeInsert(Book<I, E> book, int depth, E event);
+
     /**
      * <p>Performs some actions when notifier gets an insert event.<br>
      * This method is usually called by notifier. If you use listener object without notifier,
@@ -24,6 +26,8 @@ public interface BookListener<I extends BookItem<E>, E extends BookEvent> {
      * @param item object which was inserted into book.
      */
     void onInsert(Book<I, E> book, int depth, I item);
+
+    boolean beforeUpdate(Book<I, E> book, int depth, E event);
 
     /**
      * <p>Performs some actions when notifier gets an update event.<br>
@@ -36,6 +40,8 @@ public interface BookListener<I extends BookItem<E>, E extends BookEvent> {
      */
     void onUpdate(Book<I, E> book, int depth, I item);
 
+    boolean beforeDelete(Book<I, E> book, int depth);
+
     /**
      * <p>Performs some actions when notifier gets an delete event.<br>
      * This method is usually called by notifier. If you use listener object without notifier,
@@ -46,6 +52,8 @@ public interface BookListener<I extends BookItem<E>, E extends BookEvent> {
      * @param item object which was updated in book side.
      */
     void onDelete(Book<I, E> book, int depth, I item);
+
+    boolean beforeReset(Book<I, E> book);
 
     /**
      * <p>Performs some actions when notifier gets and reset event.<br>

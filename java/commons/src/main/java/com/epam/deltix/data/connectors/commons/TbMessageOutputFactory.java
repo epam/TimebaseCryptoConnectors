@@ -12,26 +12,36 @@ import com.epam.deltix.qsrv.hf.tickdb.pub.TickDBFactory;
 import com.epam.deltix.qsrv.hf.tickdb.pub.TickLoader;
 import com.epam.deltix.timebase.messages.InstrumentMessage;
 
-import java.util.logging.Logger;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 
 public class TbMessageOutputFactory implements CloseableMessageOutputFactory {
-    private static final Logger LOG = Logger.getLogger(TbMessageOutputFactory.class.getName());
-
     private static final int GET_STREAM_RETRIES = 5;
 
     private final String tbUrl;
     private final String streamKey;
     private final RecordClassDescriptor[] types;
+    private final Logger logger;
 
-    public TbMessageOutputFactory(final String tbUrl, final String streamKey, final RecordClassDescriptor... types) {
+    public TbMessageOutputFactory(
+            final String tbUrl,
+            final String streamKey,
+            final RecordClassDescriptor[] types,
+            final Logger logger) {
         this.tbUrl = tbUrl;
         this.streamKey = streamKey;
         this.types = types;
+        this.logger = logger;
     }
 
-    public TbMessageOutputFactory(final String tbUrl, final String streamKey, final Class... types) {
+    public TbMessageOutputFactory(
+            final String tbUrl,
+            final String streamKey,
+            final Class[] types,
+            final Logger logger) {
         this.tbUrl = tbUrl;
         this.streamKey = streamKey;
+        this.logger = logger;
 
         this.types = new RecordClassDescriptor[types.length];
 
@@ -82,8 +92,14 @@ public class TbMessageOutputFactory implements CloseableMessageOutputFactory {
 
                 @Override
                 public void close() {
-                    Util.closeQuiet(finalLoader);
-                    Util.closeQuiet(finalTb);
+                    try {
+                        finalLoader.flush();
+                    } catch (final IOException e) {
+                        throw new UncheckedIOException(e);
+                    } finally {
+                        Util.closeQuiet(finalLoader);
+                        Util.closeQuiet(finalTb);
+                    }
                 }
             };
         } catch (final Exception e) {
@@ -98,7 +114,7 @@ public class TbMessageOutputFactory implements CloseableMessageOutputFactory {
             try {
                 return getOrCreateStream(db);
             } catch (Throwable t) {
-                LOG.warning("Failed to get or create stream '" + streamKey + "'. Retrying...");
+                logger.warning(() -> "Failed to get or create stream '" + streamKey + "'. Retrying...");
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {
@@ -116,7 +132,7 @@ public class TbMessageOutputFactory implements CloseableMessageOutputFactory {
             return stream;
         }
 
-        LOG.info("Cannot find the stream '" + streamKey + "'. Preparing a new one...");
+        logger.info(() -> "Cannot find the stream '" + streamKey + "'. Preparing a new one...");
 
         final StreamOptions options = new StreamOptions();
         options.name = streamKey;

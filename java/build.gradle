@@ -3,12 +3,13 @@ plugins {
     // Helps to avoid re-declaring dependency version in each subproject.
     // See https://github.com/spring-gradle-plugins/dependency-management-plugin
 	
-    id "io.spring.dependency-management" version "1.0.11.RELEASE"
-    id "com.github.spotbugs" version "4.2.3" apply false
-    id "com.github.hierynomus.license-report" version "0.15.0"
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id 'com.github.spotbugs' version '4.2.3' apply false
+    id 'com.github.hierynomus.license-report' version '0.15.0'
 
     id 'com.github.jk1.dependency-license-report' version '2.0'
-    id "com.vanniktech.dependency.graph.generator" version "0.5.0"
+    id 'com.vanniktech.dependency.graph.generator' version '0.5.0'
+    id 'checkstyle'
 }
 
 ext {
@@ -64,8 +65,9 @@ configure(leafProjects) {
     apply plugin: 'java-library'
     apply plugin: 'maven-publish'
     apply plugin: 'io.spring.dependency-management'
-    apply plugin: "com.github.spotbugs" // Static Code analysis
+    apply plugin: 'com.github.spotbugs' // Static Code analysis
     apply plugin: 'signing'
+    //apply plugin: 'checkstyle'
 
     compileJava.options.encoding = 'UTF-8'
     compileJava.options.compilerArgs += '--add-exports=java.base/sun.nio.ch=ALL-UNNAMED'
@@ -95,7 +97,7 @@ configure(leafProjects) {
         reports {
             html.enabled = true
         }
-        reportLevel = "high"
+        reportLevel = 'high'
     }
 
     spotbugsTest {
@@ -103,7 +105,7 @@ configure(leafProjects) {
         reports {
             html.enabled = true
         }
-        reportLevel = "high"
+        reportLevel = 'high'
     }
 
     task allDeps(type: DependencyReportTask) {}
@@ -163,7 +165,7 @@ configure(leafProjects) {
             // and cause version conflict. Versions specified here may need to be updated when we update 3rd party dependeiceis.
             // The project should be buildable without this section but with "failOnVersionConflict" option turned off.
             
-//            dependency 'net.java.dev.jna:jna:4.2.1'
+            dependency 'net.java.dev.jna:jna:5.8.0' // conflict resolution
 //            dependency 'org.hamcrest:hamcrest-core:1.3'
 //
             dependency 'commons-lang:commons-lang:2.6'
@@ -215,6 +217,7 @@ configure(leafProjects) {
 
             dependency 'junit:junit:4.13.1'
             dependency "org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion"
+            dependency "org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion"
             // End of version conflict resolution
         }
     }
@@ -228,27 +231,6 @@ configure(leafProjects) {
     repositories {
         mavenCentral()
     }
-
-//    dependencies {
-//        implementation "io.github.green4j:green-jelly"
-//
-//        implementation "org.finos.timebase-ce:timebase-client"
-//        implementation "com.epam.deltix:dfp" // used by :commons and :connectors:*
-//
-//        testImplementation "org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion"
-//        testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion"
-//    }
-
-//    dependencies {
-//        spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.10.1'
-//
-//        compileOnly 'com.google.code.findbugs:jsr305'
-//        compileOnly 'com.google.code.findbugs:annotations'
-//
-//        testCompileOnly 'com.google.code.findbugs:jsr305'
-//        testCompile 'junit:junit:4.13.1'
-//        testCompile 'org.mockito:mockito-core:1.10.19'
-//    }
 
     spotbugs {
         toolVersion = "4.2.3"

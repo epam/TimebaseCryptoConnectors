@@ -5,18 +5,12 @@ import com.epam.deltix.data.connectors.commons.annotations.Connector;
 
 @Connector("OKEX")
 public class OkexSpotDataConnector extends DataConnector<OkexSpotConnectorSettings> {
-    private String wsUrl;
-    private int depth;
-
     public OkexSpotDataConnector(OkexSpotConnectorSettings settings) {
         super(settings, MdModel.availability()
             .withTrades()
             .withLevel1()
             .withLevel2().build()
         );
-
-        this.wsUrl = settings.getWsUrl();
-        this.depth = settings.getDepth();
     }
 
     @Override
@@ -26,11 +20,14 @@ public class OkexSpotDataConnector extends DataConnector<OkexSpotConnectorSettin
             final String... symbols) {
 
         return errorListener -> {
-            final OkexSpotFeed result = new OkexSpotFeed(wsUrl, depth,
-                selected,
-                outputFactory.create(),
-                errorListener,
-                symbols);
+            final OkexSpotFeed result = new OkexSpotFeed(
+                    settings().getWsUrl(),
+                    settings().getDepth(),
+                    selected,
+                    outputFactory.create(),
+                    errorListener,
+                    logger(),
+                    symbols);
             result.start();
             return result;
         };

@@ -7,7 +7,6 @@ import com.epam.deltix.data.connectors.commons.annotations.ConnectorSettings;
 public class FtxConnectorSettings extends DataConnectorSettings {
 
     private String wsUrl = "wss://ftx.com/ws";
-    private int depth = 20;
 
     public FtxConnectorSettings() {
         super();
@@ -26,11 +25,4 @@ public class FtxConnectorSettings extends DataConnectorSettings {
         this.wsUrl = wsUrl;
     }
 
-    public int getDepth() {
-        return depth;
-    }
-
-    public void setDepth(int depth) {
-        this.depth = depth;
-    }
 }

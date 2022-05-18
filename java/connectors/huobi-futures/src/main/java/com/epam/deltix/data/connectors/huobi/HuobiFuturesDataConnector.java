@@ -5,18 +5,12 @@ import com.epam.deltix.data.connectors.commons.annotations.Connector;
 
 @Connector("Huobi-Futures")
 public class HuobiFuturesDataConnector extends DataConnector<HuobiFuturesConnectorSettings> {
-    private String wsUrl;
-    private int depth;
-
     public HuobiFuturesDataConnector(HuobiFuturesConnectorSettings settings) {
         super(settings, MdModel.availability()
             .withTrades()
             .withLevel1()
             .withLevel2().build()
         );
-
-        this.wsUrl = settings.getWsUrl();
-        this.depth = settings.getDepth();
     }
 
     @Override
@@ -26,11 +20,14 @@ public class HuobiFuturesDataConnector extends DataConnector<HuobiFuturesConnect
             final String... symbols) {
 
         return errorListener -> {
-            final HuobiFuturesFeed result = new HuobiFuturesFeed(wsUrl, depth,
-                selected,
-                outputFactory.create(),
-                errorListener,
-                symbols);
+            final HuobiFuturesFeed result = new HuobiFuturesFeed(
+                    settings().getWsUrl(),
+                    settings().getDepth(),
+                    selected,
+                    outputFactory.create(),
+                    errorListener,
+                    logger(),
+                    symbols);
             result.start();
             return result;
         };

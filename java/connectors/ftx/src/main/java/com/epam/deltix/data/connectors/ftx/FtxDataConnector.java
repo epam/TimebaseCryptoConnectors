@@ -5,18 +5,12 @@ import com.epam.deltix.data.connectors.commons.annotations.Connector;
 
 @Connector("FTX")
 public class FtxDataConnector extends DataConnector<FtxConnectorSettings> {
-    private String wsUrl;
-    private int depth;
-
     public FtxDataConnector(FtxConnectorSettings settings) {
         super(settings, MdModel.availability()
             .withTrades()
             .withLevel1()
             .withLevel2().build()
         );
-
-        this.wsUrl = settings.getWsUrl();
-        this.depth = settings.getDepth();
     }
 
     @Override
@@ -26,11 +20,14 @@ public class FtxDataConnector extends DataConnector<FtxConnectorSettings> {
             final String... symbols) {
 
         return errorListener -> {
-            final FtxFeed result = new FtxFeed(wsUrl, depth,
-                selected,
-                outputFactory.create(),
-                errorListener,
-                symbols);
+            final FtxFeed result = new FtxFeed(
+                    settings().getWsUrl(),
+                    settings().getDepth(),
+                    selected,
+                    outputFactory.create(),
+                    errorListener,
+                    logger(),
+                    symbols);
             result.start();
             return result;
         };

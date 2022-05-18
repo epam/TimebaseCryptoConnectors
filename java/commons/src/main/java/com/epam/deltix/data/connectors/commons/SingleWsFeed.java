@@ -41,18 +41,68 @@ public abstract class SingleWsFeed extends MdFeed {
 
     private volatile long lastReceiveTime;
 
+    private final PeriodicalJsonTask periodicalJsonTask;
+
+    private final boolean skipGzipHeader;
+
+    protected SingleWsFeed(
+        final String uri,
+        final int idleTimeoutMillis,
+        final MdModel.Options selected,
+        final CloseableMessageOutput output,
+        final ErrorListener errorListener,
+        final Logger logger,
+        final String... symbols) {
+
+        this(uri,
+                idleTimeoutMillis,
+                selected,
+                output,
+                errorListener,
+                logger,
+                null,
+                symbols);
+    }
+
+    protected SingleWsFeed(
+        final String uri,
+        final int idleTimeoutMillis,
+        final MdModel.Options selected,
+        final CloseableMessageOutput output,
+        final ErrorListener errorListener,
+        final Logger logger,
+        final PeriodicalJsonTask periodicalJsonTask,
+        final String... symbols) {
+
+        this(uri,
+                idleTimeoutMillis,
+                selected,
+                output,
+                errorListener,
+                logger,
+                periodicalJsonTask,
+                false,
+                symbols);
+    }
+
     protected SingleWsFeed(
             final String uri,
             final int idleTimeoutMillis,
             final MdModel.Options selected,
             final CloseableMessageOutput output,
             final ErrorListener errorListener,
+            final Logger logger,
+            final PeriodicalJsonTask periodicalJsonTask,
+            final boolean skipGzipHeader,
             final String... symbols) {
-        super(selected, output, errorListener);
+
+        super(selected, output, errorListener, logger);
 
         this.uri = uri;
         this.idleTimeoutMillis = idleTimeoutMillis;
         this.symbols = symbols;
+        this.periodicalJsonTask = periodicalJsonTask;
+        this.skipGzipHeader = skipGzipHeader;
 
         mgmtService =
                 Executors.newSingleThreadScheduledExecutor(
@@ -83,16 +133,21 @@ public abstract class SingleWsFeed extends MdFeed {
                             } : null;
 
             final WebSocket.Listener wsListener = new WebSocket.Listener() {
-                private final ZlibAsciiTextDecompressor decompressor = new ZlibAsciiTextDecompressor(); // TODO: configurable decoder?
+                private final ZlibAsciiTextDecompressor decompressor = new ZlibAsciiTextDecompressor(skipGzipHeader); // TODO: configurable decoder?
                 private WsJsonFrameSender jsonSender;
 
                 @Override
                 public void onOpen(final WebSocket webSocket) {
+                    final Logger logger = logger();
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("WebSocket onOpen");
+                    }
+
                     lastReceiveTime = System.nanoTime();
                     jsonSender = new WsJsonFrameSender(webSocket);
 
                     try {
-                        prepareSubscription(jsonSender, symbols);
+                        subscribe(jsonSender, symbols);
                     } catch (final Throwable t) {
                         SingleWsFeed.this.onError(t);
                     }
@@ -105,10 +160,28 @@ public abstract class SingleWsFeed extends MdFeed {
                                 idleTimeoutMillis,
                                 TimeUnit.MILLISECONDS);
                     }
+
+                    if (periodicalJsonTask != null) {
+                        mgmtService.scheduleWithFixedDelay(
+                            () -> {
+                                if (state != STARTED_STATE) {
+                                    return;
+                                }
+                                periodicalJsonTask.execute(jsonSender);
+                            },
+                            periodicalJsonTask.delayMillis(),
+                            periodicalJsonTask.delayMillis(),
+                            TimeUnit.MILLISECONDS);
+                    }
                 }
 
                 @Override
                 public CompletionStage<?> onText(final WebSocket webSocket, final CharSequence data, final boolean last) {
+                    final Logger logger = logger();
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("WebSocket onText (last=" + last + ") " + data);
+                    }
+
                     lastReceiveTime = System.nanoTime();
 
                     try {
@@ -127,6 +200,11 @@ public abstract class SingleWsFeed extends MdFeed {
                     try {
                         final CharSequence json = decompressor.decompress(data);
                         if (json != null) {
+                            final Logger logger = logger();
+                            if (logger.isDebugEnabled()) {
+                                logger.debug("WebSocket onBinary (last=" + last + ") [DECODED] " + json);
+                            }
+
                             onJson(json, last, jsonSender);
                         }
                     } catch (final Throwable t) {
@@ -137,6 +215,11 @@ public abstract class SingleWsFeed extends MdFeed {
 
                 @Override
                 public CompletionStage<?> onPing(final WebSocket webSocket, final ByteBuffer message) {
+                    final Logger logger = logger();
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("WebSocket onPing " + message);
+                    }
+
                     lastReceiveTime = System.nanoTime();
 
                     return WebSocket.Listener.super.onPing(webSocket, message);
@@ -144,22 +227,32 @@ public abstract class SingleWsFeed extends MdFeed {
 
                 @Override
                 public void onError(final WebSocket webSocket, final Throwable error) {
+                    final Logger logger = logger();
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("WebSocket onError " + error.getLocalizedMessage());
+                    }
+
                     SingleWsFeed.this.onError(error);
                 }
 
                 @Override
                 public CompletionStage<?> onClose(final WebSocket webSocket, final int statusCode, final String reason) {
+                    final Logger logger = logger();
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("WebSocket onClose [" + statusCode + "] " + reason);
+                    }
+
                     waitForWsClose.countDown();
                     return WebSocket.Listener.super.onClose(webSocket, statusCode, reason);
                 }
             };
             try {
-                webSocket = HttpClient.newBuilder()
-                        .executor(wsExecutorService)
-                        .build()
-                        .newWebSocketBuilder()
-                        .connectTimeout(Duration.ofSeconds(10))
-                        .buildAsync(URI.create(uri),
+                webSocket = HttpClient.newBuilder().
+                        executor(wsExecutorService).
+                        build().
+                        newWebSocketBuilder().
+                        connectTimeout(Duration.ofSeconds(10)).
+                        buildAsync(URI.create(uri),
                                 wsListener).join();
             } catch (final Throwable t) {
                 SingleWsFeed.this.onError(t);
@@ -174,6 +267,12 @@ public abstract class SingleWsFeed extends MdFeed {
                 return;
             }
             state = CLOSED_STATE;
+
+            try {
+                onClose();
+            } catch (final Throwable t) {
+                logger().warning(() -> "Unexpected error in onClose(): " + t.getLocalizedMessage(), t);
+            }
 
             InterruptedException wasInterrupted = null;
 
@@ -206,12 +305,14 @@ public abstract class SingleWsFeed extends MdFeed {
         }
     }
 
+    protected void onClose() {};
+
     /**
      *
      * @param jsonWriter
      * @param symbols
      */
-    protected abstract void prepareSubscription(JsonWriter jsonWriter, String... symbols);
+    protected abstract void subscribe(JsonWriter jsonWriter, String... symbols);
 
     /**
      *

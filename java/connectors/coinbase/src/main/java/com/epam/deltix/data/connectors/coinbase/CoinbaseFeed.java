@@ -1,54 +1,36 @@
 package com.epam.deltix.data.connectors.coinbase;
 
-import com.epam.deltix.data.connectors.commons.CloseableMessageOutput;
-import com.epam.deltix.data.connectors.commons.ErrorListener;
-import com.epam.deltix.data.connectors.commons.Iso8601DateTimeParser;
-import com.epam.deltix.data.connectors.commons.MdModel;
-import com.epam.deltix.data.connectors.commons.SingleWsFeed;
-import com.epam.deltix.data.connectors.commons.TradeProducer;
+import com.epam.deltix.data.connectors.commons.*;
 import com.epam.deltix.data.connectors.commons.json.JsonArray;
 import com.epam.deltix.data.connectors.commons.json.JsonObject;
 import com.epam.deltix.data.connectors.commons.json.JsonValue;
 import com.epam.deltix.data.connectors.commons.json.JsonValueParser;
 import com.epam.deltix.data.connectors.commons.json.JsonWriter;
-import com.epam.deltix.data.connectors.commons.l2.BestBidOfferProducer;
-import com.epam.deltix.data.connectors.commons.l2.ChainedL2Listener;
-import com.epam.deltix.data.connectors.commons.l2.DefaultEvent;
-import com.epam.deltix.data.connectors.commons.l2.DefaultItem;
-import com.epam.deltix.data.connectors.commons.l2.L2Processor;
-import com.epam.deltix.data.connectors.commons.l2.L2Producer;
-import com.epam.deltix.data.connectors.commons.l2.PriceBook;
 import com.epam.deltix.dfp.Decimal64Utils;
-import com.epam.deltix.qsrv.hf.pub.ExchangeCodec;
+import com.epam.deltix.timebase.messages.TimeStampedMessage;
 import com.epam.deltix.timebase.messages.TypeConstants;
 
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
-public class CoinbaseFeed extends SingleWsFeed {
-    private static final long COINBASE_EXCHANGE_CODE = ExchangeCodec.codeToLong("COINBASE");
+public class CoinbaseFeed extends MdSingleWsFeed {
     // all fields are used by one single thread of WsFeed's ExecutorService
     private final JsonValueParser jsonParser = new JsonValueParser();
     private final Iso8601DateTimeParser dtParser = new Iso8601DateTimeParser();
-    private final Map<String, L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent>>
-            l2Processors = new HashMap<>();
-    private final DefaultEvent priceBookEvent = new DefaultEvent();
-    private final TradeProducer tradeProducer;
 
     public CoinbaseFeed(
             final String uri,
+            final int depth,
             final MdModel.Options selected,
             final CloseableMessageOutput output,
             final ErrorListener errorListener,
+            final Logger logger,
             final String... symbols) {
-        super(uri, 5000, selected, output, errorListener, symbols);
 
-        tradeProducer = new TradeProducer(COINBASE_EXCHANGE_CODE, output);
+        super("COINBASE", uri, depth, 5000, selected, output, errorListener, logger, symbols);
     }
 
     @Override
-    protected void prepareSubscription(
+    protected void subscribe(
             final JsonWriter jsonWriter,
             final String... symbols) {
 
@@ -74,7 +56,11 @@ public class CoinbaseFeed extends SingleWsFeed {
     }
 
     @Override
-    protected void onJson(final CharSequence data, final boolean last, final JsonWriter jsonWriter) {
+    protected void onJson(
+            final CharSequence data,
+            final boolean last,
+            final JsonWriter jsonWriter) {
+
         jsonParser.parse(data);
 
         if (!last) {
@@ -93,30 +79,29 @@ public class CoinbaseFeed extends SingleWsFeed {
         switch (type) {
             case "ticker": {
                 final String productId = object.getStringRequired("product_id");
-                tradeProducer.onTrade(
+                processor().onTrade(
                         productId,
-                        Decimal64Utils.parse(object.getStringRequired("price")),
-                        Decimal64Utils.parse(object.getStringRequired("last_size")));
+                        TimeStampedMessage.TIMESTAMP_UNKNOWN,
+                        object.getDecimal64Required("price"),
+                        object.getDecimal64Required("last_size"));
                 break;
             }
 
             case "snapshot": {
-                final L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent> l2Processor
-                        = getPriceBookProcessor(object);
-                l2Processor.onSnapshotPackageStarted();
-                processSnapshotSide(l2Processor, object.getArray("bids"), false);
-                processSnapshotSide(l2Processor, object.getArray("asks"), true);
-                l2Processor.onPackageFinished();
+                final String instrument = object.getStringRequired("product_id");
+                final QuoteSequenceProcessor quotesListener = processor().onBookSnapshot(instrument, TimeStampedMessage.TIMESTAMP_UNKNOWN);
+                processSnapshotSide(quotesListener, object.getArray("bids"), false);
+                processSnapshotSide(quotesListener, object.getArray("asks"), true);
+                quotesListener.onFinish();
                 break;
             }
 
             case "l2update": {
-                final L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent> l2Processor
-                        = getPriceBookProcessor(object);
+                final String instrument = object.getStringRequired("product_id");
                 dtParser.set(object.getStringRequired("time"));
-                l2Processor.onIncrementalPackageStarted(dtParser.millis());
-                processChanges(l2Processor, object.getArrayRequired("changes"));
-                l2Processor.onPackageFinished();
+                final QuoteSequenceProcessor quotesListener = processor().onBookUpdate(instrument, dtParser.millis());
+                processChanges(quotesListener, object.getArrayRequired("changes"));
+                quotesListener.onFinish();
                 break;
             }
 
@@ -125,39 +110,8 @@ public class CoinbaseFeed extends SingleWsFeed {
         }
     }
 
-    private L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent> getPriceBookProcessor(final JsonObject object) {
-        final String productId = object.getStringRequired("product_id");
-
-        L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent>
-                result = l2Processors.get(productId);
-
-        if (result == null) {
-
-            final ChainedL2Listener.Builder<DefaultItem<DefaultEvent>, DefaultEvent> builder =
-                    ChainedL2Listener.builder();
-
-            if (selected().level1()) {
-                builder.with(new BestBidOfferProducer<>(this));
-            }
-            if (selected().level2()) {
-                builder.with(new L2Producer<>(this));
-            }
-
-            result = L2Processor.builder()
-                    .withInstrument(productId)
-                    .withSource(COINBASE_EXCHANGE_CODE)
-                    .withBookOutputSize(10)
-                    .buildWithPriceBook(
-                            builder.build()
-                    );
-            l2Processors.put(productId, result);
-        }
-
-        return result;
-    }
-
     private void processSnapshotSide(
-            final L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent> l2Processor,
+            final QuoteSequenceProcessor quotesListener,
             final JsonArray quotePairs,
             final boolean ask) {
 
@@ -173,18 +127,16 @@ public class CoinbaseFeed extends SingleWsFeed {
                         + " quote: "
                         + pair.size());
             }
-            priceBookEvent.reset();
-            priceBookEvent.set(
-                    ask,
-                    Decimal64Utils.parse(pair.getStringRequired(0)),
-                    Decimal64Utils.parse(pair.getStringRequired(1))
+            quotesListener.onQuote(
+                pair.getDecimal64Required(0),
+                pair.getDecimal64Required(1),
+                ask
             );
-            l2Processor.onEvent(priceBookEvent);
         }
     }
 
     private void processChanges(
-            final L2Processor<PriceBook<DefaultItem<DefaultEvent>, DefaultEvent>, DefaultItem<DefaultEvent>, DefaultEvent> l2Processor,
+            final QuoteSequenceProcessor quotesListener,
             final JsonArray changes) {
 
         if (changes == null) {
@@ -196,20 +148,17 @@ public class CoinbaseFeed extends SingleWsFeed {
             if (change.size() != 3) {
                 throw new IllegalArgumentException("Unexpected size of a change :" + change.size());
             }
-            priceBookEvent.reset();
 
-            long size = Decimal64Utils.parse(change.getStringRequired(2));
+            long size = change.getDecimal64Required(2);
             if (Decimal64Utils.isZero(size)) {
                 size = TypeConstants.DECIMAL_NULL; // means delete the price
             }
 
-            priceBookEvent.set(
-                    "sell".equals(change.getStringRequired(0)),
-                    Decimal64Utils.parse(change.getStringRequired(1)),
-                    size
+            quotesListener.onQuote(
+                change.getDecimal64Required(1),
+                size,
+                "sell".equals(change.getStringRequired(0))
             );
-
-            l2Processor.onEvent(priceBookEvent);
         }
     }
 }
