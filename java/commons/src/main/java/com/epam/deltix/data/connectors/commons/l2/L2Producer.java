@@ -68,7 +68,7 @@ public class L2Producer<I extends BookItem<E>, E extends BookEvent>
 
         cleanupL2PackageEntries();
 
-        lastSnapshotTime.get(instrumentBook.symbol(), TimeKeeper.currentTime);
+        lastSnapshotTime.put(instrumentBook.symbol(), TimeKeeper.currentTime);
     }
 
     @Override
@@ -78,10 +78,9 @@ public class L2Producer<I extends BookItem<E>, E extends BookEvent>
         l2Package.setSymbol(instrumentBook.symbol());
 
         final long lastTime = lastSnapshotTime.get(instrumentBook.symbol(), 0);
-        final long currentTime = TimeKeeper.currentTime;
-        if (currentTime - lastTime > 10_000 /* TODO: configurable? */) {
-            lastSnapshotTime.put(instrumentBook.symbol(), currentTime);
+        if (TimeKeeper.currentTime - lastTime > 10_000 /* TODO: configurable? */) {
             sendPeriodicalSnapshot(instrumentBook);
+            lastSnapshotTime.put(instrumentBook.symbol(), TimeKeeper.currentTime); // store the most actual time
         }
 
         l2Package.setPackageType(PackageType.INCREMENTAL_UPDATE);

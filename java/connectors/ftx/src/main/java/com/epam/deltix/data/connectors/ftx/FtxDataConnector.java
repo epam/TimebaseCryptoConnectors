@@ -21,12 +21,13 @@ public class FtxDataConnector extends DataConnector<FtxConnectorSettings> {
 
         return errorListener -> {
             final FtxFeed result = new FtxFeed(
-                settings().getWsUrl(),
-                settings().getDepth(),
-                selected,
-                outputFactory.create(),
-                errorListener,
-                symbols);
+                    settings().getWsUrl(),
+                    settings().getDepth(),
+                    selected,
+                    outputFactory.create(),
+                    errorListener,
+                    logger(),
+                    symbols);
             result.start();
             return result;
         };

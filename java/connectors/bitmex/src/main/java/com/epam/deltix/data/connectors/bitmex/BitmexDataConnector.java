@@ -21,12 +21,13 @@ public class BitmexDataConnector extends DataConnector<BitmexConnectorSettings> 
 
         return errorListener -> {
             final BitmexFeed result = new BitmexFeed(
-                settings().getWsUrl(),
-                settings().getDepth(),
-                selected,
-                outputFactory.create(),
-                errorListener,
-                symbols);
+                    settings().getWsUrl(),
+                    settings().getDepth(),
+                    selected,
+                    outputFactory.create(),
+                    errorListener,
+                    logger(),
+                    symbols);
             result.start();
             return result;
         };

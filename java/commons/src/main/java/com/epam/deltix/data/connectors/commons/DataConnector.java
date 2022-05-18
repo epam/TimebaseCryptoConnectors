@@ -7,10 +7,12 @@ package com.epam.deltix.data.connectors.commons;
 public abstract class DataConnector<T extends DataConnectorSettings> implements AutoCloseable {
     private final T settings;
     private final MdModel model;
+    private final Logger logger;
 
-    protected DataConnector(T settings, MdModel model) {
+    protected DataConnector(final T settings, final MdModel model) {
         this.settings = settings;
         this.model = model;
+        this.logger = JulLogger.forConnector(settings().getName());
     }
 
     private Retrier<MdFeed> retrier; // guarded by this
@@ -31,6 +33,10 @@ public abstract class DataConnector<T extends DataConnectorSettings> implements 
         return model;
     }
 
+    public Logger logger() {
+        return logger;
+    }
+
     /**
      *
      * @param selected
@@ -48,7 +54,11 @@ public abstract class DataConnector<T extends DataConnectorSettings> implements 
         }
 
         final SymbolMapper symbolMapper = new SymbolMapper(
-                new TbMessageOutputFactory(settings.getTbUrl(), settings.getStream(), selected.types()),
+                new TbMessageOutputFactory(
+                        settings.getTbUrl(),
+                        settings.getStream(),
+                        selected.types(),
+                        logger),
 /*
                 () -> new CloseableMessageOutput() {
                     @Override
@@ -67,8 +77,9 @@ public abstract class DataConnector<T extends DataConnectorSettings> implements 
         retrier = new Retrier<>(doSubscribe(
                 selected,
                 symbolMapper,
-                symbolMapper.normalized()
-        ), 10_000);
+                symbolMapper.normalized()),
+                10_000,
+                logger);
 
         retrier.start();
     }

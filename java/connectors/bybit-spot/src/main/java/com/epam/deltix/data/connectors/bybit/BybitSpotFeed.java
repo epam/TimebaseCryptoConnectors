@@ -19,9 +19,19 @@ public class BybitSpotFeed extends MdSingleWsFeed {
             final MdModel.Options selected,
             final CloseableMessageOutput output,
             final ErrorListener errorListener,
+            final Logger logger,
             final String... symbols) {
 
-        super("BYBIT", uri, depth, 30000, selected, output, errorListener, getPeriodicalJsonTask(), symbols);
+        super("BYBIT",
+                uri,
+                depth,
+                30000,
+                selected,
+                output,
+                errorListener,
+                logger,
+                getPeriodicalJsonTask(),
+                symbols);
     }
 
     private static PeriodicalJsonTask getPeriodicalJsonTask() {

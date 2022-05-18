@@ -21,12 +21,13 @@ public class BitfinexSpotDataConnector extends DataConnector<BitfinexSpotConnect
 
         return errorListener -> {
             final BitfinexSpotFeed result = new BitfinexSpotFeed(
-                settings().getWsUrl(),
-                settings().getDepth(),
-                selected,
-                outputFactory.create(),
-                errorListener,
-                symbols);
+                    settings().getWsUrl(),
+                    settings().getDepth(),
+                    selected,
+                    outputFactory.create(),
+                    errorListener,
+                    logger(),
+                    symbols);
             result.start();
             return result;
         };

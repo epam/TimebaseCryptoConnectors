@@ -28,7 +28,17 @@ public class MdProcessor {
             final MdModel.Options selected,
             final int bookSize) {
 
-        return new MdProcessor(exchangeId, output, selected, bookSize);
+        return create(exchangeId, output, selected, bookSize, L2Processor.UNLIMITED_BOOK_SIZE);
+    }
+
+    public static MdProcessor create(
+        final String exchangeId,
+        final MessageOutput output,
+        final MdModel.Options selected,
+        final int bookSize,
+        final int fixedBookSize) {
+
+        return new MdProcessor(exchangeId, output, selected, bookSize, fixedBookSize);
     }
 
     private static final ThreadLocal<SecurityFeedStatusMessage> SECURITY_FEED_STATUS_MESSAGE_THREAD_LOCAL =
@@ -41,6 +51,7 @@ public class MdProcessor {
     private final MdModel.Options selected;
     private final long source;
     private final int bookSize;
+    private final int fixedBookSize;
 
     private MessageOutput targetOutput; // guarded by this
 
@@ -48,7 +59,8 @@ public class MdProcessor {
             final String exchangeId,
             final MessageOutput output,
             final MdModel.Options selected,
-            final int bookSize) {
+            final int bookSize,
+            final int fixedBookSize) {
 
         this.output = new MessageOutput() {
             @Override
@@ -65,6 +77,7 @@ public class MdProcessor {
         this.selected = selected;
         this.source = ExchangeCodec.codeToLong(exchangeId);
         this.bookSize = bookSize;
+        this.fixedBookSize = fixedBookSize;
     }
 
     public QuoteSequenceProcessor onBookSnapshot(final CharSequence instrument) {
@@ -167,6 +180,7 @@ public class MdProcessor {
                             .withInstrument(instrument)
                             .withSource(source)
                             .withBookOutputSize(bookSize)
+                            .withFixedBookSize(fixedBookSize)
                             .buildWithPriceBook(
                                     builder.build()
                             )

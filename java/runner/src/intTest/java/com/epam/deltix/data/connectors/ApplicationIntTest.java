@@ -1,5 +1,9 @@
 package com.epam.deltix.data.connectors;
 
+import com.epam.deltix.data.connectors.commons.json.JsonArray;
+import com.epam.deltix.data.connectors.commons.json.JsonObject;
+import com.epam.deltix.data.connectors.commons.json.JsonValue;
+import com.epam.deltix.data.connectors.commons.json.JsonValueParser;
 import com.epam.deltix.data.connectors.test.fixtures.integration.TbIntTestPreparation;
 import com.epam.deltix.qsrv.hf.tickdb.pub.DXTickDB;
 import com.epam.deltix.qsrv.hf.tickdb.pub.DXTickStream;
@@ -17,6 +21,10 @@ import org.junit.jupiter.api.TestFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Arrays;
@@ -30,17 +38,16 @@ public class ApplicationIntTest extends TbIntTestPreparation {
                     withFileFromPath(".", Path.of("build/docker"))).
             withReuse(true).
             withNetwork(NETWORK).
+            withExposedPorts(8055).
             withEnv("JAVA_OPTS", "-Dtimebase.url=dxtick://timebase:8011").
             withStartupTimeout(Duration.ofMinutes(5));
-    //withExposedPorts(8055) // uncomment when the service really exposes the port when all DCs have been started
 
     @BeforeAll
     static void beforeAll() throws Exception {
         TIMEBASE_CONTAINER.start();
         APP_CONTAINER.start();
 
-        Thread.sleep(5000); // let all DCs to be started. TODO: replace by port/8055 availability
-        // checking with specifying exposedPorts in the container specification
+        Thread.sleep(5000);
     }
 
     @AfterAll
@@ -64,39 +71,80 @@ public class ApplicationIntTest extends TbIntTestPreparation {
 
     @TestFactory
     Stream<DynamicTest> testDataFeedInTb() throws Exception {
-        final String[] connectors = new String[]{
-                "coinbase",
-                "kraken-spot"
-                /* TODO: read from application.yaml */
-        };
+        final JsonArray connectors =
+                rest("http://localhost:" + APP_CONTAINER.getFirstMappedPort() + "/api/v0/connectors").
+                        asArrayRequired();
 
-        return Arrays.stream(connectors).map(connector -> DynamicTest.dynamicTest(
-                connector,
-                () -> tryReadPackageHeaders(connector)
-        ));
+        final ConnectorStream[] connectorStreams = connectors.items().
+                map(JsonValue::asObjectRequired).
+                map(o -> new ConnectorStream(o)).
+                toArray(ConnectorStream[]::new);
+
+        return Arrays.stream(connectorStreams).
+                map(c -> DynamicTest.dynamicTest(
+                        c.connector,
+                        () -> tryReadSomeData(c)
+                ));
     }
 
-    void tryReadPackageHeaders(final String connector) throws Exception {
+    void tryReadSomeData(final ConnectorStream connector) {
+        // we are trying to read 10 messages
         final int expectedNumOfPackageHeader = 10;
         final int timeoutSeconds = 5;
 
-        final DXTickStream stream = db.getStream(connector);
+        final DXTickStream stream = db.getStream(connector.stream);
 
         Assertions.assertNotNull(stream, "Connector " + connector + " not started as expected. " +
                 "No output stream found.");
 
         try (TickCursor cursor = stream.select(TimeConstants.USE_CURRENT_TIME,
                 new SelectionOptions(true, true))) {
-
-            Assertions.assertTimeout(Duration.ofSeconds(timeoutSeconds), () -> {
+            Assertions.assertTimeoutPreemptively(Duration.ofSeconds(timeoutSeconds), () -> {
                 int packageHeaders = 0;
-
                 while (cursor.next()) {
                     if (++packageHeaders == expectedNumOfPackageHeader) {
                         break;
                     }
                 }
-            });
+            }, "Cannot read data for the " + connector);
+        }
+    }
+
+    private static JsonValue rest(final String url) throws Exception {
+        final HttpClient client = HttpClient.newBuilder().
+                connectTimeout(Duration.ofMillis(5000)).
+                followRedirects(HttpClient.Redirect.NORMAL).
+                build();
+
+        final HttpRequest request = HttpRequest.newBuilder().
+                uri(new URI(url)).
+                GET().
+                timeout(Duration.ofSeconds(3)).
+                build();
+
+        final HttpResponse<String> response =
+                client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        return new JsonValueParser().parseAndEoj(response.body());
+    }
+
+    private static class ConnectorStream {
+        private final String connector;
+        private final String stream;
+
+        private ConnectorStream(final JsonObject fromJsom) {
+            this(fromJsom.getStringRequired("name"),
+                    fromJsom.getStringRequired("stream"));
+        }
+
+        private ConnectorStream(final String connector, final String stream) {
+            this.connector = connector;
+            this.stream = stream;
+        }
+
+        @Override
+        public String toString() {
+            return "connector='" + connector + "', stream='" + stream + '\'';
         }
     }
 }

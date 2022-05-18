@@ -6,6 +6,7 @@ import io.github.green4j.jelly.JsonNumber;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 public class JsonArray {
     private final List<JsonValue> items = new ArrayList<>();
@@ -139,8 +140,8 @@ public class JsonArray {
         return jsonValue.asBooleanRequired();
     }
 
-    public void addNull() {
-        items.add(JsonValue.newNull());
+    public Stream<JsonValue> items() {
+        return items.stream();
     }
 
     public int size() {
@@ -149,6 +150,10 @@ public class JsonArray {
 
     public void clear() {
         items.clear();
+    }
+
+    public void addNull() {
+        items.add(JsonValue.newNull());
     }
 
     public void toJson(final JsonWriter jsonWriter) {

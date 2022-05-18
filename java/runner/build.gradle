@@ -19,12 +19,17 @@ dependencies {
     implementation project(':java:connectors:bybit-futures')
     implementation project(':java:connectors:bybit-spot')
     implementation project(':java:connectors:coinbase')
+    implementation project(':java:connectors:coinflex')
+    implementation project(':java:connectors:cryptofacilities')
     implementation project(':java:connectors:ftx')
+    implementation project(':java:connectors:hitbtc')
     implementation project(':java:connectors:huobi-futures')
     implementation project(':java:connectors:huobi-spot')
     implementation project(':java:connectors:kraken-futures')
     implementation project(':java:connectors:kraken-spot')
+    implementation project(':java:connectors:okcoin')
     implementation project(':java:connectors:okex')
+    implementation project(':java:connectors:poloniex')
 
     implementation 'javax.annotation:javax.annotation-api'
 
@@ -77,7 +82,8 @@ task intTest(type: Test) {
     dependsOn(prepareFilesForDocker)
     useJUnitPlatform()
     testLogging {
-        showStandardStreams = true
+        //showStandardStreams = true
+        displayGranularity = -1
         exceptionFormat = 'full'
         events "PASSED", "SKIPPED", "FAILED"
     }

@@ -21,12 +21,13 @@ public class BitmartSpotDataConnector extends DataConnector<BitmartSpotConnector
 
         return errorListener -> {
             final BitmartSpotFeed result = new BitmartSpotFeed(
-                settings().getWsUrl(),
-                settings().getDepth(),
-                selected,
-                outputFactory.create(),
-                errorListener,
-                symbols);
+                    settings().getWsUrl(),
+                    settings().getDepth(),
+                    selected,
+                    outputFactory.create(),
+                    errorListener,
+                    logger(),
+                    symbols);
             result.start();
             return result;
         };

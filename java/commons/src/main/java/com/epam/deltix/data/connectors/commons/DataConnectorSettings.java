@@ -73,4 +73,5 @@ public class DataConnectorSettings {
     public void setDepth(int depth) {
         this.depth = depth;
     }
+
 }

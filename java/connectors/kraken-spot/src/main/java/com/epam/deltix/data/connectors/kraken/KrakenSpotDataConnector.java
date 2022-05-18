@@ -21,12 +21,13 @@ public class KrakenSpotDataConnector extends DataConnector<KrakenSpotConnectorSe
 
         return errorListener -> {
             final KrakenSpotFeed result = new KrakenSpotFeed(
-                settings().getWsUrl(),
-                settings().getDepth(),
-                selected,
-                outputFactory.create(),
-                errorListener,
-                symbols);
+                    settings().getWsUrl(),
+                    settings().getDepth(),
+                    selected,
+                    outputFactory.create(),
+                    errorListener,
+                    logger(),
+                    symbols);
             result.start();
             return result;
         };

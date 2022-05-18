@@ -146,3 +146,54 @@ connectors:
       - "L2"
       - "TRADES"
     instruments: "BTC_EUR=BTC/EUR,ETH_EUR=ETH/EUR"
+
+  coinflex:
+    stream: coinflex
+    wsUrl: wss://v2api.coinflex.com/v2/websocket
+    depth: 20
+    model:
+      - "L1"
+      - "L2"
+      - "TRADES"
+    instruments: "USDT-USD-SWAP-LIN,BTC-USD-220930-LIN,BTC-USD,DOGE-USD"
+
+  cryptofacilities:
+    stream: cryptofacilities
+    wsUrl: wss://www.cryptofacilities.com/ws/v1
+    depth: 20
+    model:
+      - "L1"
+      - "L2"
+      - "TRADES"
+    instruments: "PI_XBTUSD, PF_LTCUSD, PF_ETHUSD"
+
+  hitbtc:
+    stream: hitbtc
+    wsUrl: wss://api.hitbtc.com/api/3/ws/public
+    depth: 20
+    model:
+      - "L1"
+      - "L2"
+      - "TRADES"
+    instruments: "BTCUSDT=BTC/USDT, ETHBTC=ETH/BTC"
+
+  poloniex:
+    stream: poloniex
+    wsUrl: wss://api2.poloniex.com
+    depth: 20
+    model:
+      - "L1"
+      - "L2"
+      - "TRADES"
+    instruments: "BTC_DASH=BTC/DASH, BTC_ETC=BTC/ETC"
+
+  okcoin:
+    stream: okcoin
+    wsUrl: wss://real.okcoin.com:8443/ws/v3
+    depth: 20
+    model:
+      - "L1"
+      - "L2"
+      - "TRADES"
+    instruments: "BTC-USD=BTC/USD, ETH-USD=ETH/USD"
+
