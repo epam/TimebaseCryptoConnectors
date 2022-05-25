@@ -1,7 +1,7 @@
 version: "3"
 services:
   timebase:
-    image: "finos/timebase-ce-server:6.1.7"
+    image: "finos/timebase-ce-server:6.1.8"
     stop_grace_period: 5m
     ulimits:
       nofile:
