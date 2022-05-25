@@ -43,10 +43,11 @@ dependencies {
     intTestImplementation 'org.finos.timebase-ce:timebase-client'
     intTestImplementation 'com.epam.deltix:timebase-collections'
     intTestImplementation 'com.epam.deltix:timebase-messages'
-    intTestImplementation "org.testcontainers:testcontainers:${testcontainersVersion}"
-    intTestImplementation "org.testcontainers:junit-jupiter:${testcontainersVersion}"
+    intTestImplementation "org.testcontainers:testcontainers"
+    intTestImplementation "org.testcontainers:junit-jupiter"
     intTestImplementation 'org.junit.jupiter:junit-jupiter-api'
     intTestImplementation(testFixtures(project(':java:commons')))
+
     intTestRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
 }
 
@@ -67,6 +68,11 @@ task prepareFilesForDocker(type: Copy) {
     into ('/runner') {
         // executables
         from "$rootDir/bin"
+    }
+
+    into ('/runner') {
+        // executables
+        from "$projectDir/application.yaml"
     }
 
     destinationDir project.file("$buildDir/docker")

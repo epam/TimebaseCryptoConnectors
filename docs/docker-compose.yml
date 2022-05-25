@@ -1,7 +1,7 @@
 version: "3"
 services:
   timebase:
-    image: "finos/timebase-ce-server:6.1"    
+    image: "finos/timebase-ce-server:6.1.7"
     stop_grace_period: 5m
     ulimits:
       nofile:
@@ -20,7 +20,7 @@ services:
       - "./timebase-home:/timebase-home"
 
   timebase-admin:
-    image: "epam/timebase-ws-server:latest"
+    image: "epam/timebase-ws-server:1.0.1"
     environment:
       - JAVA_OPTS=
         -Xmx1g
@@ -34,7 +34,7 @@ services:
       - timebase
 
   crypto-connectors:
-    image: "epam/timebase-crypto-connectors:0.1.4"
+    image: "epam/timebase-crypto-connectors:0.1.6"    
     environment:
       - JAVA_OPTS=
         -Xmx1g
@@ -42,7 +42,23 @@ services:
         -Dtimebase.url=dxtick://timebase:8011
         -Dserver.compression.enabled=true
         -Dserver.compression.mime-types=text/html,text/css,application/javascript,application/json
+        -Dspring.confid=config/application.yml
     ports:
       - 8055:8055
     depends_on:
-      - timebase      
+      - timebase
+      
+  grafana:
+    image: grafana/grafana:8.3.5
+    volumes:
+      - grafana-volume:/var/lib/grafana
+    environment:
+      - GF_INSTALL_PLUGINS=https://github.com/ilgizar/ilgizar-candlestick-panel/raw/master/pack/ilgizar-candlestick-panel.zip;ilgizar-candlestick-panel,https://github.com/epam/TimeBaseGrafanaPlugin/releases/download/1.0.10/epam-timebase-datasource.zip;epam-timebase-datasource
+      - GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=ilgizar-candlestick-panel,epam-timebase-datasource
+    ports:
+      - "3000:3000"
+    depends_on:
+      - timebase-admin
+
+volumes:
+    grafana-volume:

@@ -39,5 +39,7 @@ RUN ALPINE_GLIBC_BASE_URL="https://github.com/sgerrand/alpine-pkg-glibc/releases
 ENV JAVA_OPTS=-verbose:gc
 WORKDIR runner
 
+VOLUME ["config"]
+
 EXPOSE 8055
 ENTRYPOINT ["/bin/sh", "-c", "./runner.sh"]

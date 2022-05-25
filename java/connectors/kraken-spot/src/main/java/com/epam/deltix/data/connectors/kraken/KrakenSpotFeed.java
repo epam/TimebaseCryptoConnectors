@@ -26,14 +26,31 @@ public class KrakenSpotFeed extends MdSingleWsFeed {
         super("KRAKEN",
                 uri,
                 depth,
+                getKrakenBookSize(depth),
                 5000,
                 selected,
                 output,
                 errorListener,
                 logger,
+                null,
+                false,
                 symbols);
 
         this.depth = depth;
+    }
+
+    private static int getKrakenBookSize(int depth) {
+        if (depth <= 10) {
+            return 10;
+        } else if (depth <= 25) {
+            return 25;
+        } else if (depth <= 100) {
+            return 100;
+        } else if (depth <= 500) {
+            return 500;
+        } else {
+            return 1000;
+        }
     }
 
     @Override
@@ -46,7 +63,7 @@ public class KrakenSpotFeed extends MdSingleWsFeed {
             Arrays.asList(symbols).forEach(pairs::addString);
             JsonObject subscription = body.putObject("subscription");
             subscription.putString("name", "book");
-            subscription.putInteger("depth", getKrakenAvailableDepth());
+            subscription.putInteger("depth", getKrakenBookSize(depth));
             subscriptionJson.toJsonAndEoj(jsonWriter);
         }
 
@@ -59,20 +76,6 @@ public class KrakenSpotFeed extends MdSingleWsFeed {
             JsonObject subscription = body.putObject("subscription");
             subscription.putString("name", "trade");
             subscriptionJson.toJsonAndEoj(jsonWriter);
-        }
-    }
-
-    private int getKrakenAvailableDepth() {
-        if (depth <= 10) {
-            return 10;
-        } else if (depth <= 25) {
-            return 25;
-        } else if (depth <= 100) {
-            return 100;
-        } else if (depth <= 500) {
-            return 500;
-        } else {
-            return 1000;
         }
     }
 
@@ -91,13 +94,17 @@ public class KrakenSpotFeed extends MdSingleWsFeed {
             return;
         }
 
-        String type = array.getString(2);
+        String type = array.getString(array.size() - 2);
         if (type == null) {
             return;
         }
 
+        String instrument = array.getString(array.size() - 1);
+        if (instrument == null) {
+            return;
+        }
+
         if (type.startsWith("book-")) {
-            String instrument = array.getString(3);
             JsonObject values = array.getObject(1);
             JsonArray bs = values.getArray("bs");
             JsonArray as = values.getArray("as");
@@ -111,6 +118,16 @@ public class KrakenSpotFeed extends MdSingleWsFeed {
             } else {
                 JsonArray b = values.getArray("b");
                 JsonArray a = values.getArray("a");
+                JsonObject values2 = array.getObject(2);
+                if (values2 != null) {
+                    if (b == null) {
+                        b = values2.getArray("b");
+                    }
+                    if (a == null) {
+                        a = values2.getArray("a");
+                    }
+                }
+
                 if (b != null || a != null) {
                     QuoteSequenceProcessor quotesListener = processor().onBookUpdate(instrument,
                         computeTimestamp(a, computeTimestamp(b, TimeConstants.TIMESTAMP_UNKNOWN))
@@ -121,7 +138,6 @@ public class KrakenSpotFeed extends MdSingleWsFeed {
                 }
             }
         } else if (type.startsWith("trade")) {
-            String instrument = array.getString(3);
             JsonArray trades = array.getArray(1);
             if (trades != null) {
                 for (int i = 0; i < trades.size(); ++i) {
@@ -191,7 +207,6 @@ public class KrakenSpotFeed extends MdSingleWsFeed {
 
         for (int i = 0; i < changes.size(); i++) {
             final JsonArray change = changes.getArrayRequired(i);
-            // todo: process republish?
             if (change.size() != 3 && change.size() != 4) {
                 throw new IllegalArgumentException("Unexpected size of a change :" + change.size());
             }
@@ -201,11 +216,15 @@ public class KrakenSpotFeed extends MdSingleWsFeed {
                 size = TypeConstants.DECIMAL_NULL; // means delete the price
             }
 
-            quotesListener.onQuote(
-                change.getDecimal64Required(0),
-                size,
-                ask
-            );
+            try {
+                quotesListener.onQuote(
+                    change.getDecimal64Required(0),
+                    size,
+                    ask
+                );
+            } catch (Throwable t) {
+                int k = 3;
+            }
         }
     }
 }

@@ -1,5 +1,7 @@
 package com.epam.deltix.data.connectors.commons;
 
+import com.epam.deltix.data.connectors.commons.l2.L2Processor;
+
 public abstract class MdSingleWsFeed extends SingleWsFeed {
     private final MdProcessor processor;
 
@@ -65,17 +67,46 @@ public abstract class MdSingleWsFeed extends SingleWsFeed {
             final boolean skipGzipHeader,
             final String... symbols) {
 
-        super(uri,
-                idleTimeoutMillis,
-                selected,
-                output,
-                errorListener,
-                logger,
-                periodicalJsonTask,
-                skipGzipHeader,
-                symbols);
+        this(exchange,
+            uri,
+            depth,
+            L2Processor.UNLIMITED_BOOK_SIZE,
+            idleTimeoutMillis,
+            selected,
+            output,
+            errorListener,
+            logger,
+            periodicalJsonTask,
+            skipGzipHeader,
+            symbols
+        );
+    }
 
-        processor = MdProcessor.create(exchange, output, selected, depth);
+    protected MdSingleWsFeed(
+        final String exchange,
+        final String uri,
+        final int depth,
+        final int fixedDepth,
+        final int idleTimeoutMillis,
+        final MdModel.Options selected,
+        final CloseableMessageOutput output,
+        final ErrorListener errorListener,
+        final Logger logger,
+        final PeriodicalJsonTask periodicalJsonTask,
+        final boolean skipGzipHeader,
+        final String... symbols) {
+
+        super(uri,
+            idleTimeoutMillis,
+            selected,
+            output,
+            errorListener,
+            logger,
+            periodicalJsonTask,
+            skipGzipHeader,
+            symbols);
+
+        processor = MdProcessor.create(exchange, output, selected, depth, fixedDepth);
     }
 
     protected final MdProcessor processor() {

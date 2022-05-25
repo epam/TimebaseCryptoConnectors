@@ -6,21 +6,7 @@ With [TimeBase Community Edition](https://github.com/finos/TimeBase-CE) you get 
 
 ## Quick Start - setup market data collection in 60 seconds:
 
-### Prerequisites
-
-**Windows** 
-
-* [Install Docker](https://docs.docker.com/desktop/windows/install/) on your Windows machine. 
-* [Install WSL](https://docs.microsoft.com/en-us/windows/wsl/install). 
-
-**Linux**
-
-* [Install Docker Compose](https://docs.docker.com/compose/install/).  
-* [Install Docker Engine](https://docs.docker.com/engine/install/).
-
-### Start Connectors 
-
-1. Download sample [docker-compose.yml](https://github.com/epam/TimebaseCryptoConnectors/blob/main/docs/docker-compose.yml).
+1. Download sample [docker-compose.yml](https://raw.githubusercontent.com/epam/TimebaseCryptoConnectors/main/docs/docker-compose.yml).
 2. Run `docker-compose up` command to launch TimeBase crypto connectors. 
 3. View live and historical market data stored in [TimeBase](https://kb.timebase.info/community/development/tools/Web%20Admin/admin_guide#stream-actions-monitor) in your browser on [localhost:8099](http://localhost:8099) (enter test username **admin** and password **admin**):
 
