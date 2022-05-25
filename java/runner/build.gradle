@@ -79,7 +79,7 @@ task intTest(type: Test) {
         //showStandardStreams = true
         displayGranularity = -1
         exceptionFormat = 'full'
-        events "PASSED", "SKIPPED", "FAILED"
+        events 'PASSED', 'SKIPPED', 'FAILED'
     }
 
     testClassesDirs = sourceSets.intTest.output.classesDirs

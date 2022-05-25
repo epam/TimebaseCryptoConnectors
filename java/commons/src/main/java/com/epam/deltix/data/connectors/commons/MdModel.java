@@ -26,8 +26,12 @@ public class MdModel {
     private static final RecordClassDescriptor SECURITY_FEED_STATUS_RCD;
     private static final RecordClassDescriptor[] DEFAULT_RCDS;
 
+    private static Introspector introspector() {
+        return Introspector.createEmptyMessageIntrospector();
+    }
+
     static {
-        final Introspector introspector = Introspector.createEmptyMessageIntrospector();
+        final Introspector introspector = introspector();
         try {
             PACKAGE_HEADER_RCD = introspector.introspectRecordClass(PackageHeader.class);
             SECURITY_FEED_STATUS_RCD = introspector.introspectRecordClass(SecurityFeedStatusMessage.class);
@@ -118,6 +122,10 @@ public class MdModel {
 
         public boolean custom() {
             return customTypes().length > 0;
+        }
+
+        public boolean custom(final Class type) {
+            return Arrays.stream(customTypes()).anyMatch(r -> r.getName().equals(type.getName()));
         }
 
         /**
@@ -237,6 +245,25 @@ public class MdModel {
         @SuppressWarnings("unchecked")
         public S withCustom(final RecordClassDescriptor... customTypes) {
             custom = customTypes;
+            return (S) this;
+        }
+
+        /**
+         *
+         * @param customTypes
+         * @return
+         */
+        @SuppressWarnings("unchecked")
+        public S withCustom(final Class... customTypes) {
+            final Introspector introspector = introspector();
+            custom = Arrays.stream(customTypes).
+                    map(c -> {
+                        try {
+                            return introspector.introspectRecordClass(c);
+                        } catch (Introspector.IntrospectionException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }).toArray(RecordClassDescriptor[]::new);
             return (S) this;
         }
     }
