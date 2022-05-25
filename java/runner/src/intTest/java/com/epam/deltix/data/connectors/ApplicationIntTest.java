@@ -89,7 +89,7 @@ public class ApplicationIntTest extends TbIntTestPreparation {
 
     void tryReadSomeData(final ConnectorStream connector) {
         // we are trying to read 10 messages
-        final int expectedNumOfPackageHeader = 10;
+        final int expectedNumOfMessages = 10;
         final int timeoutSeconds = 5;
 
         final DXTickStream stream = db.getStream(connector.stream);
@@ -100,9 +100,9 @@ public class ApplicationIntTest extends TbIntTestPreparation {
         try (TickCursor cursor = stream.select(TimeConstants.USE_CURRENT_TIME,
                 new SelectionOptions(true, true))) {
             Assertions.assertTimeoutPreemptively(Duration.ofSeconds(timeoutSeconds), () -> {
-                int packageHeaders = 0;
+                int messages = 0;
                 while (cursor.next()) {
-                    if (++packageHeaders == expectedNumOfPackageHeader) {
+                    if (++messages == expectedNumOfMessages) {
                         break;
                     }
                 }
