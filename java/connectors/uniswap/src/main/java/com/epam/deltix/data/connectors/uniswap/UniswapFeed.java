@@ -16,6 +16,8 @@ import java.net.URISyntaxException;
 public class UniswapFeed extends HttpFeed {
     private static GraphQlQuery.Query poolsQuery() {
         final GraphQlQuery.Query result = GraphQlQuery.query("pools");
+        result.arguments().withOrderBy("id");
+
         result.withScalar("id");
         result.withScalar("liquidity");
         result.withScalar("liquidityProviderCount");
@@ -34,6 +36,8 @@ public class UniswapFeed extends HttpFeed {
 
     private static GraphQlQuery.Query tokensQuery() {
         final GraphQlQuery.Query result = GraphQlQuery.query("tokens");
+        result.arguments().withOrderBy("id");
+
         result.withScalar("id");
         result.withScalar("symbol");
         result.withScalar("name");
