@@ -1,6 +1,7 @@
 package com.epam.deltix.data.uniswap;
 
 import com.epam.deltix.timebase.messages.MarketMessage;
+import com.epam.deltix.timebase.messages.SchemaElement;
 
 public class PoolAction extends MarketMessage implements UpdatableAction<Pool> {
     private int index;
@@ -11,6 +12,7 @@ public class PoolAction extends MarketMessage implements UpdatableAction<Pool> {
     public PoolAction() {
     }
 
+    @SchemaElement()
     public int getIndex() {
         return index;
     }
@@ -20,6 +22,7 @@ public class PoolAction extends MarketMessage implements UpdatableAction<Pool> {
         this.index = index;
     }
 
+    @SchemaElement()
     public boolean isLast() {
         return isLast;
     }
@@ -29,8 +32,13 @@ public class PoolAction extends MarketMessage implements UpdatableAction<Pool> {
         isLast = last;
     }
 
+    @SchemaElement()
     public Pool getEntity() {
         return entity;
+    }
+
+    public void setEntity(Pool entity) {
+        this.entity = entity;
     }
 
     public Action getAction() {

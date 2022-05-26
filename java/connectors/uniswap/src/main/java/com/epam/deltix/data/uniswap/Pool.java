@@ -2,6 +2,7 @@ package com.epam.deltix.data.uniswap;
 
 import com.epam.deltix.data.connectors.commons.Util;
 import com.epam.deltix.data.connectors.commons.json.JsonObject;
+import com.epam.deltix.timebase.messages.SchemaElement;
 
 public class Pool implements Updatable {
     private String id;
@@ -17,6 +18,7 @@ public class Pool implements Updatable {
         return token0_symbol + '/' + token1_symbol + '-' + id;
     }
 
+    @SchemaElement()
     public String getId() {
         return id;
     }
@@ -33,6 +35,7 @@ public class Pool implements Updatable {
         return true;
     }
 
+    @SchemaElement()
     public String getLiquidity() {
         return liquidity;
     }
@@ -49,6 +52,7 @@ public class Pool implements Updatable {
         return true;
     }
 
+    @SchemaElement()
     public String getLiquidityProviderCount() {
         return liquidityProviderCount;
     }
@@ -65,6 +69,7 @@ public class Pool implements Updatable {
         return true;
     }
 
+    @SchemaElement()
     public String getToken0_id() {
         return token0_id;
     }
@@ -81,6 +86,7 @@ public class Pool implements Updatable {
         return true;
     }
 
+    @SchemaElement()
     public String getToken0_symbol() {
         return token0_symbol;
     }
@@ -97,6 +103,7 @@ public class Pool implements Updatable {
         return true;
     }
 
+    @SchemaElement()
     public String getToken1_id() {
         return token1_id;
     }
@@ -113,6 +120,7 @@ public class Pool implements Updatable {
         return true;
     }
 
+    @SchemaElement()
     public String getToken1_symbol() {
         return token1_symbol;
     }

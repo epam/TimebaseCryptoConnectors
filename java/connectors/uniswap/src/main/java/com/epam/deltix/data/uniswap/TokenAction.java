@@ -1,6 +1,9 @@
 package com.epam.deltix.data.uniswap;
 
 import com.epam.deltix.timebase.messages.MarketMessage;
+import com.epam.deltix.timebase.messages.SchemaDataType;
+import com.epam.deltix.timebase.messages.SchemaElement;
+import com.epam.deltix.timebase.messages.SchemaType;
 
 public class TokenAction extends MarketMessage implements UpdatableAction<Token> {
     private int index;
@@ -11,6 +14,7 @@ public class TokenAction extends MarketMessage implements UpdatableAction<Token>
     public TokenAction() {
     }
 
+    @SchemaElement()
     public int getIndex() {
         return index;
     }
@@ -20,6 +24,7 @@ public class TokenAction extends MarketMessage implements UpdatableAction<Token>
         this.index = index;
     }
 
+    @SchemaElement()
     public boolean isLast() {
         return isLast;
     }
@@ -29,12 +34,22 @@ public class TokenAction extends MarketMessage implements UpdatableAction<Token>
         isLast = last;
     }
 
+    @SchemaElement()
     public Token getEntity() {
         return entity;
     }
 
+    public void setEntity(Token entity) {
+        this.entity = entity;
+    }
+
+    @SchemaElement()
     public Action getAction() {
         return action;
+    }
+
+    public void setAction(Action action) {
+        this.action = action;
     }
 
     @Override
