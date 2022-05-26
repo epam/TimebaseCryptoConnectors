@@ -149,7 +149,7 @@ public class Pool implements Updatable {
 
         String token1_id_json = null;
         String token1_symbol_json = null;
-        final JsonObject token1 = from.getObject("token0");
+        final JsonObject token1 = from.getObject("token1");
         if (token1 != null) {
             token1_id_json = token1.getString("id");
             token1_symbol_json = token1.getString("symbol");
