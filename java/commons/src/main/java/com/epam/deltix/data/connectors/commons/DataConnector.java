@@ -5,6 +5,12 @@ package com.epam.deltix.data.connectors.commons;
  * @param <T>
  */
 public abstract class DataConnector<T extends DataConnectorSettings> implements AutoCloseable {
+    public static volatile CloseableMessageOutputFactory DEBUG_OUTPUT_FACTORY = null; // not sure we need to
+    // introduce a factory of output factories passing into the constructor, for example. We are not
+    // going to introduce an abstract output for a DataConnector, hiding a dependency to TB, at least for now.
+    // The only practical case, we've found, is forwarding all the messages to console/log for debug
+    // purposes when the DataConnector is instantiated in a main() method in an IDE.
+
     private final T settings;
     private final MdModel model;
     private final Logger logger;
@@ -54,25 +60,13 @@ public abstract class DataConnector<T extends DataConnectorSettings> implements 
         }
 
         final SymbolMapper symbolMapper = new SymbolMapper(
-
-                new TbMessageOutputFactory(
-                        settings.getTbUrl(),
-                        settings.getStream(),
-                        selected.types(),
-                        logger),
-/*
-                () -> new CloseableMessageOutput() {
-                    @Override
-                    public void close() {
-                        System.out.println("CLOSE");
-                    }
-
-                    @Override
-                    public void send(final com.epam.deltix.timebase.messages.InstrumentMessage message) {
-                        System.out.println(message);
-                    }
-                },
-*/
+                DEBUG_OUTPUT_FACTORY != null ?
+                        DEBUG_OUTPUT_FACTORY :
+                        new TbMessageOutputFactory(
+                                settings.getTbUrl(),
+                                settings.getStream(),
+                                selected.types(),
+                                logger),
                 symbols);
 
         retrier = new Retrier<>(doSubscribe(

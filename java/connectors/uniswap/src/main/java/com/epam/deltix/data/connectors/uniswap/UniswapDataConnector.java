@@ -1,5 +1,6 @@
 package com.epam.deltix.data.connectors.uniswap;
 
+import com.epam.deltix.data.connectors.commons.CloseableMessageOutput;
 import com.epam.deltix.data.connectors.commons.CloseableMessageOutputFactory;
 import com.epam.deltix.data.connectors.commons.DataConnector;
 import com.epam.deltix.data.connectors.commons.MdFeed;
@@ -8,6 +9,7 @@ import com.epam.deltix.data.connectors.commons.RetriableFactory;
 import com.epam.deltix.data.connectors.commons.annotations.Connector;
 import com.epam.deltix.data.uniswap.PoolAction;
 import com.epam.deltix.data.uniswap.TokenAction;
+import com.epam.deltix.timebase.messages.InstrumentMessage;
 
 @Connector("UNISWAP")
 public class UniswapDataConnector extends DataConnector<UniswapConnectorSettings> {
@@ -48,7 +50,24 @@ public class UniswapDataConnector extends DataConnector<UniswapConnectorSettings
                         "uniswap"
                 )
         );
+/*
+        DataConnector.DEBUG_OUTPUT_FACTORY = () -> new CloseableMessageOutput() {
+            @Override
+            public void close() {
+                System.out.println("Close the message output");
+            }
 
+            @Override
+            public void send(final InstrumentMessage message) {
+                //System.out.println(message);
+                if (message instanceof PoolAction) {
+                    if (!message.getSymbol().toString().contains("/")) {
+                        System.out.println(message);
+                    }
+                }
+            }
+        };
+*/
         final MdModel model = dataConnector.model();
 
         final MdModel.Availability availability = model.available();
