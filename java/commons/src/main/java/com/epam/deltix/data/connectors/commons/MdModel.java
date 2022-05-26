@@ -8,6 +8,7 @@ import com.epam.deltix.timebase.messages.universal.PackageHeader;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 // TODO: finish custom type management when have a case/an example
 
@@ -138,9 +139,9 @@ public class MdModel {
         }
 
         public RecordClassDescriptor[] types() {
-            // TODO: maybe replace with a Map to
+            // TODO: may be replaced with a Map to
             // make unique set by the type name, not by the magic GUID
-            // OR make a more complex RCD joining
+            // OR make a more complex RCD joining?
             final Set<RecordClassDescriptor> result = new HashSet<>();
             result.addAll(Arrays.asList(tradesTypes()));
             result.addAll(Arrays.asList(level1Types()));
@@ -159,10 +160,19 @@ public class MdModel {
 
         @Override
         public String toString() {
-            return "Trades [" + (trades() ? "+" : "-") + "]" + Util.NATIVE_LINE_BREAK +
-                    "Level1 [" + (level1() ? "+" : "-") + "]" + Util.NATIVE_LINE_BREAK +
-                    "Level2 [" + (level1() ? "+" : "-") + "]" + Util.NATIVE_LINE_BREAK +
-                    "Custom [" + (custom() ? "+" : "-") + "]";
+            final StringBuilder result = new StringBuilder();
+            result.append("Trades [").append((trades() ? '+' : '-')).append(']').append(Util.NATIVE_LINE_BREAK);
+            result.append("Level1 [").append((level1() ? '+' : '-')).append(']').append(Util.NATIVE_LINE_BREAK);
+            result.append("Level2 [").append((level2() ? '+' : '-')).append(']').append(Util.NATIVE_LINE_BREAK);
+            result.append("Custom [").append((custom() ? '+' : '-')).append(']');
+            if (custom()) {
+                result.append(" {");
+                result.append(Arrays.stream(customTypes())
+                        .map(r -> r.getName())
+                        .collect(Collectors.joining(", ")));
+                result.append('}');
+            }
+            return result.toString();
         }
     }
 
