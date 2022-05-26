@@ -51,13 +51,11 @@ public abstract class UniswapHttpPoller implements HttpPoller {
                         .timeout(Duration.ofSeconds(10))
                         .POST(HttpRequest.BodyPublishers.ofString(requestBody))
                         .build();
-                System.out.println("SENDING " + requestBody);
 
                 client
                         .sendAsync(request, HttpResponse.BodyHandlers.ofString())
                         .thenApply(response -> response.body())
                         .whenComplete((body, error) -> {
-                            System.out.println("BODY: " + body);
                             if (error != null) {
                                 errorListener.onError(error);
                             } else {

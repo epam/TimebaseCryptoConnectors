@@ -56,8 +56,6 @@ public class PaginatingUniswapHttpPoller extends UniswapHttpPoller {
     protected String nextRequestBody(final String response) {
         jsonParser.parseAndEoj(response);
 
-        System.out.println(response);
-
         final JsonObject jsonValue = jsonParser.eoj().asObjectRequired();
 
         if (jsonValue.hasMember("error")) { // stop

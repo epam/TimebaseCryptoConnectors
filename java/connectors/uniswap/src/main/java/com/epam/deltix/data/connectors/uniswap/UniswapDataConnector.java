@@ -56,7 +56,7 @@ public class UniswapDataConnector extends DataConnector<UniswapConnectorSettings
 
         dataConnector.subscribe(
                 model.select().
-                        withCustom(PoolAction.class/*, TokenAction.class*/).
+                        withCustom(PoolAction.class, TokenAction.class).
                         build()
         );
 
