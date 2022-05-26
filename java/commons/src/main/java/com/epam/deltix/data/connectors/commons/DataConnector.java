@@ -54,6 +54,7 @@ public abstract class DataConnector<T extends DataConnectorSettings> implements 
         }
 
         final SymbolMapper symbolMapper = new SymbolMapper(
+
                 new TbMessageOutputFactory(
                         settings.getTbUrl(),
                         settings.getStream(),
