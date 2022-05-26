@@ -2,6 +2,7 @@ package com.epam.deltix.data.uniswap;
 
 import com.epam.deltix.data.connectors.commons.Util;
 import com.epam.deltix.data.connectors.commons.json.JsonObject;
+import com.epam.deltix.timebase.messages.SchemaElement;
 
 public class Token implements Updatable {
     // token address
@@ -47,6 +48,7 @@ public class Token implements Updatable {
         return symbol;
     }
 
+    @SchemaElement()
     public String getId() {
         return id;
     }
@@ -63,6 +65,7 @@ public class Token implements Updatable {
         return true;
     }
 
+    @SchemaElement()
     public String getSymbol() {
         return symbol;
     }
@@ -79,6 +82,7 @@ public class Token implements Updatable {
         return true;
     }
 
+    @SchemaElement()
     public String getName() {
         return name;
     }
@@ -95,6 +99,7 @@ public class Token implements Updatable {
         return true;
     }
 
+    @SchemaElement()
     public String getDecimals() {
         return decimals;
     }
@@ -111,6 +116,7 @@ public class Token implements Updatable {
         return true;
     }
 
+    @SchemaElement()
     public String getTotalSupply() {
         return totalSupply;
     }
@@ -127,6 +133,7 @@ public class Token implements Updatable {
         return true;
     }
 
+    @SchemaElement()
     public String getVolume() {
         return volume;
     }
@@ -143,6 +150,7 @@ public class Token implements Updatable {
         return true;
     }
 
+    @SchemaElement()
     public String getVolumeUSD() {
         return volumeUSD;
     }
@@ -159,6 +167,7 @@ public class Token implements Updatable {
         return true;
     }
 
+    @SchemaElement()
     public String getUntrackedVolumeUSD() {
         return untrackedVolumeUSD;
     }
@@ -175,6 +184,7 @@ public class Token implements Updatable {
         return true;
     }
 
+    @SchemaElement()
     public String getFeesUSD() {
         return feesUSD;
     }
@@ -191,6 +201,7 @@ public class Token implements Updatable {
         return true;
     }
 
+    @SchemaElement()
     public String getTxCount() {
         return txCount;
     }
@@ -207,6 +218,7 @@ public class Token implements Updatable {
         return true;
     }
 
+    @SchemaElement()
     public String getPoolCount() {
         return poolCount;
     }
@@ -223,6 +235,7 @@ public class Token implements Updatable {
         return true;
     }
 
+    @SchemaElement()
     public String getTotalValueLocked() {
         return totalValueLocked;
     }
@@ -239,6 +252,7 @@ public class Token implements Updatable {
         return true;
     }
 
+    @SchemaElement()
     public String getTotalValueLockedUSD() {
         return totalValueLockedUSD;
     }
@@ -255,6 +269,7 @@ public class Token implements Updatable {
         return true;
     }
 
+    @SchemaElement()
     public String getTotalValueLockedUSDUntracked() {
         return totalValueLockedUSDUntracked;
     }
@@ -271,6 +286,7 @@ public class Token implements Updatable {
         return true;
     }
 
+    @SchemaElement()
     public String getDerivedETH() {
         return derivedETH;
     }

@@ -171,7 +171,7 @@ public class Pool implements Updatable {
     @Override
     public String toString() {
         return "Pool{" +
-                ", id='" + id + '\'' +
+                "id='" + id + '\'' +
                 ", liquidity='" + liquidity + '\'' +
                 ", liquidityProviderCount='" + liquidityProviderCount + '\'' +
                 ", token0_id='" + token0_id + '\'' +

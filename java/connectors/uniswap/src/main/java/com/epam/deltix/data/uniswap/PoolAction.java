@@ -41,6 +41,7 @@ public class PoolAction extends MarketMessage implements UpdatableAction<Pool> {
         this.entity = entity;
     }
 
+    @SchemaElement()
     public Action getAction() {
         return action;
     }
