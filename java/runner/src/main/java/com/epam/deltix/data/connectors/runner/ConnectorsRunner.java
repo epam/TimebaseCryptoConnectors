@@ -76,6 +76,11 @@ public class ConnectorsRunner {
             LOG.info("Discovered Data Connector implementation: " + implementation);
         });
 
+        if (connectorsSettings.getConnectors() == null) {
+            LOG.warning("Empty connectors config");
+            return connectors;
+        }
+
         connectorsSettings.getConnectors().forEach((name, settings) -> {
             String connectorType = connectorsSettings.extractType(name);
             if (connectorType == null) {
