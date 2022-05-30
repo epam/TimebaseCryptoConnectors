@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.util.*;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -104,7 +103,7 @@ public class ConnectorsRunner {
 
     private void startConnectors() {
         connectors.forEach((name, connector) -> {
-            MdModel.Options model = buildModel(connector.model().select(), name);
+            MdModel.Options model = buildModel(connector.model(), name);
             LOG.info("Connector '" + name + "' subscribe model: " + model);
 
             String[] instruments = buildInstruments(name);
@@ -243,13 +242,32 @@ public class ConnectorsRunner {
         return connectorSettings;
     }
 
+    private MdModel.Options buildModel(MdModel model, String connector) {
+        MdModel.Selection selection = model.select();
 
-    private MdModel.Options buildModel(MdModel.Selection modelSelection, String connector) {
         List<String> modelList = connectorsSettings.extractModel(connector);
         if (modelList != null) {
             for (String modelValue : modelList) {
                 try {
-                    MdModelEnum.with(modelSelection, modelValue);
+                    MdModelEnum modelEnum = MdModelEnum.valueOf(modelValue);
+                    if (modelEnum == MdModelEnum.CUSTOM) {
+                        List<String> modelTypes = connectorsSettings.extractModelTypes(connector);
+                        if (modelTypes != null) {
+                            Class<?>[] modelClasses = modelTypes.stream()
+                                .map(t -> {
+                                    try {
+                                        return Class.forName(t);
+                                    } catch (ClassNotFoundException e) {
+                                        throw new RuntimeException(e);
+                                    }
+                                }).toArray(Class[]::new);
+                            MdModelEnum.withCustom(selection, model, modelClasses);
+                        } else if (model.available().custom()) {
+                            MdModelEnum.withCustom(selection, model);
+                        }
+                    } else {
+                        MdModelEnum.with(selection, modelEnum);
+                    }
                 } catch (Throwable t) {
                     LOG.warning("Invalid model value: " + modelValue +
                         ". Valid model values are: " + Arrays.asList(MdModelEnum.values()));
@@ -257,7 +275,7 @@ public class ConnectorsRunner {
             }
         }
 
-        return modelSelection;
+        return selection;
     }
 
     private String[] buildInstruments(String connector) {

@@ -3,7 +3,8 @@ package com.epam.deltix.data.connectors.commons;
 public enum MdModelEnum {
     TRADES,
     L1,
-    L2;
+    L2,
+    CUSTOM;
 
     public static void with(MdModel.ModifiableOptions options, String enumValue) {
         with(options, MdModelEnum.valueOf(enumValue));
@@ -22,4 +23,16 @@ public enum MdModelEnum {
                 return;
         }
     }
+
+    public static void withCustom(MdModel.ModifiableOptions options, MdModel model, Class<?>... customTypes) {
+        if (customTypes != null) {
+            options.withCustom(customTypes);
+        } else {
+            MdModel.Availability available = model.available();
+            if (available.custom()) {
+                options.withCustom(available.customTypes());
+            }
+        }
+    }
+
 }

@@ -46,6 +46,10 @@ public class PoolAction extends MarketMessage implements UpdatableAction<Pool> {
         return action;
     }
 
+    public void setAction(Action action) {
+        this.action = action;
+    }
+
     @Override
     public void setUpdatableAction(final Pool entity, final Action action) {
         setSymbol(entity.getTbSymbol());
