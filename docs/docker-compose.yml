@@ -1,7 +1,7 @@
 version: "3"
 services:
   timebase:
-    image: "finos/timebase-ce-server:6.1.7"
+    image: "finos/timebase-ce-server:6.1.8"
     stop_grace_period: 5m
     ulimits:
       nofile:
@@ -20,7 +20,7 @@ services:
       - "./timebase-home:/timebase-home"
 
   timebase-admin:
-    image: "epam/timebase-ws-server:1.0.1"
+    image: "epam/timebase-ws-server:1.0.2"
     environment:
       - JAVA_OPTS=
         -Xmx1g
@@ -59,6 +59,11 @@ services:
       - "3000:3000"
     depends_on:
       - timebase-admin
+      
+#  jupyter-demo:
+#    image: jupyter-test:1.0
+#    ports:
+#      - "8888:8888"
 
 volumes:
     grafana-volume:

@@ -1,4 +1,4 @@
-package com.epam.deltix.data.connectors.coinbase;
+package com.epam.deltix.data.connectors.uniswap;
 
 import com.epam.deltix.qsrv.hf.tickdb.pub.DXTickDB;
 import com.epam.deltix.qsrv.hf.tickdb.pub.DXTickStream;
@@ -7,10 +7,8 @@ import com.epam.deltix.qsrv.hf.tickdb.pub.TickCursor;
 import com.epam.deltix.qsrv.hf.tickdb.pub.TickDBFactory;
 import com.epam.deltix.qsrv.hf.tickdb.pub.TimeConstants;
 
-/**
- * Remove from the repo OR transform to an integration test
- */
-public class ReadCoinbaseData {
+// Remove from the repo OR transform to an integration test
+public class ReadUniswapData {
     public static void main(String[] args) {
         final DXTickDB db = TickDBFactory.createFromUrl("dxtick://localhost:8011");
         db.open(true);
@@ -21,11 +19,10 @@ public class ReadCoinbaseData {
         final DXTickStream stream = db.getStream("uniswap");
 
         try (TickCursor cursor = stream.select(TimeConstants.USE_CURRENT_TIME,
-                new SelectionOptions(true, true))) {
+                new SelectionOptions(false, true))) {
             while (cursor.next()) {
                 System.out.println(cursor.getMessage());
             }
         }
-
     }
 }
