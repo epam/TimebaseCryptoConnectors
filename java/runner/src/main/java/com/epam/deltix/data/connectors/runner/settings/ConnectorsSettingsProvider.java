@@ -39,6 +39,10 @@ public class ConnectorsSettingsProvider {
         return extractStringList(connector, "model");
     }
 
+    public List<String> extractModelTypes(String connector) {
+        return extractStringList(connector, "modelTypes");
+    }
+
     public String extractString(String connector, String key) {
         Map<String, Object> connectorSettings = connectorSettings(connector);
         if (connectorSettings != null) {

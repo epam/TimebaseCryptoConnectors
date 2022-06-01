@@ -46,7 +46,7 @@ public class SymbolMapper implements CloseableMessageOutputFactory {
     }
 
     @Override
-    public CloseableMessageOutput create() throws Exception {
+    public CloseableMessageOutput create() {
         final CloseableMessageOutput output = delegate.create();
 
         synchronized (mapping) {

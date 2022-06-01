@@ -37,6 +37,8 @@ RUN ALPINE_GLIBC_BASE_URL="https://github.com/sgerrand/alpine-pkg-glibc/releases
     chmod +x /runner/runner.sh
 
 ENV JAVA_OPTS=-verbose:gc
+ENV SPRING_CONFIG_LOCATION=/runner/config/application.yaml
+
 WORKDIR runner
 
 EXPOSE 8055

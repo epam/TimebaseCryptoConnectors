@@ -11,8 +11,8 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
 
-    testFixturesImplementation "org.testcontainers:testcontainers:${testcontainersVersion}"
-    testFixturesImplementation "org.testcontainers:junit-jupiter:${testcontainersVersion}"
+    testFixturesImplementation "org.testcontainers:testcontainers"
+    testFixturesImplementation "org.testcontainers:junit-jupiter"
 }
 
 tasks.withType(JavaCompile) {

@@ -2,6 +2,8 @@ package com.epam.deltix.data.connectors.commons.json;
 
 import com.epam.deltix.dfp.Decimal;
 import com.epam.deltix.dfp.Decimal64Utils;
+import io.github.green4j.jelly.AppendableWriter;
+import io.github.green4j.jelly.JsonGenerator;
 import io.github.green4j.jelly.JsonNumber;
 
 import java.math.BigDecimal;
@@ -24,6 +26,10 @@ public class JsonObject {
     private final Map<String, JsonValue> membersByName = new HashMap<>();
 
     JsonObject() {
+    }
+
+    public boolean hasMember(final String name) {
+        return membersByName.containsKey(name);
     }
 
     public JsonObject putObject(final String member) {
@@ -191,32 +197,52 @@ public class JsonObject {
                 NULL_VALUE.asBooleanRequired();
     }
 
+    public void forAnyObject(BiConsumer<String, JsonObject> consumer) {
+        membersByName.entrySet().stream()
+                .filter(e -> e.getValue() != null && e.getValue().asObject() != null)
+                .limit(1)
+                .forEach(e ->
+                    consumer.accept(e.getKey(), e.getValue().asObject()));
+    }
+
     public void forEachObject(BiConsumer<String, JsonObject> consumer) {
         membersByName.forEach((key, value) -> {
-            if (value != null) {
-                JsonObject jsonObject = value.asObject();
-                if (jsonObject != null) {
-                    consumer.accept(key, jsonObject);
-                }
+            if (value == null) {
+                return;
             }
+            final JsonObject jsonObject = value.asObject();
+            if (jsonObject == null) {
+                return;
+            }
+            consumer.accept(key, jsonObject);
         });
+    }
+
+    public void forAnyArray(BiConsumer<String, JsonArray> consumer) {
+        membersByName.entrySet().stream()
+                .filter(e -> e.getValue() != null && e.getValue().asArray() != null)
+                .limit(1)
+                .forEach(e ->
+                    consumer.accept(e.getKey(), e.getValue().asArray()));
     }
 
     public void forEachArray(BiConsumer<String, JsonArray> consumer) {
         membersByName.forEach((key, value) -> {
-            if (value != null) {
-                JsonArray jsonArray = value.asArray();
-                if (jsonArray != null) {
-                    consumer.accept(key, jsonArray);
-                }
+            if (value == null) {
+                return;
             }
+            final JsonArray jsonArray = value.asArray();
+            if (jsonArray == null) {
+                return;
+            }
+            consumer.accept(key, jsonArray);
         });
     }
 
     public void forEachString(BiConsumer<String, String> consumer) {
         membersByName.forEach((key, value) -> {
             if (value != null) {
-                String string = value.asString();
+                final String string = value.asString();
                 if (string != null) {
                     consumer.accept(key, string);
                 }
@@ -264,6 +290,15 @@ public class JsonObject {
             member.value.toJson(jsonGenerator);
         }
         jsonGenerator.endObject();
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder result = new StringBuilder();
+        final JsonGenerator generator = new JsonGenerator();
+        generator.setOutput(new AppendableWriter<>(result));
+        toJson(new JsonWriterToGenerator(generator));
+        return result.toString();
     }
 
     private final class Member {

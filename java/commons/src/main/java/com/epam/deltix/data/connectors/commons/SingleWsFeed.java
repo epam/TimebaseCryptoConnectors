@@ -106,11 +106,11 @@ public abstract class SingleWsFeed extends MdFeed {
 
         mgmtService =
                 Executors.newSingleThreadScheduledExecutor(
-                        r -> new Thread(r,"WebSocket Manager#" + uri)
+                        r -> new Thread(r,  SingleWsFeed.class.getSimpleName() + " Manager#" + uri)
                 );
 
         wsExecutorService = Executors.newSingleThreadExecutor(
-                r -> new Thread(r,"WebSocket Executor#" + uri)
+                r -> new Thread(r,SingleWsFeed.class.getSimpleName() + " Executor#" + uri)
         );
     }
 
@@ -268,13 +268,17 @@ public abstract class SingleWsFeed extends MdFeed {
             }
             state = CLOSED_STATE;
 
+            InterruptedException wasInterrupted = null;
+
             try {
                 onClose();
             } catch (final Throwable t) {
-                logger().warning(() -> "Unexpected error in onClose(): " + t.getLocalizedMessage(), t);
+                if (t instanceof InterruptedException) {
+                    wasInterrupted = (InterruptedException) t;
+                } else {
+                    logger().warning(() -> "Unexpected error in onClose(): " + t.getLocalizedMessage(), t);
+                }
             }
-
-            InterruptedException wasInterrupted = null;
 
             try {
                 webSocket.sendClose(1000, "Bye-bye");

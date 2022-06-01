@@ -219,6 +219,9 @@ configure(leafProjects) {
             dependency "org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion"
             dependency "org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion"
             // End of version conflict resolution
+
+            dependency "org.testcontainers:testcontainers:${testcontainersVersion}"
+            dependency "org.testcontainers:junit-jupiter:${testcontainersVersion}"
         }
     }
 
