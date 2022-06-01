@@ -65,7 +65,8 @@ Common settings for all connectors:
 |instruments|A list of trading instruments that will be received from the exchange.|yes|
 |model|Data model type.|yes|
 
-> Refer to [application.yaml](https://github.com/epam/TimebaseCryptoConnectors/blob/main/java/runner/src/main/resources/application.yaml#:~:text=connectors%3A,USDT%2CLTC%2DUSD%22) to view the default settings the connectors start with.
+> Refer to the [configuration](https://github.com/epam/TimebaseCryptoConnectors/blob/main/docs/configuration.md) to learn how to configure. 
+
 
 #### Connector-Specific Settings 
 
