@@ -23,7 +23,7 @@ services:
     ports:
       - 8055:8055
     volumes:
-      - /my/config_dir:/runner/config
+      - "./config:/runner/config"
 ```
 
 For example, you can create a custom config to start just the selected data connector as shown in the below example:
