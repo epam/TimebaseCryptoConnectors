@@ -1,7 +1,3 @@
-
-
-
-
 # Configuration 
 
 ## Default 
