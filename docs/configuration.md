@@ -2,13 +2,15 @@
 
 ## Default 
 
-By default, we launch with [default](https://raw.githubusercontent.com/epam/TimebaseCryptoConnectors/main/java/runner/src/main/docker/application.yaml) configuration to start all the available connectors.
+By default, we launch with [default](https://raw.githubusercontent.com/epam/TimebaseCryptoConnectors/main/java/runner/src/main/resources/application.yaml) configuration to start all the available connectors.
 
 ## Custom 
 
-You can override the [default](https://raw.githubusercontent.com/epam/TimebaseCryptoConnectors/main/java/runner/src/main/docker/application.yaml) configuration by your custom config. 
+You can override the [default](https://raw.githubusercontent.com/epam/TimebaseCryptoConnectors/main/java/runner/src/main/resources/application.yaml) configuration by your custom config. 
 
-The default `application.yaml` is located in Docker in the [/runner/config](https://github.com/epam/TimebaseCryptoConnectors/blob/76ee7a34e1eaa0b68f36227d0ae19ff428ff6436/java/runner/src/main/docker/Dockerfile#L40) directory. To override this, you can mount the directory with your custom `application.yaml` config on the `/runner/config` directory as shown in the below example:  
+The default `application.yaml` is located in Docker in the [/runner/config](https://github.com/epam/TimebaseCryptoConnectors/blob/76ee7a34e1eaa0b68f36227d0ae19ff428ff6436/java/runner/src/main/docker/Dockerfile#L40) directory. To override this, you can mount the directory with your custom `application.yaml` config on the `/runner/config` directory as shown in the below example.
+
+> For the convenience purposes, we recommend creating a `config` folder to store your custom configs in the directory, where you keep your docker-compose.yml.
 
 ```yaml
 # docker-compose configuration
@@ -44,4 +46,3 @@ connectors:
     instruments: "tBTCUSD=BTC/USD,tBTCEUR=BTC/EUR,tETCUSD=ETC/USD,tBTCF0:USTF0=BTCPC"
 ```
 
-> For the convenience purposes, we recommend creating a `config` folder to store your custom configs in the `docker` directory, where the default application.yaml and the docker file are located.
