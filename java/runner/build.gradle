@@ -71,7 +71,7 @@ task prepareFilesForDocker(type: Copy) {
     }
 
     into ('/runner/config') {
-        from "$projectDir/src/main/docker/application.yaml"
+        from "$projectDir/src/main/resources/application.yaml"
     }
 
     destinationDir project.file("$buildDir/docker")
