@@ -12,9 +12,9 @@ Crypto market data connectors basically facilitate the market data flow from the
 
 In this document we will cover a specific single-WebSocket data connector implementation. 
 
-![](/docs/img/tb-ce-connectors2.png)
+On the illustration below you see, that single WebSocket connectors use a special `SingleWsFeed` framework to subscribe for market data via a WebSocket connection with a specific crypto exchange and to write it to [TimeBase](https://github.com/finos/TimeBase-CE). In TimeBase, all data is organized in [streams](https://kb.timebase.info/community/overview/streams) in a form of chronologically arranged [messages](https://kb.timebase.info/community/overview/messages). In object-oriented programing languages messages can be seen as classes, each with a specific set of fields.
 
-On the above illustration you see, that single WebSocket connectors use a special `SingleWsFeed` framework to subscribe for market data via a WebSocket connection with a specific crypto exchange and to write it to [TimeBase](https://github.com/finos/TimeBase-CE). In TimeBase, all data is organized in [streams](https://kb.timebase.info/community/overview/streams) in a form of chronologically arranged [messages](https://kb.timebase.info/community/overview/messages). In object-oriented programing languages messages can be seen as classes, each with a specific set of fields.
+![](/docs/img/tb-ce-connectors2.png)
 
 We have developed a Universal Format [API](https://github.com/epam/TimebaseCryptoConnectors/blob/main/docs/universal.md) to consume market data from different exchanges of any level of granularity and effectively map it on the TimeBase [data model](#data-model). It includes classes that represent L1 (Top of the book), L2, and even L3 market data, you can use later to build your Order Book. 
 
