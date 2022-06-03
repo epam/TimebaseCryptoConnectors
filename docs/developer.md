@@ -6,7 +6,9 @@ Most of the featured market data connectors share common design and implementati
 
 ![](/docs/img/tb-ce-connectors1.png)
 
-Crypto market data connectors basically facilitate the market data flow from the specific crypto exchange to [TimeBase](https://github.com/finos/TimeBase-CE).
+Crypto market data connectors basically facilitate the market data flow from the specific crypto exchange to [TimeBase](https://github.com/finos/TimeBase-CE)- illustrated just below.
+
+![](/docs/img/tb-ce-connectors4.png)
 
 In this document we will cover a specific single-WebSocket data connector implementation. 
 
