@@ -25,6 +25,7 @@ With [TimeBase Community Edition](https://github.com/finos/TimeBase-CE) you get 
 3. View live and historical market data stored in [TimeBase](https://kb.timebase.info/community/development/tools/Web%20Admin/admin_guide#stream-actions-monitor) in your browser at [localhost:8099](http://localhost:8099) (default username **admin** and password **admin**):
 
 <iframe src="//videoportal.epam.com/video/iframe.html?video=VYGn2Lav&resolution=1280x720#" height="281" width="500" frameBorder="1" allowfullscreen></iframe>
+
 ![](/img/stream-monitor.png)
 
 ### Configuration 
