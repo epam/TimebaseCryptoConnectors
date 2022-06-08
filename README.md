@@ -4,6 +4,8 @@
 
 With [TimeBase Community Edition](https://github.com/finos/TimeBase-CE) you get access to free [market data connectors](#supported-crypto-exchanges) you can use to receive normalized market data with any level of granularity (top of the book, L2) from the most popular crypto exchanges and recording it in [TimeBase](https://kb.timebase.info/) **in a matter of minutes**. 
 
+![](/img/stream-monitor.png)
+
 ## Quick Start - setup market data collection in 60 seconds:
 
 ### Prerequisites
@@ -25,8 +27,6 @@ With [TimeBase Community Edition](https://github.com/finos/TimeBase-CE) you get 
 3. View live and historical market data stored in [TimeBase](https://kb.timebase.info/community/development/tools/Web%20Admin/admin_guide#stream-actions-monitor) in your browser at [localhost:8099](http://localhost:8099) (default username **admin** and password **admin**):
 
 https://user-images.githubusercontent.com/46220620/172610668-e9fcd008-4a49-477e-93ba-45038ca9a3d4.mp4
-
-![](/img/stream-monitor.png)
 
 ### Configuration 
 
