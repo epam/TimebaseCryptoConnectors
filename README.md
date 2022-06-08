@@ -24,7 +24,7 @@ With [TimeBase Community Edition](https://github.com/finos/TimeBase-CE) you get 
 2. Run `docker-compose up` command from the directory with your docker-compose.yml file to launch TimeBase crypto connectors. 
 3. View live and historical market data stored in [TimeBase](https://kb.timebase.info/community/development/tools/Web%20Admin/admin_guide#stream-actions-monitor) in your browser at [localhost:8099](http://localhost:8099) (default username **admin** and password **admin**):
 
-https://videoportal.epam.com/video/qQB2Jwlvd898B0QX7MwG
+https://user-images.githubusercontent.com/46220620/172610509-ea0d314a-72fc-4074-b875-04002a380664.mp4
 
 ![](/img/stream-monitor.png)
 
