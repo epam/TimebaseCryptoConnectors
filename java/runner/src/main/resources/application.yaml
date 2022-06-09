@@ -197,3 +197,13 @@ connectors:
       - "TRADES"
     instruments: "BTC-USD=BTC/USD, ETH-USD=ETH/USD"
 
+  ascendex:
+    stream: ascendex
+    wsUrl: wss://ascendex.com/api/pro/v1/stream
+    depth: 20
+    model:
+      - "L1"
+      - "L2"
+      - "TRADES"
+    instruments: "BTC/USDT=BTC/USDT, ETH/USDT=ETH/USDT, BTC/USD=BTC/USD, ETH/USD=ETH/USD"
+
