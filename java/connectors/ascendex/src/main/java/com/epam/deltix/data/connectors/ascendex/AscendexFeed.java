@@ -5,14 +5,13 @@ import com.epam.deltix.data.connectors.commons.json.*;
 import com.epam.deltix.dfp.Decimal64Utils;
 import com.epam.deltix.qsrv.hf.tickdb.pub.TimeConstants;
 import com.epam.deltix.timebase.messages.TypeConstants;
+import com.epam.deltix.util.collections.CharSequenceSet;
 
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 public class AscendexFeed extends MdSingleWsFeed {
     private final JsonValueParser jsonParser = new JsonValueParser();
-    private Map<String, Boolean> snapshotInitializationMap = new HashMap<>();
+    private CharSequenceSet snapshotInitialization = new CharSequenceSet();
 
     public AscendexFeed(
             final String uri,
@@ -43,11 +42,15 @@ public class AscendexFeed extends MdSingleWsFeed {
 
         updatesJson.toJsonAndEoj(jsonWriter);
 
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        //trades subscription
+        String tradesChannel = "trades:" + symbolsString;
+        JsonValue tradesJson = JsonValue.newObject();
+        JsonObject tradesBody = tradesJson.asObject();
+
+        tradesBody.putString("op", "sub");
+        tradesBody.putString("ch", tradesChannel);
+
+        tradesJson.toJsonAndEoj(jsonWriter);
 
         //snapshot request
         Arrays.stream(symbols).forEach((symbol) -> {
@@ -61,16 +64,6 @@ public class AscendexFeed extends MdSingleWsFeed {
 
             snapshotJson.toJsonAndEoj(jsonWriter);
         });
-
-        //trades subscription
-        String tradesChannel = "trades:" + symbolsString;
-        JsonValue tradesJson = JsonValue.newObject();
-        JsonObject tradesBody = tradesJson.asObject();
-
-        tradesBody.putString("op", "sub");
-        tradesBody.putString("ch", tradesChannel);
-
-        tradesJson.toJsonAndEoj(jsonWriter);
     }
 
     @Override
@@ -87,14 +80,14 @@ public class AscendexFeed extends MdSingleWsFeed {
         String channel = object.getString("m");
         String symbol = object.getString("symbol");
 
-        if(channel.equals("ping")) {
+        if("ping".equals(channel)) {
             JsonValue pongJson = JsonValue.newObject();
 
             JsonObject pongBody = pongJson.asObject();
             pongBody.putString("op", "pong");
 
             pongJson.toJsonAndEoj(jsonWriter);
-        } else if(channel.equals("depth-snapshot")) {
+        } else if("depth-snapshot".equals(channel)) {
             long timeStamp = jsonData.getLong("ts");
 
             QuoteSequenceProcessor quotesListener = processor().onBookSnapshot(symbol, timeStamp);
@@ -102,9 +95,8 @@ public class AscendexFeed extends MdSingleWsFeed {
             processSnapshotSide(quotesListener, jsonData.getArray("asks"), true);
 
             quotesListener.onFinish();
-            snapshotInitializationMap.put(symbol, true);
-        } else if(channel.equals("depth") && snapshotInitializationMap.containsKey(symbol)
-                && snapshotInitializationMap.get(symbol) == true) {
+            snapshotInitialization.addCharSequence(symbol);
+        } else if("depth".equals(channel) && snapshotInitialization.containsCharSequence(symbol)) {
             long timeStamp = jsonData.getLong("ts");
 
             QuoteSequenceProcessor quotesListenerUpdate = processor().onBookUpdate(symbol, timeStamp);
@@ -112,7 +104,7 @@ public class AscendexFeed extends MdSingleWsFeed {
             processChanges(quotesListenerUpdate, jsonData.getArray("asks"), true);
 
             quotesListenerUpdate.onFinish();
-        } else if(channel.equals("trades")) {
+        } else if("trades".equals(channel)) {
             JsonArray dataArray = object.getArrayRequired("data");
             for (int i = 0; i < dataArray.size(); ++i) {
                 JsonObject trade = dataArray.getObjectRequired(i);
