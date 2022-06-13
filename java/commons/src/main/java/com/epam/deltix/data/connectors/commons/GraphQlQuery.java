@@ -1,10 +1,10 @@
 package com.epam.deltix.data.connectors.commons;
 
-import com.epam.deltix.data.connectors.commons.Util;
-
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class GraphQlQuery {
     public static Query query(final String type) {
@@ -14,9 +14,17 @@ public class GraphQlQuery {
     public static class Arguments {
         private int first = Integer.MIN_VALUE;
         private int skip = Integer.MIN_VALUE;
+        private String where;
         private String orderBy;
 
         private Arguments() {
+        }
+
+        private Arguments(final Arguments from) {
+            this.first = from.first;
+            this.skip = from.skip;
+            this.where = from.where;
+            this.orderBy = from.orderBy;
         }
 
         public Arguments withFirst(final int first) {
@@ -39,6 +47,11 @@ public class GraphQlQuery {
             return this;
         }
 
+        public Arguments withWhere(final String where) {
+            this.where = where;
+            return this;
+        }
+
         public Arguments withOrderBy(final String orderBy) {
             this.orderBy = orderBy;
             return this;
@@ -52,12 +65,16 @@ public class GraphQlQuery {
             return skip != Integer.MIN_VALUE;
         }
 
+        private boolean hasWhere() {
+            return where != null;
+        }
+
         private boolean hasOrderBy() {
             return orderBy != null;
         }
 
         private boolean hasArguments() {
-            return  hasFirst() || hasSkip() || hasOrderBy();
+            return  hasFirst() || hasSkip() || hasWhere() || hasOrderBy();
         }
 
         void write(final Appendable to) throws IOException {
@@ -82,11 +99,20 @@ public class GraphQlQuery {
                 added++;
             }
 
+            if (hasWhere()) {
+                if (added > 0) {
+                    to.append(", ");
+                }
+                to.append("where: { ").append(where).append(" }");
+                added++;
+            }
+
             if (hasOrderBy()) {
                 if (added > 0) {
                     to.append(", ");
                 }
                 to.append("orderBy: ").append(orderBy);
+                added++;
             }
 
             to.append(')');
@@ -100,12 +126,22 @@ public class GraphQlQuery {
             this.name = name;
         }
 
+        protected Field(final Field from) {
+            this.name = from.name;
+        }
+
         abstract void write(Appendable to, int level) throws IOException;
+
+        public abstract Field copy();
     }
 
     private static class Scalar extends Field {
         private Scalar(final String name) {
             super(name);
+        }
+
+        private Scalar(final Scalar from) {
+            super(from);
         }
 
         @Override
@@ -114,14 +150,27 @@ public class GraphQlQuery {
             to.append(name);
             to.append(Util.NATIVE_LINE_BREAK);
         }
+
+        @Override
+        public Scalar copy() {
+            return new Scalar(this);
+        }
     }
 
     public static class Object extends Field {
-        private final Arguments arguments = new Arguments();
-        private final List<Field> fields = new ArrayList<>();
+        private final Arguments arguments;
+        private final List<Field> fields;
 
         private Object(final String name) {
             super(name);
+            arguments = new Arguments();
+            fields = new ArrayList<>();
+        }
+
+        private Object(final Object from) {
+            super(from);
+            arguments = new Arguments(from.arguments);
+            fields = from.fields.stream().map(Field::copy).collect(Collectors.toList());
         }
 
         public void withScalar(final String name) {
@@ -151,6 +200,11 @@ public class GraphQlQuery {
             Util.tabBy2(to, level);
             to.append('}').append(Util.NATIVE_LINE_BREAK);
         }
+
+        @Override
+        public Object copy() {
+            return new Object(this);
+        }
     }
 
     public static class Query extends Object {
@@ -158,10 +212,24 @@ public class GraphQlQuery {
             super(name);
         }
 
+        private Query(final Query from) {
+            super(from);
+        }
+
         public void write(final Appendable to) throws IOException {
             to.append('{').append(Util.NATIVE_LINE_BREAK);
             write(to, 1);
             to.append('}');
+        }
+
+        public String toJson() {
+            final StringBuilder result = new StringBuilder();
+            try {
+                writeJson(result);
+            } catch (final IOException e) {
+                throw new UncheckedIOException(e);
+            }
+            return result.toString();
         }
 
         public void writeJson(final Appendable to) throws IOException {
@@ -190,6 +258,9 @@ public class GraphQlQuery {
                         case '\n':
                             to.append("\\n");
                             break;
+                        case '"':
+                            to.append("\\\"");
+                            break;
                         default:
                             to.append(c);
                     }
@@ -198,6 +269,11 @@ public class GraphQlQuery {
             });
 
             to.append("\"}");
+        }
+
+        @Override
+        public Query copy() {
+            return new Query(this);
         }
     }
 

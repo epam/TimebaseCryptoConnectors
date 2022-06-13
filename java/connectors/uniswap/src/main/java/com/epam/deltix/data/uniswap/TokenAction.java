@@ -1,9 +1,7 @@
 package com.epam.deltix.data.uniswap;
 
 import com.epam.deltix.timebase.messages.MarketMessage;
-import com.epam.deltix.timebase.messages.SchemaDataType;
 import com.epam.deltix.timebase.messages.SchemaElement;
-import com.epam.deltix.timebase.messages.SchemaType;
 
 public class TokenAction extends MarketMessage implements UpdatableAction<Token> {
     private int index;

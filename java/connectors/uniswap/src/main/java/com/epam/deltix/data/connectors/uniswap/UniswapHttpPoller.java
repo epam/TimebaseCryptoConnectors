@@ -13,8 +13,12 @@ import java.time.Duration;
 public abstract class UniswapHttpPoller implements HttpPoller {
     private final URI graphQlUri;
 
-    public UniswapHttpPoller(final String graphQlUri) throws URISyntaxException {
-        this.graphQlUri = new URI(graphQlUri);
+    public UniswapHttpPoller(final String graphQlUri) {
+        try {
+            this.graphQlUri = new URI(graphQlUri);
+        } catch (final URISyntaxException e) {
+            throw new IllegalArgumentException(e);
+        }
     }
 
     @Override
@@ -61,7 +65,7 @@ public abstract class UniswapHttpPoller implements HttpPoller {
                             } else {
                                 requestBody = nextRequestBody(body);
                                 if (requestBody == null) {
-                                    continuator.run();
+                                    continuator.run(); // to schedule next cycle of polling
                                     return;
                                 }
                                 client.executor().get().execute(this);

@@ -6,41 +6,58 @@ import com.epam.deltix.data.connectors.commons.JsonObjectsListener;
 import com.epam.deltix.data.connectors.commons.MessageOutput;
 import com.epam.deltix.data.connectors.commons.json.JsonObject;
 import com.epam.deltix.data.uniswap.Action;
-import com.epam.deltix.data.uniswap.UpdatableAction;
 import com.epam.deltix.data.uniswap.Updatable;
+import com.epam.deltix.data.uniswap.UpdatableAction;
 import com.epam.deltix.timebase.messages.MarketMessage;
 
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 public class UniswapCollectionPoller<U extends Updatable, A extends UpdatableAction<U>>
         extends PaginatingUniswapHttpPoller {
 
     public UniswapCollectionPoller(
             final String graphQlUri,
-            final GraphQlQuery.Query query,
+            final GraphQlQuery.Query queryTemplate,
             final Factory<U> entityFactory,
             final Factory<A> entityActionFactory,
-            final MessageOutput messageOutput) throws URISyntaxException {
+            final MessageOutput messageOutput) {
+        this(
+                graphQlUri,
+                queryTemplate,
+                object -> true,
+                entityFactory,
+                entityActionFactory,
+                messageOutput
+        );
+    }
+
+    public UniswapCollectionPoller(
+            final String graphQlUri,
+            final GraphQlQuery.Query queryTemplate,
+            final Predicate<JsonObject> objectFilter,
+            final Factory<U> entityFactory,
+            final Factory<A> entityActionFactory,
+            final MessageOutput messageOutput) {
 
         super(
                 graphQlUri,
-                query,
-                1_000,
+                queryTemplate,
+                objectFilter,
+                1_000, // TODO: a system property with a default value?
                 new JsonObjectsListener() {
                     private final Map<String, U> state = new HashMap<>();
                     private final Map<String, U> toDelete = new HashMap<>();
-
                     private final List<A> actions = new ArrayList<>();
 
                     @Override
                     public void onObjectsStarted() {
-                        actions.clear();
                         toDelete.clear();
                         toDelete.putAll(state);
+                        actions.clear();
                     }
 
                     @Override
