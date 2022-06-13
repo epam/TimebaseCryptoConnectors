@@ -72,7 +72,7 @@ public class TokenIdentifier {
     /**
      * Maps tokens' symbols to their ids.
      * @param tokenSymbols token symbols to map
-     * @return the map 'symbol -> id'
+     * @return the map 'symbol -&gt; id'
      * @throws Exception if any error happened, including HTTP response code was not 200
      */
     public Map<String, Info> identify(final String... tokenSymbols) throws Exception {
