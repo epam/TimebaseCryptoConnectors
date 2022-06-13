@@ -37,9 +37,9 @@ RUN ALPINE_GLIBC_BASE_URL="https://github.com/sgerrand/alpine-pkg-glibc/releases
     chmod +x /runner/runner.sh
 
 ENV JAVA_OPTS=-verbose:gc
-WORKDIR runner
+ENV SPRING_CONFIG_LOCATION=/runner/config/application.yaml
 
-VOLUME ["config"]
+WORKDIR runner
 
 EXPOSE 8055
 ENTRYPOINT ["/bin/sh", "-c", "./runner.sh"]

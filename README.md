@@ -4,6 +4,8 @@
 
 With [TimeBase Community Edition](https://github.com/finos/TimeBase-CE) you get access to free [market data connectors](#supported-crypto-exchanges) you can use to receive normalized market data with any level of granularity (top of the book, L2) from the most popular crypto exchanges and recording it in [TimeBase](https://kb.timebase.info/) **in a matter of minutes**. 
 
+![](/img/stream-monitor.png)
+
 ## Quick Start - setup market data collection in 60 seconds:
 
 ### Prerequisites
@@ -20,15 +22,19 @@ With [TimeBase Community Edition](https://github.com/finos/TimeBase-CE) you get 
 
 ### Start Connectors 
 
-1. Download sample [docker-compose.yml](https://github.com/epam/TimebaseCryptoConnectors/blob/main/docs/docker-compose.yml).
-2. Run `docker-compose up` command to launch TimeBase crypto connectors. 
-3. View live and historical market data stored in [TimeBase](https://kb.timebase.info/community/development/tools/Web%20Admin/admin_guide#stream-actions-monitor) in your browser on [localhost:8099](http://localhost:8099) (enter test username **admin** and password **admin**):
+1. Download sample [docker-compose.yml](https://raw.githubusercontent.com/epam/TimebaseCryptoConnectors/main/docs/docker-compose.yml)
+2. Run `docker-compose up` command from the directory with your docker-compose.yml file to launch TimeBase crypto connectors. 
+3. View live and historical market data stored in [TimeBase](https://kb.timebase.info/community/development/tools/Web%20Admin/admin_guide#stream-actions-monitor) in your browser at [localhost:8099](http://localhost:8099) (default username **admin** and password **admin**):
 
-![](/img/stream-monitor.png)
+https://user-images.githubusercontent.com/46220620/172610668-e9fcd008-4a49-477e-93ba-45038ca9a3d4.mp4
 
-By default, we launch with [application.yaml](https://github.com/epam/TimebaseCryptoConnectors/blob/main/java/runner/src/main/resources/application.yaml#:~:text=connectors%3A,USDT%2CLTC%2DUSD%22) configuration to start all the available connectors with the default settings. Recorded market data is saved into `/timebase-home` directory. You can create custom configurations to run just the selected connectors with [specific settings](https://github.com/epam/TimebaseCryptoConnectors/blob/main/docs/developer.md#1-create-settings). 
+### Configuration 
 
-> Refer to the [developers tutorials](https://github.com/epam/TimebaseCryptoConnectors/blob/main/docs/developer.md) for more information. 
+By default, we launch with the [default](https://raw.githubusercontent.com/epam/TimebaseCryptoConnectors/main/java/runner/src/main/resources/application.yaml) configuration to start all the available data connectors. Recorded market data is saved into `/timebase-home` directory. You can create custom configurations to run just the selected connectors with specific settings.
+
+> Refer to the [configuration](https://github.com/epam/TimebaseCryptoConnectors/blob/main/docs/configuration.md) to learn how to configure. 
+
+> Refer to the [developers tutorials](https://github.com/epam/TimebaseCryptoConnectors/blob/main/docs/developer.md) for more in depth information about data model and tutorials on how to develop custom data connectors. 
 
 ## Supported Crypto Exchanges
 

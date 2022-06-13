@@ -2,14 +2,12 @@ package com.epam.deltix.data.connectors.commons;
 
 import com.epam.deltix.qsrv.hf.pub.md.Introspector;
 import com.epam.deltix.qsrv.hf.pub.md.RecordClassDescriptor;
+import com.epam.deltix.qsrv.hf.pub.md.RecordClassSet;
 import com.epam.deltix.qsrv.hf.spi.conn.DisconnectEventListener;
 import com.epam.deltix.qsrv.hf.tickdb.comm.client.TickDBClient;
-import com.epam.deltix.qsrv.hf.tickdb.pub.DXTickDB;
-import com.epam.deltix.qsrv.hf.tickdb.pub.DXTickStream;
-import com.epam.deltix.qsrv.hf.tickdb.pub.LoadingOptions;
-import com.epam.deltix.qsrv.hf.tickdb.pub.StreamOptions;
-import com.epam.deltix.qsrv.hf.tickdb.pub.TickDBFactory;
-import com.epam.deltix.qsrv.hf.tickdb.pub.TickLoader;
+import com.epam.deltix.qsrv.hf.tickdb.pub.*;
+import com.epam.deltix.qsrv.hf.tickdb.pub.task.SchemaChangeTask;
+import com.epam.deltix.qsrv.hf.tickdb.schema.*;
 import com.epam.deltix.timebase.messages.InstrumentMessage;
 
 import java.io.IOException;
@@ -129,6 +127,7 @@ public class TbMessageOutputFactory implements CloseableMessageOutputFactory {
     private DXTickStream getOrCreateStream(final DXTickDB tb) {
         final DXTickStream stream = tb.getStream(streamKey);
         if (stream != null) {
+            checkAndUpdateSchema(stream);
             return stream;
         }
 
@@ -140,5 +139,93 @@ public class TbMessageOutputFactory implements CloseableMessageOutputFactory {
         options.setPolymorphic(types);
 
         return tb.createStream(streamKey, options);
+    }
+
+    private void checkAndUpdateSchema(DXTickStream stream) {
+        RecordClassSet streamSchema = stream.getStreamOptions().getMetaData();
+        RecordClassSet connectorSchema = addMissingTypes(types, streamSchema.getContentClasses());
+        StreamMetaDataChange change = new SchemaAnalyzer(new SchemaMapping()).getChanges(
+            streamSchema,
+            MetaDataChange.ContentType.Polymorphic,
+            connectorSchema,
+            MetaDataChange.ContentType.Polymorphic
+        );
+
+        SchemaChange.Impact impact = getChangeImpact(change);
+        if (impact == SchemaChange.Impact.DataConvert) {
+            logger.info(() -> "Applying schema changes to stream " + stream.getKey());
+            stream.execute(new SchemaChangeTask(change));
+            BackgroundProcessInfo process;
+            while ((process = stream.getBackgroundProcess()) != null && !process.isFinished()) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                }
+            }
+            logger.info(() -> "Schema changes to stream " + stream.getKey() + " successfully applied");
+        } else if (impact == SchemaChange.Impact.DataLoss) {
+            logger.warning(() -> "Stream " + stream.getKey() + " schema can not be converted without data loss. " +
+                "In case of any problems, please, change stream schema manually or choose another stream for connector.");
+        }
+    }
+
+    public SchemaChange.Impact getChangeImpact(StreamMetaDataChange schemaChange) {
+        SchemaChange.Impact result = SchemaChange.Impact.None;
+        for (ClassDescriptorChange change : schemaChange.changes) {
+            SchemaChange.Impact imp = getChangeImpact(change, schemaChange.mapping);
+            if (imp == SchemaChange.Impact.DataLoss) {
+                return SchemaChange.Impact.DataLoss;
+            } else if (imp == SchemaChange.Impact.DataConvert) {
+                result = SchemaChange.Impact.DataConvert;
+            }
+        }
+
+        return result;
+    }
+
+    public SchemaChange.Impact getChangeImpact(ClassDescriptorChange descriptorChange, SchemaMapping mapping) {
+        if (descriptorChange.getSource() != null && descriptorChange.getTarget() != null) {
+            // modify
+            SchemaChange.Impact result = SchemaChange.Impact.None;
+            for (AbstractFieldChange change : descriptorChange.getChanges()) {
+                SchemaChange.Impact imp;
+                if (change instanceof EnumFieldTypeChange) {
+                    imp = ((EnumFieldTypeChange) change).getChangeImpact(mapping);
+                } else {
+                    imp = change.getChangeImpact();
+                }
+
+                if (imp == SchemaChange.Impact.DataLoss) {
+                    return SchemaChange.Impact.DataLoss;
+                } else if (imp == SchemaChange.Impact.DataConvert) {
+                    result = SchemaChange.Impact.DataConvert;
+                }
+            }
+
+            return result;
+        } else if (descriptorChange.getTarget() != null) {
+            return SchemaChange.Impact.DataConvert; // create
+        } else {
+            return SchemaChange.Impact.None; // delete
+        }
+    }
+
+    private static RecordClassSet addMissingTypes(RecordClassDescriptor[] types, RecordClassDescriptor[] streamTypes) {
+        RecordClassSet newTypes = new RecordClassSet(types);
+        for (RecordClassDescriptor streamType : streamTypes) {
+            boolean found = false;
+            for (RecordClassDescriptor type : types) {
+                if (type.getName().equalsIgnoreCase(streamType.getName())) {
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) {
+                newTypes.addContentClasses(streamType);
+            }
+        }
+
+        return newTypes;
     }
 }

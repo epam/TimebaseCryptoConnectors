@@ -59,6 +59,11 @@ services:
       - "3000:3000"
     depends_on:
       - timebase-admin
+      
+#  jupyter-demo:
+#    image: jupyter-test:1.0
+#    ports:
+#      - "8888:8888"
 
 volumes:
     grafana-volume:
