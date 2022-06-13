@@ -6,12 +6,16 @@ import com.epam.deltix.data.connectors.commons.HttpFeed;
 import com.epam.deltix.data.connectors.commons.HttpPoller;
 import com.epam.deltix.data.connectors.commons.Logger;
 import com.epam.deltix.data.connectors.commons.MdModel;
+import com.epam.deltix.data.connectors.uniswap.subscriptions.BundleSubscription;
+import com.epam.deltix.data.connectors.uniswap.subscriptions.FactorySubscription;
 import com.epam.deltix.data.connectors.uniswap.subscriptions.IdentifiedUniswapSymbol;
 import com.epam.deltix.data.connectors.uniswap.subscriptions.PoolSubscription;
 import com.epam.deltix.data.connectors.uniswap.subscriptions.Subscription;
 import com.epam.deltix.data.connectors.uniswap.subscriptions.TokenIdentifier;
 import com.epam.deltix.data.connectors.uniswap.subscriptions.TokenSubscription;
 import com.epam.deltix.data.connectors.uniswap.subscriptions.UniswapSymbol;
+import com.epam.deltix.data.uniswap.BundleAction;
+import com.epam.deltix.data.uniswap.FactoryAction;
 import com.epam.deltix.data.uniswap.PoolAction;
 import com.epam.deltix.data.uniswap.TokenAction;
 
@@ -63,8 +67,16 @@ public class UniswapFeed extends HttpFeed {
 
         final List<Subscription> subscriptions = new ArrayList<>();
 
-        if (selected.custom(TokenAction.class)) {
-            subscriptions.add(new TokenSubscription(
+        if (selected.custom(FactoryAction.class)) {
+            subscriptions.add(new FactorySubscription(
+                    uri,
+                    this,
+                    logger(),
+                    identifiedUniswapSymbols
+            ));
+        }
+        if (selected.custom(BundleAction.class)) {
+            subscriptions.add(new BundleSubscription(
                     uri,
                     this,
                     logger(),
@@ -73,6 +85,14 @@ public class UniswapFeed extends HttpFeed {
         }
         if (selected.custom(PoolAction.class)) {
             subscriptions.add(new PoolSubscription(
+                    uri,
+                    this,
+                    logger(),
+                    identifiedUniswapSymbols
+            ));
+        }
+        if (selected.custom(TokenAction.class)) {
+            subscriptions.add(new TokenSubscription(
                     uri,
                     this,
                     logger(),

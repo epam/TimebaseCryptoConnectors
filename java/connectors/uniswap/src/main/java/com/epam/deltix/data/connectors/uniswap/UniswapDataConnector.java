@@ -7,6 +7,8 @@ import com.epam.deltix.data.connectors.commons.MdFeed;
 import com.epam.deltix.data.connectors.commons.MdModel;
 import com.epam.deltix.data.connectors.commons.RetriableFactory;
 import com.epam.deltix.data.connectors.commons.annotations.Connector;
+import com.epam.deltix.data.uniswap.BundleAction;
+import com.epam.deltix.data.uniswap.FactoryAction;
 import com.epam.deltix.data.uniswap.PoolAction;
 import com.epam.deltix.data.uniswap.TokenAction;
 import com.epam.deltix.timebase.messages.InstrumentMessage;
@@ -71,7 +73,11 @@ public class UniswapDataConnector extends DataConnector<UniswapConnectorSettings
 
         dataConnector.subscribe(
                 model.select().
-                        withCustom(PoolAction.class, TokenAction.class).
+                        withCustom(
+                                FactoryAction.class,
+                                BundleAction.class,
+                                PoolAction.class,
+                                TokenAction.class).
                         build(),
                 "BUSD/WETH", "/ICHI"
         );
