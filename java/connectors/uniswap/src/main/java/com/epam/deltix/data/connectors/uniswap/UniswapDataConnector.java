@@ -8,6 +8,7 @@ import com.epam.deltix.data.connectors.commons.MdModel;
 import com.epam.deltix.data.connectors.commons.RetriableFactory;
 import com.epam.deltix.data.connectors.commons.annotations.Connector;
 import com.epam.deltix.data.uniswap.BundleAction;
+import com.epam.deltix.data.uniswap.Factory;
 import com.epam.deltix.data.uniswap.FactoryAction;
 import com.epam.deltix.data.uniswap.PoolAction;
 import com.epam.deltix.data.uniswap.TokenAction;
@@ -18,6 +19,8 @@ public class UniswapDataConnector extends DataConnector<UniswapConnectorSettings
     public UniswapDataConnector(final UniswapConnectorSettings settings) {
         super(settings, MdModel.availability()
             .withCustom(
+                    FactoryAction.class,
+                    BundleAction.class,
                     PoolAction.class,
                     TokenAction.class)
                 .build()

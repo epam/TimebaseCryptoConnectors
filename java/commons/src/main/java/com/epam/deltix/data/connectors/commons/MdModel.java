@@ -5,6 +5,7 @@ import com.epam.deltix.qsrv.hf.pub.md.RecordClassDescriptor;
 import com.epam.deltix.timebase.messages.service.SecurityFeedStatusMessage;
 import com.epam.deltix.timebase.messages.universal.PackageHeader;
 
+import java.awt.*;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -329,6 +330,21 @@ public class MdModel {
                 throw new IllegalArgumentException("Level 2 is not supported by the model");
             }
             return super.withLevel2();
+        }
+
+        public Selection withCustom(final Class... customTypes) {
+            final Class[] unknown = Arrays.stream(customTypes)
+                    .filter(c -> !availability.custom(c))
+                    .toArray(Class[]::new);
+            if (unknown.length > 0) {
+                throw new IllegalArgumentException("Unknown custom class"
+                        + (unknown.length > 1 ? "es" : "")
+                        + " selected: "
+                        + Arrays.stream(unknown)
+                        .map(Class::getName)
+                        .collect(Collectors.joining(", ")));
+            }
+            return super.withCustom(customTypes);
         }
 
         /**
