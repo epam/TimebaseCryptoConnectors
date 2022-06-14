@@ -45,7 +45,7 @@ public class Iso8601DateTimeParser {
         final int day = (from.charAt(idx++) - '0') * 10 +
                 (from.charAt(idx++) - '0');
 
-        long valueDay = year * 10000 + month * 100 + day;
+        long valueDay = year * 10000L + month * 100 + day;
 
         if (lastValueDay != valueDay) {
             lastValueDayMidnightCalendar.set(Calendar.YEAR, year);
