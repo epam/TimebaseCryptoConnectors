@@ -5,21 +5,23 @@ import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 
 public class ZlibAsciiTextDecompressor {
-    private final Inflater inflater = new Inflater(true);
-    private final byte[] unzippedDataPortion = new byte[2048];
-    private final AsciiByteCharSequence text = new AsciiByteCharSequence();
-    private byte[] receivedData = new byte[2048];
-    private byte[] unzippedData = new byte[2048];
+    private static final int BUFFER_SIZE = 2048;
 
+    private final Inflater inflater = new Inflater(true);
+    private final byte[] unzippedDataPortion = new byte[BUFFER_SIZE];
+    private final AsciiByteCharSequence text = new AsciiByteCharSequence();
     private final int skipHeaderSize;
+
+    private byte[] receivedData = new byte[BUFFER_SIZE];
+    private byte[] unzippedData = new byte[BUFFER_SIZE];
 
     public ZlibAsciiTextDecompressor(boolean skipGzipHeader) {
         this.skipHeaderSize = skipGzipHeader ? 10 : 0;
     }
 
     public CharSequence decompress(final ByteBuffer data) throws DataFormatException {
-        int copiedBytes = copyReceivedData(data);
-        int decompressedBytes = decompress(receivedData, copiedBytes);
+        final int copiedBytes = copyReceivedData(data);
+        final int decompressedBytes = decompress(receivedData, copiedBytes);
         if (decompressedBytes == -1) {
             return null;
         }
