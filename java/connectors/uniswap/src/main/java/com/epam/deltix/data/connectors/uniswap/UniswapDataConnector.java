@@ -7,6 +7,8 @@ import com.epam.deltix.data.connectors.commons.MdFeed;
 import com.epam.deltix.data.connectors.commons.MdModel;
 import com.epam.deltix.data.connectors.commons.RetriableFactory;
 import com.epam.deltix.data.connectors.commons.annotations.Connector;
+import com.epam.deltix.data.uniswap.BundleAction;
+import com.epam.deltix.data.uniswap.FactoryAction;
 import com.epam.deltix.data.uniswap.PoolAction;
 import com.epam.deltix.data.uniswap.TokenAction;
 import com.epam.deltix.timebase.messages.InstrumentMessage;
@@ -35,7 +37,8 @@ public class UniswapDataConnector extends DataConnector<UniswapConnectorSettings
                     outputFactory.create(),
                     errorListener,
                     logger(),
-                    5_000
+                    5_000,
+                    symbols
                     );
             result.start();
             return result;
@@ -50,7 +53,7 @@ public class UniswapDataConnector extends DataConnector<UniswapConnectorSettings
                         "uniswap"
                 )
         );
-/*
+
         DataConnector.DEBUG_OUTPUT_FACTORY = () -> new CloseableMessageOutput() {
             @Override
             public void close() {
@@ -59,15 +62,10 @@ public class UniswapDataConnector extends DataConnector<UniswapConnectorSettings
 
             @Override
             public void send(final InstrumentMessage message) {
-                //System.out.println(message);
-                if (message instanceof PoolAction) {
-                    if (!message.getSymbol().toString().contains("/")) {
-                        System.out.println(message);
-                    }
-                }
+                System.out.println(message);
             }
         };
-*/
+
         final MdModel model = dataConnector.model();
 
         final MdModel.Availability availability = model.available();
@@ -75,8 +73,13 @@ public class UniswapDataConnector extends DataConnector<UniswapConnectorSettings
 
         dataConnector.subscribe(
                 model.select().
-                        withCustom(PoolAction.class, TokenAction.class).
-                        build()
+                        withCustom(
+                                FactoryAction.class,
+                                BundleAction.class,
+                                PoolAction.class,
+                                TokenAction.class).
+                        build(),
+                "BUSD/WETH", "/ICHI"
         );
 
         System.in.read();

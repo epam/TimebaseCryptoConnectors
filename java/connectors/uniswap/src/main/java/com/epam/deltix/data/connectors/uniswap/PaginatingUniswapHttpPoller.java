@@ -8,31 +8,36 @@ import com.epam.deltix.data.connectors.commons.json.JsonValueParser;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.net.URISyntaxException;
+import java.util.Objects;
+import java.util.function.Predicate;
 
 public class PaginatingUniswapHttpPoller extends UniswapHttpPoller {
     private final JsonValueParser jsonParser = new JsonValueParser();
 
     private final GraphQlPagination query;
+    private final Predicate<JsonObject> objectFilter;
     private final JsonObjectsListener jsonListener;
 
     private boolean inObjectSequence;
 
     public PaginatingUniswapHttpPoller(
             final String graphQlUri,
-            final GraphQlQuery.Query query,
+            final GraphQlQuery.Query queryTemplate,
+            final Predicate<JsonObject> objectFilter,
             final int pageSize,
-            final JsonObjectsListener jsonListener) throws URISyntaxException {
-        this(graphQlUri, new GraphQlPagination(query, pageSize), jsonListener);
+            final JsonObjectsListener jsonListener) {
+        this(graphQlUri, new GraphQlPagination(queryTemplate, pageSize), objectFilter, jsonListener);
     }
 
     public PaginatingUniswapHttpPoller(
             final String graphQlUri,
             final GraphQlPagination query,
-            final JsonObjectsListener jsonListener) throws URISyntaxException {
+            final Predicate<JsonObject> objectFilter,
+            final JsonObjectsListener jsonListener) {
         super(graphQlUri);
 
         this.query = query;
+        this.objectFilter = objectFilter;
         this.jsonListener = jsonListener;
     }
 
@@ -80,8 +85,10 @@ public class PaginatingUniswapHttpPoller extends UniswapHttpPoller {
                 inObjectSequence = true;
             }
             array.items()
-                    .filter(item -> item.asObject() != null)
-                    .forEach(item -> jsonListener.onObject(item.asObject()));
+                    .map(item -> item.asObject())
+                    .filter(Objects::nonNull)
+                    .filter(objectFilter)
+                    .forEach(jsonListener::onObject);
         });
 
         final StringBuilder nextRequest = new StringBuilder();

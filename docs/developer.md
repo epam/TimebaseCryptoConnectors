@@ -6,13 +6,15 @@ Most of the featured market data connectors share common design and implementati
 
 ![](/docs/img/tb-ce-connectors1.png)
 
-Crypto market data connectors basically facilitate the market data flow from the specific crypto exchange to [TimeBase](https://github.com/finos/TimeBase-CE).
+Crypto market data connectors basically facilitate the market data flow from the specific crypto exchange to [TimeBase](https://github.com/finos/TimeBase-CE)- illustrated just below.
+
+![](/docs/img/tb-ce-connectors4.png)
 
 In this document we will cover a specific single-WebSocket data connector implementation. 
 
-![](/docs/img/tb-ce-connectors2.png)
+On the illustration below you see, that single WebSocket connectors use a special `SingleWsFeed` framework to subscribe for market data via a WebSocket connection with a specific crypto exchange and to write it to [TimeBase](https://github.com/finos/TimeBase-CE). In TimeBase, all data is organized in [streams](https://kb.timebase.info/community/overview/streams) in a form of chronologically arranged [messages](https://kb.timebase.info/community/overview/messages). In object-oriented programing languages messages can be seen as classes, each with a specific set of fields.
 
-On the above illustration you see, that single WebSocket connectors use a special `SingleWsFeed` framework to subscribe for market data via a WebSocket connection with a specific crypto exchange and to write it to [TimeBase](https://github.com/finos/TimeBase-CE). In TimeBase, all data is organized in [streams](https://kb.timebase.info/community/overview/streams) in a form of chronologically arranged [messages](https://kb.timebase.info/community/overview/messages). In object-oriented programing languages messages can be seen as classes, each with a specific set of fields.
+![](/docs/img/tb-ce-connectors2.png)
 
 We have developed a Universal Format [API](https://github.com/epam/TimebaseCryptoConnectors/blob/main/docs/universal.md) to consume market data from different exchanges of any level of granularity and effectively map it on the TimeBase [data model](#data-model). It includes classes that represent L1 (Top of the book), L2, and even L3 market data, you can use later to build your Order Book. 
 
@@ -65,7 +67,8 @@ Common settings for all connectors:
 |instruments|A list of trading instruments that will be received from the exchange.|yes|
 |model|Data model type.|yes|
 
-> Refer to [application.yaml](https://github.com/epam/TimebaseCryptoConnectors/blob/main/java/runner/src/main/resources/application.yaml#:~:text=connectors%3A,USDT%2CLTC%2DUSD%22) to view the default settings the connectors start with.
+> Refer to the [configuration](https://github.com/epam/TimebaseCryptoConnectors/blob/main/docs/configuration.md) to learn how to configure. 
+
 
 #### Connector-Specific Settings 
 

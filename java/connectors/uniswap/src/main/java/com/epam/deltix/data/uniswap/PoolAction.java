@@ -46,7 +46,7 @@ public class PoolAction extends MarketMessage implements UpdatableAction<Pool> {
         return action;
     }
 
-    public void setAction(Action action) {
+    public void setAction(final Action action) {
         this.action = action;
     }
 

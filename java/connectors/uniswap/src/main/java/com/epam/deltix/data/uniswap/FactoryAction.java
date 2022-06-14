@@ -3,13 +3,13 @@ package com.epam.deltix.data.uniswap;
 import com.epam.deltix.timebase.messages.MarketMessage;
 import com.epam.deltix.timebase.messages.SchemaElement;
 
-public class TokenAction extends MarketMessage implements UpdatableAction<Token> {
+public class FactoryAction extends MarketMessage implements UpdatableAction<Factory> {
     private int index;
     private boolean isLast;
-    private Token entity;
+    private Factory entity;
     private Action action;
 
-    public TokenAction() {
+    public FactoryAction() {
     }
 
     @SchemaElement()
@@ -33,11 +33,11 @@ public class TokenAction extends MarketMessage implements UpdatableAction<Token>
     }
 
     @SchemaElement()
-    public Token getEntity() {
+    public Factory getEntity() {
         return entity;
     }
 
-    public void setEntity(Token entity) {
+    public void setEntity(Factory entity) {
         this.entity = entity;
     }
 
@@ -46,12 +46,12 @@ public class TokenAction extends MarketMessage implements UpdatableAction<Token>
         return action;
     }
 
-    public void setAction(Action action) {
+    public void setAction(final Action action) {
         this.action = action;
     }
 
     @Override
-    public void setUpdatableAction(final Token entity, final Action action) {
+    public void setUpdatableAction(final Factory entity, final Action action) {
         setSymbol(entity.getTbSymbol());
         this.entity = entity;
         this.action = action;
@@ -59,7 +59,7 @@ public class TokenAction extends MarketMessage implements UpdatableAction<Token>
 
     @Override
     public String toString() {
-        return "TokenAction{" +
+        return "FactoryAction{" +
                 "symbol=" + getSymbol() +
                 ", index=" + index +
                 ", isLast=" + isLast +

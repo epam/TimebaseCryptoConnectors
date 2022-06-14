@@ -25,7 +25,7 @@ public enum MdModelEnum {
     }
 
     public static void withCustom(MdModel.ModifiableOptions options, MdModel model, Class<?>... customTypes) {
-        if (customTypes != null) {
+        if (customTypes != null && customTypes.length > 0) {
             options.withCustom(customTypes);
         } else {
             MdModel.Availability available = model.available();

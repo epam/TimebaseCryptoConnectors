@@ -6,8 +6,10 @@ public class GraphQlPagination {
 
     private int skip;
 
-    public GraphQlPagination(final GraphQlQuery.Query template, final int pageSize) {
-        this.query = template;
+    public GraphQlPagination(
+            final GraphQlQuery.Query template,
+            final int pageSize) {
+        this.query = template.copy(); // we make a copy to mutate the query in next()
         this.pageSize = pageSize;
 
         query.arguments().withFirst(pageSize);
