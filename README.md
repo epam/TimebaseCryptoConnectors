@@ -42,6 +42,7 @@ By default, we launch with the [default](https://raw.githubusercontent.com/epam/
 
 |Exchange|Supported Contracts|
 |------|------------------|
+|[AscendEX](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/ascendex)|SPOT, Linear Futures|
 |[BYBIT&nbsp;FUTURES](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/bybit-futures)|Inverse and Linear Futures|
 |[BYBIT&nbsp;SPOT](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/bybit-spot)|SPOT|
 |[BITFINEX](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/bitfinex)|SPOT, Linear Futures|
