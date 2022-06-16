@@ -136,7 +136,7 @@ configure(leafProjects) {
 
             dependency group: 'io.github.green4j', name: 'green-jelly', version: '0.1.0'
 
-            dependency 'org.springframework:spring-core:5.3.18' // conflict resolution
+            dependency 'org.springframework:spring-core:5.3.20' // conflict resolution
 
             dependency group: "org.springframework.boot", name: "spring-boot-starter-web", version:springBootVersion
             dependency group: "org.springframework.boot", name: "spring-boot-starter-actuator", version:springBootVersion
