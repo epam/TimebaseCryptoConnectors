@@ -3,7 +3,7 @@ name: Build CI
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: [main-*]
   pull_request:
     types: [opened, synchronize]
     branches: [main]
@@ -49,6 +49,15 @@ jobs:
           DOCKER_REGISTRY_URL: ${{ secrets.DOCKER_REGISTRY_URL }}
           DOCKER_REGISTRY_USERNAME: ${{ secrets.DOCKER_HUB_USER }}
           DOCKER_REGISTRY_PASSWORD: ${{ secrets.DOCKER_HUB_TOKEN }}
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'epam/timebase-crypto-connectors'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
       - name: Run tests
         run: ./gradlew test
       - name: Upload test results
