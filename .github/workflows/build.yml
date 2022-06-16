@@ -3,7 +3,7 @@ name: Build CI
 on:
   workflow_dispatch:
   push:
-    branches: [main-*]
+    branches: [main]
   pull_request:
     types: [opened, synchronize]
     branches: [main]
@@ -52,7 +52,6 @@ jobs:
       - name: Reading docker image version
         run: |
           versionSnapshot=`grep 'version=' gradle.properties | sed 's/version=\([^-]*\)/\1/'`
-          echo "version_snapshot=$versionSnapshot"
           echo "version_snapshot=$versionSnapshot" >> $GITHUB_ENV
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
