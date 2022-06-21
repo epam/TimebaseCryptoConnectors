@@ -54,12 +54,12 @@ In the previous example, we started one docker container with either all the ava
 # docker-compose configuration
 version: "3"
 services:
-  crypto-connectors:
+  crypto-connectors1:
     image: "epam/timebase-crypto-connectors:0.1.7"
     ports:
       - 8055:8055
     volumes:
-      - "./config:/runner/config"
+      - "./config1:/runner/config"
   crypto-connectors2:
     image: "epam/timebase-crypto-connectors:0.1.7"
     ports:
