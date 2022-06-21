@@ -74,6 +74,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
       - name: Release branch
         run: |
           git config user.name github-actions
