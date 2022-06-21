@@ -136,13 +136,13 @@ configure(leafProjects) {
 
             dependency group: 'io.github.green4j', name: 'green-jelly', version: '0.1.0'
 
-            dependency 'org.springframework:spring-core:5.3.18' // conflict resolution
+            dependency 'org.springframework:spring-core:5.3.20' // conflict resolution
 
             dependency group: "org.springframework.boot", name: "spring-boot-starter-web", version:springBootVersion
             dependency group: "org.springframework.boot", name: "spring-boot-starter-actuator", version:springBootVersion
 
 //            dependency 'com.google.guava:guava:30.1.1-jre'
-            dependency 'com.google.code.gson:gson:2.8.6'
+            dependency 'com.google.code.gson:gson:2.8.9'
 //            dependency 'com.google.code.findbugs:jsr305:3.0.2'
 //            dependency 'com.google.code.findbugs:annotations:3.0.1'
 //
@@ -183,14 +183,14 @@ configure(leafProjects) {
 //            dependency 'com.fasterxml.jackson.core:jackson-core:2.13.2'
 //            dependency 'com.fasterxml.jackson.core:jackson-annotations:2.10.3'
 
-            dependencySet(group: 'com.fasterxml.jackson.core', version: '2.13.2') {
+            dependencySet(group: 'com.fasterxml.jackson.core', version: '2.13.3') {
                 entry 'jackson-core'
                 entry 'jackson-annotations'
                 entry 'jackson-bom'
             }
 
-            dependency 'com.fasterxml.jackson.core:jackson-databind:2.13.2.2'
-            dependency 'com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.13.2'
+            dependency 'com.fasterxml.jackson.core:jackson-databind:2.13.3'
+            dependency 'com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.13.3'
 
             dependency 'javax.annotation:javax.annotation-api:1.3.2'
 

@@ -45,7 +45,7 @@ public class Iso8601DateTimeParser {
         final int day = (from.charAt(idx++) - '0') * 10 +
                 (from.charAt(idx++) - '0');
 
-        long valueDay = year * 10000 + month * 100 + day;
+        long valueDay = year * 10000L + month * 100L + day;
 
         if (lastValueDay != valueDay) {
             lastValueDayMidnightCalendar.set(Calendar.YEAR, year);
@@ -65,19 +65,19 @@ public class Iso8601DateTimeParser {
             throw new IllegalArgumentException("Expected 'T' at " + idx);
         }
         millis = lastValueDayMidnight +
-                TimeUnit.HOURS.toMillis((from.charAt(idx++) - '0') * 10 +
+                TimeUnit.HOURS.toMillis((from.charAt(idx++) - '0') * 10L +
                         (from.charAt(idx++) - '0'));
 
         if (from.charAt(idx++) != ':') {
             throw new IllegalArgumentException("Expected ':' at " + idx);
         }
-        millis += TimeUnit.MINUTES.toMillis((from.charAt(idx++) - '0') * 10 +
+        millis += TimeUnit.MINUTES.toMillis((from.charAt(idx++) - '0') * 10L +
                 (from.charAt(idx++) - '0'));
 
         if (from.charAt(idx++) != ':') {
             throw new IllegalArgumentException("Expected ':' at " + idx);
         }
-        millis += TimeUnit.SECONDS.toMillis((from.charAt(idx++) - '0') * 10 +
+        millis += TimeUnit.SECONDS.toMillis((from.charAt(idx++) - '0') * 10L +
                 (from.charAt(idx++) - '0'));
 
         nanos = 0;
@@ -87,8 +87,8 @@ public class Iso8601DateTimeParser {
                 throw new IllegalArgumentException("Expected '.' at " + idx);
             }
             millis = millis +
-                    (from.charAt(idx++) - '0') * 100 +
-                    (from.charAt(idx++) - '0') * 10 +
+                    (from.charAt(idx++) - '0') * 100L +
+                    (from.charAt(idx++) - '0') * 10L +
                     (from.charAt(idx++) - '0');
 
             if (from.length() > 24) { // .SSSSSS

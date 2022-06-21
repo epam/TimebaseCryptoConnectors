@@ -18,6 +18,8 @@ public class UniswapDataConnector extends DataConnector<UniswapConnectorSettings
     public UniswapDataConnector(final UniswapConnectorSettings settings) {
         super(settings, MdModel.availability()
             .withCustom(
+                    FactoryAction.class,
+                    BundleAction.class,
                     PoolAction.class,
                     TokenAction.class)
                 .build()

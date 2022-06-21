@@ -14,13 +14,13 @@ With [TimeBase Community Edition](https://github.com/finos/TimeBase-CE) you get 
 
 **Windows** 
 
-* [Install Docker](https://docs.docker.com/desktop/windows/install/) on your Windows machine. 
 * [Install WSL](https://docs.microsoft.com/en-us/windows/wsl/install). 
+* [Install Docker](https://docs.docker.com/desktop/windows/install/) on your Windows machine. 
 
 **Linux**
 
-* [Install Docker Compose](https://docs.docker.com/compose/install/).  
 * [Install Docker Engine](https://docs.docker.com/engine/install/).
+* [Install Docker Compose](https://docs.docker.com/compose/install/).  
 
 ### Start Connectors 
 
@@ -42,6 +42,7 @@ By default, we launch with the [default](https://raw.githubusercontent.com/epam/
 
 |Exchange|Supported Contracts|
 |------|------------------|
+|[AscendEX](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/ascendex)|SPOT, Linear Futures|
 |[BYBIT&nbsp;FUTURES](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/bybit-futures)|Inverse and Linear Futures|
 |[BYBIT&nbsp;SPOT](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/bybit-spot)|SPOT|
 |[BITFINEX](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/bitfinex)|SPOT, Linear Futures|
