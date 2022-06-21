@@ -48,7 +48,7 @@ connectors:
 
 ## Multiple Containers 
 
-In the previous example, we started one docker container with either all the available or a specific marker data connector. If it is necessary, you can also start more than one docker container concurrently, each with a specific application.yaml config. In the example below, we run two containers crypto-connectors and crypto-connectors2, each on a dedicated port and with a specific config.
+In the previous example, we started one docker container with either all the available or a specific marker data connector. If it is necessary, you can also start more than one docker container concurrently, each with a specific application.yaml config. In the example below, we run two containers crypto-connectors1 and crypto-connectors2, each on a dedicated port and with a specific config.
 
 ```yaml
 # docker-compose configuration
