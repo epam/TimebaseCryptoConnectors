@@ -46,3 +46,24 @@ connectors:
     instruments: "tBTCUSD=BTC/USD,tBTCEUR=BTC/EUR,tETCUSD=ETC/USD,tBTCF0:USTF0=BTCPC"
 ```
 
+## Multiple Containers 
+
+In the previous example, we started one docker container with either all the available or a specific marker data connector. If it is necessary, you can also start more than one docker container concurrently, each with a specific application.yaml config. In the example below, we run two containers crypto-connectors and crypto-connectors2, each on a dedicated port and with a specific config.
+
+```yaml
+# docker-compose configuration
+version: "3"
+services:
+  crypto-connectors:
+    image: "epam/timebase-crypto-connectors:0.1.7"
+    ports:
+      - 8055:8055
+    volumes:
+      - "./config:/runner/config"
+  crypto-connectors2:
+    image: "epam/timebase-crypto-connectors:0.1.7"
+    ports:
+      - 8056:8055
+    volumes:
+      - "./config2:/runner/config"
+```
