@@ -4,6 +4,10 @@ import java.util.function.Supplier;
 
 public interface Logger {
 
+    void warning(String msg);
+
+    void warning(String msg, Throwable t);
+
     void warning(Supplier<String> msgSupplier);
 
     void warning(Supplier<String> msgSupplier, Throwable t);

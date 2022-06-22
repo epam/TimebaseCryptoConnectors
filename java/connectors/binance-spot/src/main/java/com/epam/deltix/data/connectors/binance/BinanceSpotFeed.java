@@ -6,7 +6,6 @@ import com.epam.deltix.dfp.Decimal64Utils;
 import com.epam.deltix.qsrv.hf.tickdb.pub.TimeConstants;
 import com.epam.deltix.timebase.messages.TypeConstants;
 
-import java.net.URI;
 import java.util.*;
 
 public class BinanceSpotFeed extends MdSingleWsRestFeed {
@@ -57,17 +56,11 @@ public class BinanceSpotFeed extends MdSingleWsRestFeed {
 
         subscriptionJson.toJsonAndEoj(jsonWriter);
 
-        Map<String, URI> targetsMap = new HashMap<>();
-        Arrays.asList(symbols).forEach(symbol -> {
-            URI target = URI.create("https://api.binance.com/api/v3/depth?symbol=" + symbol.toUpperCase() + "&limit=1000");
-            targetsMap.put(symbol, target);
-        });
-
-        initBookSnapshots(targetsMap);
+        initBookSnapshots(Arrays.asList(symbols));
     }
 
     @Override
-    protected void onJson(final CharSequence data, final boolean last, final JsonWriter jsonWriter) {
+    protected void onWsJson(final CharSequence data, final boolean last, final JsonWriter jsonWriter) {
         jsonParser.parse(data);
 
         if (!last) {
@@ -100,9 +93,8 @@ public class BinanceSpotFeed extends MdSingleWsRestFeed {
                         } else if (U > lastUpdateId) {
                             firstBookUpdate.put(symbol, false);
                             snapshotIdMap.remove(symbol);
-                            Map<String, URI> targetsMap = new HashMap<>();
-                            targetsMap.put(symbol, URI.create("https://api.binance.com/api/v3/depth?symbol=" + symbol.toUpperCase() + "&limit=1000"));
-                            initBookSnapshots(targetsMap);
+                            buffer.clear();
+                            initBookSnapshots(Arrays.asList(symbol));
                         }
                     }
                 } else {
@@ -114,9 +106,8 @@ public class BinanceSpotFeed extends MdSingleWsRestFeed {
                         } else {
                             firstBookUpdate.put(symbol, true);
                             snapshotIdMap.remove(symbol);
-                            Map<String, URI> urlMap = new HashMap<>();
-                            urlMap.put(symbol, URI.create("https://api.binance.com/api/v3/depth?symbol=" + symbol.toUpperCase() + "&limit=1000"));
-                            initBookSnapshots(urlMap);
+                            buffer.clear();
+                            initBookSnapshots(Arrays.asList(symbol));
                         }
                     }
                 }
@@ -129,6 +120,34 @@ public class BinanceSpotFeed extends MdSingleWsRestFeed {
 
             processor().onTrade(object.getString("s").toLowerCase(), timestamp, price, size);
         }
+    }
+
+    @Override
+    protected void onRestJson(String url, CharSequence body) {
+        Map<String, String> queryParams = getQueryParams(url);
+
+        processBookSnapshot(body, queryParams.get("symbol"));
+    }
+
+    private Map<String, String> getQueryParams (String url) {
+        String query = url.substring(url.indexOf("?") + 1);
+        String[] pairs = query.split("&");
+
+        Map<String, String> queryPairs = new HashMap<>();
+
+        Arrays.asList(pairs).stream().forEach(pair -> {
+            int idx = pair.indexOf("=");
+            queryPairs.put(pair.substring(0, idx), pair.substring(idx + 1).toLowerCase());
+        });
+
+        return queryPairs;
+    }
+
+    private void initBookSnapshots(List<String> symbols) {
+        symbols.stream().forEach(symbol -> {
+            String target = "https://api.binance.com/api/v3/depth?symbol=" + symbol.toUpperCase() + "&limit=1000";
+            getAsync(target);
+        });
     }
 
     private void processBookUpdate(JsonObject object) {
@@ -166,8 +185,7 @@ public class BinanceSpotFeed extends MdSingleWsRestFeed {
         }
     }
 
-    @Override
-    protected void processBookSnapshot(String body, String symbol) {
+    protected void processBookSnapshot(CharSequence body, String symbol) {
         JsonValueParser jsonParser = new JsonValueParser();
         jsonParser.parse(body);
 

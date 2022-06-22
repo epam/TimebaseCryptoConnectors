@@ -219,7 +219,7 @@ connectors:
     1inchusdt=1INCH/USDT,adabtc=ADA/BTC,atombtc=ATOM/BTC,bandusdt=BAND/USDT,batbtc=BAT/BTC,bateth=BAT/ETH,
     btceur=BTC/EUR,chzusdt=CHZ/USDT,compusdt=COMP/USDT,dashbtc=DASH/BTC,dogeusdt=DOGE/USDT,
     dotbtc=DOt/BTC,dotusdt=DOT/USDT,eosbtc=EOS/BTC,eoseth=EOS/ETH,eoseur=EOS/EUR,eosusdt=EOS/USDT,ethbtc=ETH/BTC,
-    etheur=ETH/EUR,kncbtc=KNC/BTC,linkusdt=LINK/USDT,ltcbtc=LTC/BTC,ltcusdt=LTC/USDT,lunausdt=LUNA/USDT,
+    etheur=ETH/EUR,kncbtc=KNC/BTC,linkusdt=LINK/USDT,ltcbtc=LTC/BTC,ltcusdt=LTC/USDT,
     manausdt=MANA/USDT,manabtc=MANA/BTC,oceanusdt=OCEAN/USDT,omgbtc=OMG/BTC,omgeth=OMG/ETH,qtumbtc=QTUM/BTC,
     solusdt=SOL/USDT,trxbtc=TRX/BTC,trxeth=TRX/ETH,trxeur=TRX/EUR,tusdusdt=TUSD/USDT,uniusdt=UNI/USDT,
     usdcusdt=USDC/USDT,xlmbtc=XLM/BTC,xmrbtc=XMR/BTC,xrpbtc=XRP/BTC,xrpusdt=XRP/USDT,xtzbtc=XTZ/BTC,zecbtc=ZEC/BTC,

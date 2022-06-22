@@ -3,13 +3,13 @@ package com.epam.deltix.data.connectors.commons;
 import com.epam.deltix.data.connectors.commons.json.JsonWriter;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.WebSocket;
 import java.nio.ByteBuffer;
 import java.time.Duration;
-import java.util.Map;
 import java.util.concurrent.*;
 
 /**
@@ -29,10 +29,11 @@ public abstract class SingleWsRestFeed extends MdFeed {
     private final ScheduledExecutorService mgmtService;
     // to prevent data races and race conditions we do all the websocket event processing with
     // one single thread of an ExecutorService
-    private final ExecutorService wsExecutorService;
+    private final ExecutorService wsRestExecutorService;
 
     private final CountDownLatch waitForWsClose = new CountDownLatch(1);
 
+    private HttpClient httpClient; // used by one single thread of mgmtService
     private WebSocket webSocket; // used by one single thread of mgmtService
     private int state = INITIAL_STATE; // used by one single thread of mgmtService
 
@@ -108,7 +109,7 @@ public abstract class SingleWsRestFeed extends MdFeed {
                         r -> new Thread(r, SingleWsFeed.class.getSimpleName() + " Manager#" + uri)
                 );
 
-        wsExecutorService = Executors.newSingleThreadExecutor(
+        wsRestExecutorService = Executors.newSingleThreadExecutor(
                 r -> new Thread(r, SingleWsFeed.class.getSimpleName() + " Executor#" + uri)
         );
     }
@@ -183,7 +184,7 @@ public abstract class SingleWsRestFeed extends MdFeed {
                     lastReceiveTime = System.nanoTime();
 
                     try {
-                        onJson(data, last, jsonSender);
+                        onWsJson(data, last, jsonSender);
                     } catch (final Throwable t) {
                         SingleWsRestFeed.this.onError(t);
                     }
@@ -203,7 +204,7 @@ public abstract class SingleWsRestFeed extends MdFeed {
                                 logger.debug("WebSocket onBinary (last=" + last + ") [DECODED] " + json);
                             }
 
-                            onJson(json, last, jsonSender);
+                            onWsJson(json, last, jsonSender);
                         }
                     } catch (final Throwable t) {
                         SingleWsRestFeed.this.onError(t);
@@ -245,13 +246,15 @@ public abstract class SingleWsRestFeed extends MdFeed {
                 }
             };
             try {
-                webSocket = HttpClient.newBuilder().
-                        executor(wsExecutorService).
-                        build().
+                httpClient = HttpClient.newBuilder().
+                        executor(wsRestExecutorService).build();
+
+                webSocket = httpClient.
                         newWebSocketBuilder().
                         connectTimeout(Duration.ofSeconds(10)).
                         buildAsync(URI.create(uri),
                                 wsListener).join();
+
             } catch (final Throwable t) {
                 SingleWsRestFeed.this.onError(t);
             }
@@ -286,9 +289,9 @@ public abstract class SingleWsRestFeed extends MdFeed {
                 } catch (final InterruptedException e) {
                     wasInterrupted = e;
                 } finally {
-                    wsExecutorService.shutdownNow();
+                    wsRestExecutorService.shutdownNow();
                     try {
-                        wsExecutorService.awaitTermination(5, TimeUnit.SECONDS);
+                        wsRestExecutorService.awaitTermination(5, TimeUnit.SECONDS);
                     } catch (final InterruptedException e) {
                         wasInterrupted = e;
                     }
@@ -311,19 +314,24 @@ public abstract class SingleWsRestFeed extends MdFeed {
     }
 
     /**
-     * @param targetsMap
+     * @param url
      */
 
-    protected void initBookSnapshots(Map<String, URI> targetsMap) {
+    protected void getAsync(String url) {
         mgmtService.execute(() -> {
-            HttpClient client = HttpClient.newHttpClient();
-            targetsMap.keySet().stream().forEach(symbol -> {
-                client.sendAsync(
-                                HttpRequest.newBuilder(targetsMap.get(symbol)).GET().build(),
+            if (state != STARTED_STATE) {
+                return;
+            }
+
+            try {
+                httpClient.sendAsync(
+                                HttpRequest.newBuilder(new URI(url)).GET().build(),
                                 HttpResponse.BodyHandlers.ofString())
                         .thenApply(HttpResponse::body)
-                        .thenAccept(body -> processBookSnapshot(body, symbol));
-            });
+                        .thenAccept(body -> onRestJson(url, body));
+            } catch (URISyntaxException e) {
+                logger().warning("Error: url: " + url + " is not valid", e);
+            }
         });
     }
 
@@ -337,11 +345,11 @@ public abstract class SingleWsRestFeed extends MdFeed {
      * @param data
      * @param last
      */
-    protected abstract void onJson(CharSequence data, boolean last, JsonWriter jsonWriter);
+    protected abstract void onWsJson(CharSequence data, boolean last, JsonWriter jsonWriter);
 
     /**
+     * @param url
      * @param body
-     * @param symbol
      */
-    protected abstract void processBookSnapshot(String body, String symbol);
+    protected abstract void onRestJson(String url, CharSequence body);
 }
