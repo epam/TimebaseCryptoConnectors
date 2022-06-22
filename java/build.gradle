@@ -440,3 +440,4 @@ task cleanSubprojects {
 task cleanJava {
     dependsOn cleanSubprojects
 }
+build.dependsOn checkLicense
