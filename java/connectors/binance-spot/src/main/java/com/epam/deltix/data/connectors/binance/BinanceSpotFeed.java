@@ -16,7 +16,8 @@ public class BinanceSpotFeed extends MdSingleWsRestFeed {
     private Map<String, Long> lastUpdateIdMap = new HashMap<>();
 
     public BinanceSpotFeed(
-            final String uri,
+            final String wsUrl,
+            final String restUrl,
             final int depth,
             final MdModel.Options selected,
             final CloseableMessageOutput output,
@@ -25,7 +26,8 @@ public class BinanceSpotFeed extends MdSingleWsRestFeed {
             final String... symbols) {
 
         super("BINANCE",
-                uri,
+                wsUrl,
+                restUrl,
                 depth,
                 30000,
                 selected,
@@ -123,30 +125,14 @@ public class BinanceSpotFeed extends MdSingleWsRestFeed {
     }
 
     @Override
-    protected void onRestJson(String url, CharSequence body) {
-        Map<String, String> queryParams = getQueryParams(url);
-
-        processBookSnapshot(body, queryParams.get("symbol"));
-    }
-
-    private Map<String, String> getQueryParams (String url) {
-        String query = url.substring(url.indexOf("?") + 1);
-        String[] pairs = query.split("&");
-
-        Map<String, String> queryPairs = new HashMap<>();
-
-        Arrays.asList(pairs).stream().forEach(pair -> {
-            int idx = pair.indexOf("=");
-            queryPairs.put(pair.substring(0, idx), pair.substring(idx + 1).toLowerCase());
-        });
-
-        return queryPairs;
+    protected void onRestJson(String symbol, CharSequence body) {
+        processBookSnapshot(body, symbol);
     }
 
     private void initBookSnapshots(List<String> symbols) {
         symbols.stream().forEach(symbol -> {
-            String target = "https://api.binance.com/api/v3/depth?symbol=" + symbol.toUpperCase() + "&limit=1000";
-            getAsync(target);
+            String target = "/depth?symbol=" + symbol.toUpperCase() + "&limit=1000";
+            getAsync(symbol, target);
         });
     }
 

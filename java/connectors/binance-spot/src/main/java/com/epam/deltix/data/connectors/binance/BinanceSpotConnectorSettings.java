@@ -7,6 +7,8 @@ import com.epam.deltix.data.connectors.commons.annotations.ConnectorSettings;
 public class BinanceSpotConnectorSettings extends DataConnectorSettings {
     private String wsUrl = "wss://stream.binance.com:9443/ws";
 
+    private String restUrl = "https://api.binance.com/api/v3";
+
     public BinanceSpotConnectorSettings() {
         super();
     }
@@ -23,4 +25,13 @@ public class BinanceSpotConnectorSettings extends DataConnectorSettings {
     public void setWsUrl(String wsUrl) {
         this.wsUrl = wsUrl;
     }
+
+    public String getRestUrl() {
+        return restUrl;
+    }
+
+    public void setRestUrl(String restUrl) {
+        this.restUrl = restUrl;
+    }
+
 }

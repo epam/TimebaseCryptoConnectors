@@ -7,7 +7,8 @@ public abstract class MdSingleWsRestFeed extends SingleWsRestFeed {
 
     protected MdSingleWsRestFeed(
             final String exchange,
-            final String uri,
+            final String wsUrl,
+            final String restUrl,
             final int depth,
             final int idleTimeoutMillis,
             final MdModel.Options selected,
@@ -17,7 +18,8 @@ public abstract class MdSingleWsRestFeed extends SingleWsRestFeed {
             final String... symbols) {
 
         this(exchange,
-                uri,
+                wsUrl,
+                restUrl,
                 depth,
                 idleTimeoutMillis,
                 selected,
@@ -30,7 +32,8 @@ public abstract class MdSingleWsRestFeed extends SingleWsRestFeed {
 
     protected MdSingleWsRestFeed(
             final String exchange,
-            final String uri,
+            final String wsUrl,
+            final String restUrl,
             final int depth,
             final int idleTimeoutMillis,
             final MdModel.Options selected,
@@ -41,7 +44,8 @@ public abstract class MdSingleWsRestFeed extends SingleWsRestFeed {
             final String... symbols) {
 
         this(exchange,
-                uri,
+                wsUrl,
+                restUrl,
                 depth,
                 idleTimeoutMillis,
                 selected,
@@ -56,7 +60,8 @@ public abstract class MdSingleWsRestFeed extends SingleWsRestFeed {
 
     protected MdSingleWsRestFeed(
             final String exchange,
-            final String uri,
+            final String wsUrl,
+            final String restUrl,
             final int depth,
             final int idleTimeoutMillis,
             final MdModel.Options selected,
@@ -68,7 +73,8 @@ public abstract class MdSingleWsRestFeed extends SingleWsRestFeed {
             final String... symbols) {
 
         this(exchange,
-                uri,
+                wsUrl,
+                restUrl,
                 depth,
                 L2Processor.UNLIMITED_BOOK_SIZE,
                 idleTimeoutMillis,
@@ -84,7 +90,8 @@ public abstract class MdSingleWsRestFeed extends SingleWsRestFeed {
 
     protected MdSingleWsRestFeed(
             final String exchange,
-            final String uri,
+            final String wsUrl,
+            final String restUrl,
             final int depth,
             final int fixedDepth,
             final int idleTimeoutMillis,
@@ -96,7 +103,8 @@ public abstract class MdSingleWsRestFeed extends SingleWsRestFeed {
             final boolean skipGzipHeader,
             final String... symbols) {
 
-        super(uri,
+        super(wsUrl,
+                restUrl,
                 idleTimeoutMillis,
                 selected,
                 output,

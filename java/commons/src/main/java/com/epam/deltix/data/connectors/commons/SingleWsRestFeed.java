@@ -20,7 +20,8 @@ public abstract class SingleWsRestFeed extends MdFeed {
     private final static int STARTED_STATE = 1;
     private final static int CLOSED_STATE = 2;
 
-    private final String uri;
+    private final String wsUrl;
+    private final String restUrl;
     private final int idleTimeoutMillis;
     private final String[] symbols;
 
@@ -46,7 +47,8 @@ public abstract class SingleWsRestFeed extends MdFeed {
     private WsJsonFrameSender jsonSender;
 
     protected SingleWsRestFeed(
-            final String uri,
+            final String wsUrl,
+            final String restUrl,
             final int idleTimeoutMillis,
             final MdModel.Options selected,
             final CloseableMessageOutput output,
@@ -54,7 +56,8 @@ public abstract class SingleWsRestFeed extends MdFeed {
             final Logger logger,
             final String... symbols) {
 
-        this(uri,
+        this(wsUrl,
+                restUrl,
                 idleTimeoutMillis,
                 selected,
                 output,
@@ -65,7 +68,8 @@ public abstract class SingleWsRestFeed extends MdFeed {
     }
 
     protected SingleWsRestFeed(
-            final String uri,
+            final String wsUrl,
+            final String restUrl,
             final int idleTimeoutMillis,
             final MdModel.Options selected,
             final CloseableMessageOutput output,
@@ -74,7 +78,8 @@ public abstract class SingleWsRestFeed extends MdFeed {
             final PeriodicalJsonTask periodicalJsonTask,
             final String... symbols) {
 
-        this(uri,
+        this(wsUrl,
+                restUrl,
                 idleTimeoutMillis,
                 selected,
                 output,
@@ -86,7 +91,8 @@ public abstract class SingleWsRestFeed extends MdFeed {
     }
 
     protected SingleWsRestFeed(
-            final String uri,
+            final String wsUrl,
+            final String restUrl,
             final int idleTimeoutMillis,
             final MdModel.Options selected,
             final CloseableMessageOutput output,
@@ -98,7 +104,8 @@ public abstract class SingleWsRestFeed extends MdFeed {
 
         super(selected, output, errorListener, logger);
 
-        this.uri = uri;
+        this.wsUrl = wsUrl;
+        this.restUrl = restUrl;
         this.idleTimeoutMillis = idleTimeoutMillis;
         this.symbols = symbols;
         this.periodicalJsonTask = periodicalJsonTask;
@@ -106,11 +113,11 @@ public abstract class SingleWsRestFeed extends MdFeed {
 
         mgmtService =
                 Executors.newSingleThreadScheduledExecutor(
-                        r -> new Thread(r, SingleWsFeed.class.getSimpleName() + " Manager#" + uri)
+                        r -> new Thread(r, SingleWsFeed.class.getSimpleName() + " Manager#" + wsUrl)
                 );
 
         wsRestExecutorService = Executors.newSingleThreadExecutor(
-                r -> new Thread(r, SingleWsFeed.class.getSimpleName() + " Executor#" + uri)
+                r -> new Thread(r, SingleWsFeed.class.getSimpleName() + " Executor#" + wsUrl)
         );
     }
 
@@ -252,7 +259,7 @@ public abstract class SingleWsRestFeed extends MdFeed {
                 webSocket = httpClient.
                         newWebSocketBuilder().
                         connectTimeout(Duration.ofSeconds(10)).
-                        buildAsync(URI.create(uri),
+                        buildAsync(URI.create(wsUrl),
                                 wsListener).join();
 
             } catch (final Throwable t) {
@@ -314,23 +321,23 @@ public abstract class SingleWsRestFeed extends MdFeed {
     }
 
     /**
-     * @param url
+     * @param relativeUrl
      */
 
-    protected void getAsync(String url) {
+    protected void getAsync(String id, String relativeUrl) {
         mgmtService.execute(() -> {
             if (state != STARTED_STATE) {
                 return;
             }
-
+            String fullUrl = restUrl + relativeUrl;
             try {
                 httpClient.sendAsync(
-                                HttpRequest.newBuilder(new URI(url)).GET().build(),
+                                HttpRequest.newBuilder(new URI(fullUrl)).GET().build(),
                                 HttpResponse.BodyHandlers.ofString())
                         .thenApply(HttpResponse::body)
-                        .thenAccept(body -> onRestJson(url, body));
+                        .thenAccept(body -> onRestJson(id, body));
             } catch (URISyntaxException e) {
-                logger().warning("Error: url: " + url + " is not valid", e);
+                logger().warning("Error: url: " + fullUrl + " is not valid", e);
             }
         });
     }
@@ -348,8 +355,8 @@ public abstract class SingleWsRestFeed extends MdFeed {
     protected abstract void onWsJson(CharSequence data, boolean last, JsonWriter jsonWriter);
 
     /**
-     * @param url
+     * @param id
      * @param body
      */
-    protected abstract void onRestJson(String url, CharSequence body);
+    protected abstract void onRestJson(String id, CharSequence body);
 }

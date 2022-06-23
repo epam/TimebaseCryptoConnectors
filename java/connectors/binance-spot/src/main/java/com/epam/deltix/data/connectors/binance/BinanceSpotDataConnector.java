@@ -22,6 +22,7 @@ public class BinanceSpotDataConnector extends DataConnector<BinanceSpotConnector
         return errorListener -> {
             final BinanceSpotFeed result = new BinanceSpotFeed(
                     settings().getWsUrl(),
+                    settings().getRestUrl(),
                     settings().getDepth(),
                     selected,
                     outputFactory.create(),
