@@ -43,6 +43,17 @@ jobs:
           java-version: ${{ matrix.java }}
       - name: Build with gradle
         run: ./gradlew build checkLicense
+      - name: Link Checker
+        uses: lycheeverse/lychee-action@v1.5.0
+        with:
+          # Check all markdown and html files in repo (default)
+          args: --verbose --no-progress './**/*.md' './**/*.html'
+          # Use json as output format (instead of markdown)
+          # format: json
+          # Use different output file path
+          # output: /tmp/foo.txt
+          # Fail action on broken links
+          fail: true
       - name: Build docker
         run: ./gradlew :java:runner:dockerBuildImageAll
         env:
