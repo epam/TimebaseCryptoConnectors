@@ -47,7 +47,7 @@ public class ApplicationIntTest extends TbIntTestPreparation {
         TIMEBASE_CONTAINER.start();
         APP_CONTAINER.start();
 
-        Thread.sleep(20_000);
+        Thread.sleep(10_000);
     }
 
     @AfterAll
@@ -90,7 +90,7 @@ public class ApplicationIntTest extends TbIntTestPreparation {
     void tryReadSomeData(final ConnectorStream connector) {
         // we are trying to read 10 messages
         final int expectedNumOfMessages = 10;
-        final int timeoutSeconds = 5;
+        final int timeoutSeconds = 30;
 
         final DXTickStream stream = db.getStream(connector.stream);
 
