@@ -81,3 +81,6 @@ jobs:
         with:
           path: build/reports/junit
           name: Test Report
+      - name: Run Integration tests
+        run: |
+          ./gradlew intTest
