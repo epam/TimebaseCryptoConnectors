@@ -47,7 +47,7 @@ public class ApplicationIntTest extends TbIntTestPreparation {
         TIMEBASE_CONTAINER.start();
         APP_CONTAINER.start();
 
-        Thread.sleep(5000);
+        Thread.sleep(20_000);
     }
 
     @AfterAll
