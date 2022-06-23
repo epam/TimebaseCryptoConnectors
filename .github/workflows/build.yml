@@ -3,7 +3,7 @@ name: Build CI
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: [main, main-int-test]
   pull_request:
     types: [opened, synchronize]
     branches: [main]
@@ -81,3 +81,6 @@ jobs:
         with:
           path: build/reports/junit
           name: Test Report
+      - name: Run Integration tests
+        run: |
+          ./gradlew intTest
