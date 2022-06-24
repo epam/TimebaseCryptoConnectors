@@ -21,6 +21,16 @@ public class JulLogger implements Logger {
     }
 
     @Override
+    public void warning(String msg) {
+        jul.log(Level.WARNING, prefix + msg);
+    }
+
+    @Override
+    public void warning(String msg, Throwable t) {
+        jul.log(Level.WARNING, prefix + msg, t);
+    }
+
+    @Override
     public void warning(final Supplier<String> msgSupplier) {
         if (!jul.isLoggable(Level.WARNING)) {
             return;
