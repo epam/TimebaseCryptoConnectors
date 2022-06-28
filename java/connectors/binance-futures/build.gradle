@@ -1,0 +1,7 @@
+dependencies {
+    implementation project(":java:commons")
+
+    implementation "org.finos.timebase-ce:timebase-pub"
+    implementation "com.epam.deltix:timebase-messages"
+    implementation "com.epam.deltix:timebase-collections"
+}
