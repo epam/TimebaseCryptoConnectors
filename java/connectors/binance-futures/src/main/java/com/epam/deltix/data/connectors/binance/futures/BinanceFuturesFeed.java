@@ -1,4 +1,4 @@
-package com.epam.deltix.data.connectors.binance;
+package com.epam.deltix.data.connectors.binance.futures;
 
 import com.epam.deltix.data.connectors.commons.*;
 import com.epam.deltix.data.connectors.commons.json.*;
@@ -8,14 +8,14 @@ import com.epam.deltix.timebase.messages.TypeConstants;
 
 import java.util.*;
 
-public class BinanceSpotFeed extends MdSingleWsRestFeed {
+public class BinanceFuturesFeed extends MdSingleWsRestFeed {
     private final JsonValueParser jsonParser = new JsonValueParser();
     private Map<String, Queue<JsonObject>> updatesBufferMap = new HashMap<>();
     private Map<String, Boolean> firstBookUpdate = new HashMap<>();
     private Map<String, Long> snapshotIdMap = new HashMap<>();
     private Map<String, Long> lastUpdateIdMap = new HashMap<>();
 
-    public BinanceSpotFeed(
+    public BinanceFuturesFeed(
             final String wsUrl,
             final String restUrl,
             final int depth,
@@ -71,56 +71,57 @@ public class BinanceSpotFeed extends MdSingleWsRestFeed {
 
         JsonValue jsonValue = jsonParser.eoj();
         JsonObject object = jsonValue.asObject();
+        JsonObject wsData = object.getObject("data");
+        if (wsData != null) {
+            if ("depthUpdate".equals(wsData.getString("e"))) {
+                String symbol = wsData.getString("s").toLowerCase();
 
-        if ("depthUpdate".equals(object.getString("e"))) {
-            String symbol = object.getString("s").toLowerCase();
+                Queue<JsonObject> buffer = updatesBufferMap.get(symbol);
+                buffer.add(wsData);
 
-            Queue<JsonObject> buffer = updatesBufferMap.get(symbol);
-            buffer.add(object);
+                if (snapshotIdMap.containsKey((symbol))) {
+                    if (firstBookUpdate.get(symbol)) {
+                        while (buffer.size() > 0) {
+                            JsonObject updateItem = buffer.poll();
 
-            if (snapshotIdMap.containsKey((symbol))) {
-                if (firstBookUpdate.get(symbol)) {
-                    while (buffer.size() > 0) {
-                        JsonObject updateItem = buffer.poll();
-
-                        long U = updateItem.getLong("U");
-                        long u = updateItem.getLong("u");
-                        long lastUpdateId = snapshotIdMap.get(symbol);
-
-                        if (lastUpdateId >= U && lastUpdateId <= u) {
-                            processBookUpdate(updateItem);
-                            firstBookUpdate.put(symbol, false);
-                            lastUpdateIdMap.put(symbol, u);
-                            break;
-                        } else if (U > lastUpdateId) {
-                            firstBookUpdate.put(symbol, false);
-                            snapshotIdMap.remove(symbol);
-                            buffer.clear();
-                            initBookSnapshots(Arrays.asList(symbol));
+                            long U = updateItem.getLong("U");
+                            long u = updateItem.getLong("u");
+                            long lastUpdateId = snapshotIdMap.get(symbol);
+                            if (lastUpdateId >= U && lastUpdateId <= u) {
+                                processBookUpdate(updateItem);
+                                firstBookUpdate.put(symbol, false);
+                                lastUpdateIdMap.put(symbol, u);
+                                break;
+                            } else if (U > lastUpdateId) {
+                                firstBookUpdate.put(symbol, false);
+                                snapshotIdMap.remove(symbol);
+                                buffer.clear();
+                                initBookSnapshots(Arrays.asList(symbol));
+                            }
                         }
-                    }
-                } else {
-                    while (buffer.size() > 0) {
-                        JsonObject updateItem = buffer.poll();
-                        if (lastUpdateIdMap.get(symbol) + 1 == updateItem.getLong("U")) {
-                            processBookUpdate(updateItem);
-                            lastUpdateIdMap.put(symbol, updateItem.getLong("u"));
-                        } else {
-                            firstBookUpdate.put(symbol, true);
-                            snapshotIdMap.remove(symbol);
-                            buffer.clear();
-                            initBookSnapshots(Arrays.asList(symbol));
+                    } else {
+                        while (buffer.size() > 0) {
+                            JsonObject updateItem = buffer.poll();
+                            if (lastUpdateIdMap.get(symbol) == updateItem.getLong("pu")) {
+                                processBookUpdate(updateItem);
+                                lastUpdateIdMap.put(symbol, updateItem.getLong("u"));
+                            } else {
+                                firstBookUpdate.put(symbol, true);
+                                snapshotIdMap.remove(symbol);
+                                buffer.clear();
+                                initBookSnapshots(Arrays.asList(symbol));
+                            }
                         }
                     }
                 }
+            } else if ("trade".equals(wsData.getString("e"))) {
+                long timestamp = wsData.getLong("E");
+
+                long price = wsData.getDecimal64Required("p");
+                long size = wsData.getDecimal64Required("q");
+
+                processor().onTrade(wsData.getString("s").toLowerCase(), timestamp, price, size);
             }
-        } else if ("trade".equals(object.getString("e"))) {
-            long timestamp = object.getLong("E");
-
-            long price = object.getDecimal64Required("p");
-            long size = object.getDecimal64Required("q");
-
-            processor().onTrade(object.getString("s").toLowerCase(), timestamp, price, size);
         }
     }
 

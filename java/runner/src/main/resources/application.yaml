@@ -216,3 +216,27 @@ connectors:
       - "L2"
       - "TRADES"
     instruments: "btcusdt=BTC/USDT,ethusdt=ETH/USDT,lunausdt=LUNA/USDT"
+
+  binance-futures:
+    type: binance-futures
+    stream: binance-futures
+    wsUrl: wss://fstream.binance.com/stream
+    restUrl: https://fapi.binance.com/fapi/v1
+    depth: 20
+    model:
+      - "L1"
+      - "L2"
+      - "TRADES"
+    instruments: "btcusdt=BTC/USDT,ethusdt=ETH/USDT,adausdt=ADA/USDT"
+
+  binance-dlv:
+    type: binance-futures
+    stream: binance-futures
+    wsUrl: wss://dstream.binance.com/stream
+    restUrl: https://dapi.binance.com/dapi/v1
+    depth: 50
+    model:
+      - "L1"
+      - "L2"
+      - "TRADES"
+    instruments: "dotusd_perp=DOT/USD,bnbusd_220930=BNB/USD"

@@ -1,4 +1,4 @@
-package com.epam.deltix.data.connectors.binance;
+package com.epam.deltix.data.connectors.binance.spot;
 
 import com.epam.deltix.data.connectors.commons.*;
 import com.epam.deltix.data.connectors.commons.annotations.Connector;

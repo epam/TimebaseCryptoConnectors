@@ -1,21 +1,22 @@
-package com.epam.deltix.data.connectors.binance;
+package com.epam.deltix.data.connectors.binance.futures;
 
 import com.epam.deltix.data.connectors.commons.DataConnectorSettings;
 import com.epam.deltix.data.connectors.commons.annotations.ConnectorSettings;
 
-@ConnectorSettings("Binance-Spot")
-public class BinanceSpotConnectorSettings extends DataConnectorSettings {
-    private String wsUrl = "wss://stream.binance.com:9443/ws";
+@ConnectorSettings("Binance-Futures")
+public class BinanceFuturesConnectorSettings extends DataConnectorSettings {
+    private String wsUrl = "wss://fstream.binance.com/stream";
 
-    private String restUrl = "https://api.binance.com/api/v3";
+    private String restUrl = "https://fapi.binance.com/fapi/v1";
 
-    public BinanceSpotConnectorSettings() {
+    public BinanceFuturesConnectorSettings() {
         super();
     }
 
-    public BinanceSpotConnectorSettings(String tbUrl, String stream, String wsUrl) {
+    public BinanceFuturesConnectorSettings(String tbUrl, String stream, String wsUrl, String restUrl) {
         super(tbUrl, stream);
         this.wsUrl = wsUrl;
+        this.restUrl = restUrl;
     }
 
     public String getWsUrl() {
