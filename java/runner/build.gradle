@@ -81,8 +81,20 @@ task prepareFilesForDocker(type: Copy) {
     destinationDir project.file("$buildDir/docker")
 }
 
+task prepareFilesForIntTests(type: Copy) {
+    into ('/config') {
+        from "$projectDir/src/main/resources/application.yaml"
+    }
+
+    into ('/config') {
+        from "$projectDir/src/intTest/resources/logback.xml"
+    }
+
+    destinationDir project.file("$buildDir/intTest")
+}
+
 task intTest(type: Test) {
-    dependsOn(prepareFilesForDocker)
+    dependsOn(prepareFilesForDocker, prepareFilesForIntTests)
     useJUnitPlatform()
     testLogging {
         //showStandardStreams = true

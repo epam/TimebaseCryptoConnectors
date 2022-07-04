@@ -10,6 +10,7 @@ import com.epam.deltix.data.connectors.test.fixtures.integration.TbIntTestPrepar
 import com.epam.deltix.data.connectors.validator.DataValidator;
 import com.epam.deltix.data.connectors.validator.DataValidatorImpl;
 import com.epam.deltix.dfp.Decimal64Utils;
+import com.epam.deltix.qsrv.hf.stream.MessageWriter2;
 import com.epam.deltix.qsrv.hf.tickdb.pub.DXTickDB;
 import com.epam.deltix.qsrv.hf.tickdb.pub.DXTickStream;
 import com.epam.deltix.qsrv.hf.tickdb.pub.SelectionOptions;
@@ -25,9 +26,12 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
+import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -38,9 +42,13 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 public class ApplicationIntTest extends TbIntTestPreparation {
+
+    private static final Logger LOG = Logger.getLogger(ApplicationIntTest.class.getName());
 
     public static final GenericContainer APP_CONTAINER = new GenericContainer(
             new ImageFromDockerfile("localhost/timebase-crypto-connectors:snapshot").
@@ -49,7 +57,8 @@ public class ApplicationIntTest extends TbIntTestPreparation {
             withReuse(true).
             withNetwork(NETWORK).
             withExposedPorts(8055).
-            withEnv("JAVA_OPTS", "-Dtimebase.url=dxtick://timebase:8011").
+            withEnv("JAVA_OPTS", "-Dtimebase.url=dxtick://timebase:8011 -Dlogging.config=/runner/config/logback.xml").
+            withFileSystemBind("build/intTest/config", "/runner/config", BindMode.READ_WRITE).
             withStartupTimeout(Duration.ofMinutes(5));
 
     private static final int SMOKE_READ_TIMEOUT_S = 30;
@@ -85,19 +94,18 @@ public class ApplicationIntTest extends TbIntTestPreparation {
         db.close();
     }
 
-//    @TestFactory
-//    Stream<DynamicTest> testDataFeedInTbSmoke() throws Exception {
-//        return Arrays.stream(listStreams()).
-//                map(c -> DynamicTest.dynamicTest(
-//                        c.connector,
-//                        () -> tryReadSomeData(c)
-//                ));
-//    }
+    @TestFactory
+    Stream<DynamicTest> testDataFeedInTbSmoke() throws Exception {
+        return Arrays.stream(listStreams()).
+                map(c -> DynamicTest.dynamicTest(
+                        c.connector,
+                        () -> tryReadSomeData(c)
+                ));
+    }
 
     @TestFactory
     Stream<DynamicTest> testDataFeedInTbValidateOrderBook() throws Exception {
         return Arrays.stream(listStreams()).
-            filter(s -> ("huobi-futures".equalsIgnoreCase(s.stream) || "ascendex".equalsIgnoreCase(s.stream))).
             map(c -> DynamicTest.dynamicTest(
                 c.connector,
                 () -> tryBuildOrderBook(c)
@@ -147,18 +155,10 @@ public class ApplicationIntTest extends TbIntTestPreparation {
         Assertions.assertNotNull(stream, "Connector " + connector + " not started as expected. " +
             "No output stream found.");
 
+        Map<String, DataValidator> validators = new HashMap<>();
+        AtomicLong errors = new AtomicLong();
+
         try (TickCursor cursor = stream.select(TimeConstants.TIMESTAMP_UNKNOWN, new SelectionOptions(false, true))) {
-            Map<String, DataValidator> validators = new HashMap<>();
-            AtomicLong errors = new AtomicLong();
-            LogProcessor logProcessor = new LogProcessor() {
-                @Override
-                public void onLogEvent(Object sender, Severity severity, Throwable exception, CharSequence stringMessage) {
-                    if (severity == Severity.ERROR) {
-                        errors.addAndGet(1);
-                    }
-                    System.out.println(stringMessage);
-                }
-            };
             Assertions.assertTimeoutPreemptively(Duration.ofSeconds(timeoutSeconds), () -> {
                 int messages = 0;
                 while (cursor.next()) {
@@ -171,21 +171,36 @@ public class ApplicationIntTest extends TbIntTestPreparation {
                     if (message instanceof PackageHeaderInfo) {
                         PackageHeaderInfo packageHeader = (PackageHeaderInfo) message;
                         DataValidator validator = validators.computeIfAbsent(
-                            message.getSymbol().toString(), k -> createValidator(k, logProcessor)
+                            message.getSymbol().toString(),
+                            k -> createValidator(k, (sender, severity, exception, stringMessage) -> {
+                                    if (severity == Severity.ERROR) {
+                                        errors.addAndGet(1);
+                                        LOG.severe(severity + " | " + stringMessage);
+                                    } else {
+                                        LOG.warning(severity + " | " + stringMessage);
+                                    }
+
+                                    if (exception != null) {
+                                        LOG.log(Level.SEVERE, "Exception", exception);
+                                    }
+                                }
+                            )
                         );
 
                         validator.sendPackage(packageHeader);
 
                         if (++messages == expectedNumOfMessages) {
-                            System.out.println("Processed " + messages + " package headers");
+                            LOG.info("Processed " + messages + " package headers");
                             break;
                         }
                     }
                 }
             }, "Cannot read data for the " + connector);
-
-            Assertions.assertEquals(0L, errors.get());
         }
+
+        exportStream(stream);
+
+        Assertions.assertEquals(0L, errors.get());
     }
 
     private static DataValidator createValidator(String symbol, LogProcessor log) {
@@ -197,6 +212,24 @@ public class ApplicationIntTest extends TbIntTestPreparation {
         validator.setCheckBidMoreThanAsk(true);
 
         return validator;
+    }
+
+    private static void exportStream(DXTickStream stream) {
+        File outputFile = new File("build/test-results/intTest/streams/" + stream.getKey() + ".qsmsg.gz").getAbsoluteFile();
+        outputFile.getParentFile().mkdirs();
+        int messages = 0;
+        try (TickCursor cursor = stream.select(TimeConstants.TIMESTAMP_UNKNOWN, new SelectionOptions(true, false));
+             MessageWriter2 messageWriter = MessageWriter2.create(outputFile, null, null, stream.getPolymorphicDescriptors()))
+        {
+            while (cursor.next()) {
+                messageWriter.send(cursor.getMessage());
+                messages++;
+            }
+        } catch (ClassNotFoundException | IOException e) {
+            e.printStackTrace();
+        }
+
+        LOG.info("Exported stream: " + stream.getKey() + ". Messages count: " + messages);
     }
 
     private static JsonValue rest(final String url) throws Exception {

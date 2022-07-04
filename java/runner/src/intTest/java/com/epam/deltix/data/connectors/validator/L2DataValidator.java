@@ -301,7 +301,7 @@ public class L2DataValidator implements DataValidator {
                 validationCheck(headerInfo, tradeEntry);
             } else if (headerInfo.getEntries().get(i) instanceof BookResetEntry) {
                 BookResetEntry bookResetEntry = (BookResetEntry) headerInfo.getEntries().get(i);
-//                validationCheck(headerInfo, bookResetEntry); // todo
+                validationCheck(headerInfo, bookResetEntry); // todo
             } else {
                 sendMessageToLogger(headerInfo, headerInfo.getEntries().get(i).getExchangeId(), "Unexpected entry type for level2 messages", Severity.ERROR);
             }
@@ -312,6 +312,7 @@ public class L2DataValidator implements DataValidator {
         MarketSide<OrderBookQuote> quotes = book.getMarketSide(entryNew.getSide());
         if (entryNew.getLevel() > quotes.depth()) {
             sendMessageToLogger(headerInfo, entryNew.getExchangeId(), "Incorrect level. Greater than level's count + 1", Severity.ERROR);
+            return;
         }
 
         if (entryNew.getLevel() == 0) {
