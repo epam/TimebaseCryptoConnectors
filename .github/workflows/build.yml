@@ -91,5 +91,4 @@ jobs:
           name: integration-test-results
           path: |
             ./java/runner/build/reports/tests/intTest
-            ./java/runner/build/intTest/config
-            ./java/runner/build/test-results/streams
+            ./java/runner/build/intTest

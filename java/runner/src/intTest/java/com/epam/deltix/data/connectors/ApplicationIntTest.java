@@ -215,8 +215,10 @@ public class ApplicationIntTest extends TbIntTestPreparation {
     }
 
     private static void exportStream(DXTickStream stream) {
-        File outputFile = new File("build/test-results/intTest/streams/" + stream.getKey() + ".qsmsg.gz").getAbsoluteFile();
+        File outputFile = new File("build/intTest/streams/" + stream.getKey() + ".qsmsg.gz").getAbsoluteFile();
         outputFile.getParentFile().mkdirs();
+        LOG.info("Exporting stream: " + outputFile.getAbsolutePath());
+
         int messages = 0;
         try (TickCursor cursor = stream.select(TimeConstants.TIMESTAMP_UNKNOWN, new SelectionOptions(true, false));
              MessageWriter2 messageWriter = MessageWriter2.create(outputFile, null, null, stream.getPolymorphicDescriptors()))
