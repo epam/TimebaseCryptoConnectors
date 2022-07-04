@@ -216,15 +216,11 @@ public class KrakenSpotFeed extends MdSingleWsFeed {
                 size = TypeConstants.DECIMAL_NULL; // means delete the price
             }
 
-            try {
-                quotesListener.onQuote(
-                    change.getDecimal64Required(0),
-                    size,
-                    ask
-                );
-            } catch (Throwable t) {
-                int k = 3;
-            }
+            quotesListener.onQuote(
+                change.getDecimal64Required(0),
+                size,
+                ask
+            );
         }
     }
 }

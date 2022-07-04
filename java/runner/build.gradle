@@ -46,6 +46,7 @@ dependencies {
     intTestImplementation 'org.finos.timebase-ce:timebase-client'
     intTestImplementation 'com.epam.deltix:timebase-collections'
     intTestImplementation 'com.epam.deltix:timebase-messages'
+    intTestImplementation 'com.epam.deltix:orderbook-core'
     intTestImplementation "org.testcontainers:testcontainers"
     intTestImplementation "org.testcontainers:junit-jupiter"
     intTestImplementation 'org.junit.jupiter:junit-jupiter-api'
