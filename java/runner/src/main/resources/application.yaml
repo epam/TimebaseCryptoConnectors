@@ -189,7 +189,7 @@ connectors:
 
   okcoin:
     stream: okcoin
-    wsUrl: wss://real.okcoin.com:8443/ws/v3
+    wsUrl: wss://push1-v2.kucoin.com/endpoint
     depth: 20
     model:
       - "L1"
@@ -240,3 +240,14 @@ connectors:
       - "L2"
       - "TRADES"
     instruments: "dotusd_perp=DOT/USD,bnbusd_220930=BNB/USD"
+
+  kucoin:
+    stream: kucoin
+    wsUrl: wss://ws-api.kucoin.com/endpoint
+    restUrl: https://api.kucoin.com/api/v1
+    depth: 20
+    model:
+      - "L1"
+      - "L2"
+      - "TRADES"
+    instruments: "btc-usdt=BTC/USDT,eth-usdt=ETH/USDT"

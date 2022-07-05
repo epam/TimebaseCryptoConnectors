@@ -1,4 +1,4 @@
-package com.epam.deltix.data.connectors.binance.spot;
+package com.epam.deltix.data.connectors.kucoin;
 
 import com.epam.deltix.data.connectors.commons.*;
 import com.epam.deltix.data.connectors.commons.json.*;
@@ -8,14 +8,14 @@ import com.epam.deltix.timebase.messages.TypeConstants;
 
 import java.util.*;
 
-public class BinanceSpotFeed extends MdSingleWsRestFeed {
+public class KucoinFeed extends MdSingleWsRestFeed {
     private final JsonValueParser jsonParser = new JsonValueParser();
     private Map<String, Queue<JsonObject>> updatesBufferMap = new HashMap<>();
-    private Map<String, Boolean> firstBookUpdate = new HashMap<>();
-    private Map<String, Long> snapshotIdMap = new HashMap<>();
-    private Map<String, Long> lastUpdateIdMap = new HashMap<>();
+    private Map<String, Long> sequenceIdMap = new HashMap<>();
+    private long lastPingTime;
+    private long pingTimeout = 16000;
 
-    public BinanceSpotFeed(
+    public KucoinFeed(
             final String wsUrl,
             final String restUrl,
             final int depth,
@@ -26,7 +26,7 @@ public class BinanceSpotFeed extends MdSingleWsRestFeed {
             final boolean isAuthRequired,
             final String... symbols) {
 
-        super("BINANCE",
+        super("KUCOIN",
                 wsUrl,
                 restUrl,
                 depth,
@@ -41,26 +41,27 @@ public class BinanceSpotFeed extends MdSingleWsRestFeed {
 
     @Override
     protected void subscribe(JsonWriter jsonWriter, String... symbols) {
+        StringBuilder symbolsStringBuilder = new StringBuilder();
+        Arrays.stream(symbols).forEach(symbol -> symbolsStringBuilder.append(symbol).append(","));
+        String symbolsString = symbolsStringBuilder.deleteCharAt(symbolsStringBuilder.length() - 1)
+                .toString().toUpperCase();
+
         JsonValue subscriptionJson = JsonValue.newObject();
-
         JsonObject body = subscriptionJson.asObject();
-        body.putString("method", "SUBSCRIBE");
 
-        JsonArray params = body.putArray("params");
+        body.putInteger("id", 1);
+        body.putString("type", "subscribe");
+        body.putString("topic", "/market/level2:" + symbolsString);
+        body.putBoolean("response", false);
+
         Arrays.asList(symbols).forEach(symbol -> {
-            params.addString(symbol + "@depth");
-            params.addString(symbol + "@trade");
-
             Queue<JsonObject> updatesQueue = new LinkedList<>();
             updatesBufferMap.put(symbol, updatesQueue);
         });
 
-        //mandatory id for the response tracking
-        body.putInteger("id", 1);
-
         subscriptionJson.toJsonAndEoj(jsonWriter);
-
-        initBookSnapshots(Arrays.asList(symbols));
+        lastPingTime = System.currentTimeMillis();
+        initBookSnapshots(symbols);
     }
 
     @Override
@@ -74,45 +75,23 @@ public class BinanceSpotFeed extends MdSingleWsRestFeed {
         JsonValue jsonValue = jsonParser.eoj();
         JsonObject object = jsonValue.asObject();
 
-        if ("depthUpdate".equals(object.getString("e"))) {
-            String symbol = object.getString("s").toLowerCase();
+        if ("trade.l2update".equals(object.getString("subject"))) {
+            JsonObject jasonData = object.getObject("data");
+            String symbol = jasonData.getString("symbol").toLowerCase();
 
             Queue<JsonObject> buffer = updatesBufferMap.get(symbol);
-            buffer.add(object);
+            buffer.add(jasonData);
 
-            if (snapshotIdMap.containsKey((symbol))) {
-                if (firstBookUpdate.get(symbol)) {
-                    while (buffer.size() > 0) {
-                        JsonObject updateItem = buffer.poll();
-
-                        long U = updateItem.getLong("U");
-                        long u = updateItem.getLong("u");
-                        long lastUpdateId = snapshotIdMap.get(symbol);
-
-                        if (lastUpdateId >= U && lastUpdateId <= u) {
-                            processBookUpdate(updateItem);
-                            firstBookUpdate.put(symbol, false);
-                            lastUpdateIdMap.put(symbol, u);
-                            break;
-                        } else if (U > lastUpdateId) {
-                            firstBookUpdate.put(symbol, false);
-                            snapshotIdMap.remove(symbol);
-                            buffer.clear();
-                            initBookSnapshots(Arrays.asList(symbol));
-                        }
-                    }
-                } else {
-                    while (buffer.size() > 0) {
-                        JsonObject updateItem = buffer.poll();
-                        if (lastUpdateIdMap.get(symbol) + 1 == updateItem.getLong("U")) {
-                            processBookUpdate(updateItem);
-                            lastUpdateIdMap.put(symbol, updateItem.getLong("u"));
-                        } else {
-                            firstBookUpdate.put(symbol, true);
-                            snapshotIdMap.remove(symbol);
-                            buffer.clear();
-                            initBookSnapshots(Arrays.asList(symbol));
-                        }
+            if (sequenceIdMap.containsKey((symbol))) {
+                while (buffer.size() > 0) {
+                    JsonObject updateItem = buffer.poll();
+                    if (sequenceIdMap.get(symbol) + 1 == updateItem.getLong("sequenceStart")) {
+                        processBookUpdate(updateItem);
+                        sequenceIdMap.put(symbol, updateItem.getLong("sequenceEnd"));
+                    } else if (sequenceIdMap.get(symbol) + 1 < updateItem.getLong("sequenceStart")) {
+                        sequenceIdMap.remove(symbol);
+                        buffer.clear();
+                        initBookSnapshots(symbol);
                     }
                 }
             }
@@ -124,6 +103,20 @@ public class BinanceSpotFeed extends MdSingleWsRestFeed {
 
             processor().onTrade(object.getString("s").toLowerCase(), timestamp, price, size);
         }
+
+        long now = System.currentTimeMillis();
+        long timeDelta = now - lastPingTime;
+
+        if (timeDelta > pingTimeout) {
+            JsonValue pingJson = JsonValue.newObject();
+            JsonObject pingBody = pingJson.asObject();
+
+            pingBody.putString("id", "1");
+            pingBody.putString("type", "ping");
+
+            lastPingTime = now;
+            pingJson.toJsonAndEoj(jsonWriter);
+        }
     }
 
     @Override
@@ -133,23 +126,37 @@ public class BinanceSpotFeed extends MdSingleWsRestFeed {
 
     @Override
     protected String authenticate(String wsUrl) {
-        return null;
+        String resultUrl = wsUrl;
+        CharSequence body = post("/bullet-public");
+
+        JsonValueParser jsonParser = new JsonValueParser();
+        jsonParser.parse(body);
+        JsonValue jsonValue = jsonParser.eoj();
+        JsonObject authObject = jsonValue.asObject();
+
+        if ("200000".equals(authObject.getString("code"))) {
+            String token = authObject.getObject("data").getString("token");
+            resultUrl = resultUrl + "?token=" + token;
+        }
+
+        return resultUrl;
     }
 
-    private void initBookSnapshots(List<String> symbols) {
-        symbols.stream().forEach(symbol -> {
-            String target = "/depth?symbol=" + symbol.toUpperCase() + "&limit=1000";
+    private void initBookSnapshots(String... symbols) {
+        Arrays.asList(symbols).stream().forEach(symbol -> {
+            String target = "/market/orderbook/level2_100?symbol=" + symbol.toUpperCase();
             getAsync(symbol, target);
         });
     }
 
     private void processBookUpdate(JsonObject object) {
-        long timestamp = object.getLong("E");
+        JsonObject changes = object.getObject("changes");
 
-        QuoteSequenceProcessor quotesListener = processor().onBookUpdate(object.getString("s").toLowerCase(), timestamp);
+        QuoteSequenceProcessor quotesListener = processor().onBookUpdate(object.getString("symbol").toLowerCase(),
+                TimeConstants.TIMESTAMP_UNKNOWN);
 
-        processChanges(quotesListener, object.getArray("b"), false);
-        processChanges(quotesListener, object.getArray("a"), true);
+        processChanges(quotesListener, changes.getArray("bids"), false);
+        processChanges(quotesListener, changes.getArray("asks"), true);
 
         quotesListener.onFinish();
     }
@@ -184,18 +191,18 @@ public class BinanceSpotFeed extends MdSingleWsRestFeed {
 
         JsonValue jsonValue = jsonParser.eoj();
         JsonObject object = jsonValue.asObject();
+        JsonObject data = object.getObject("data");
 
-        long lastUpdateId = object.getLong("lastUpdateId");
+        long sequence = Long.parseLong(data.getString("sequence"));
 
-        if (lastUpdateId != 0) {
-            QuoteSequenceProcessor quotesListener = processor().onBookSnapshot(symbol, TimeConstants.TIMESTAMP_UNKNOWN);
+        if (sequence != 0) {
+            QuoteSequenceProcessor quotesListener = processor().onBookSnapshot(symbol, data.getLong("time"));
 
-            processSnapshotSide(quotesListener, object.getArray("bids"), false);
-            processSnapshotSide(quotesListener, object.getArray("asks"), true);
+            processSnapshotSide(quotesListener, data.getArray("bids"), false);
+            processSnapshotSide(quotesListener, data.getArray("asks"), true);
             quotesListener.onFinish();
 
-            snapshotIdMap.put(symbol, lastUpdateId);
-            firstBookUpdate.put(symbol, true);
+            sequenceIdMap.put(symbol, sequence);
         } else {
             String message = object.getString("msg");
             if (message != null && !message.isEmpty()) {

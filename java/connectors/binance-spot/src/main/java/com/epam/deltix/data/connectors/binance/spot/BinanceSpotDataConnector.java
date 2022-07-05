@@ -28,6 +28,7 @@ public class BinanceSpotDataConnector extends DataConnector<BinanceSpotConnector
                     outputFactory.create(),
                     errorListener,
                     logger(),
+                    false,
                     symbols);
             result.start();
             return result;

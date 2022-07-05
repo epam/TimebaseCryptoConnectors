@@ -1,7 +1,11 @@
 package com.epam.deltix.data.connectors.commons;
 
+import com.epam.deltix.data.connectors.commons.json.JsonObject;
+import com.epam.deltix.data.connectors.commons.json.JsonValue;
+import com.epam.deltix.data.connectors.commons.json.JsonValueParser;
 import com.epam.deltix.data.connectors.commons.json.JsonWriter;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
@@ -46,6 +50,8 @@ public abstract class SingleWsRestFeed extends MdFeed {
 
     private WsJsonFrameSender jsonSender;
 
+    private boolean isAuthRequired;
+
     protected SingleWsRestFeed(
             final String wsUrl,
             final String restUrl,
@@ -54,6 +60,7 @@ public abstract class SingleWsRestFeed extends MdFeed {
             final CloseableMessageOutput output,
             final ErrorListener errorListener,
             final Logger logger,
+            final boolean isAuthRequired,
             final String... symbols) {
 
         this(wsUrl,
@@ -64,6 +71,7 @@ public abstract class SingleWsRestFeed extends MdFeed {
                 errorListener,
                 logger,
                 null,
+                isAuthRequired,
                 symbols);
     }
 
@@ -76,6 +84,7 @@ public abstract class SingleWsRestFeed extends MdFeed {
             final ErrorListener errorListener,
             final Logger logger,
             final PeriodicalJsonTask periodicalJsonTask,
+            final boolean isAuthRequired,
             final String... symbols) {
 
         this(wsUrl,
@@ -87,6 +96,7 @@ public abstract class SingleWsRestFeed extends MdFeed {
                 logger,
                 periodicalJsonTask,
                 false,
+                isAuthRequired,
                 symbols);
     }
 
@@ -100,6 +110,7 @@ public abstract class SingleWsRestFeed extends MdFeed {
             final Logger logger,
             final PeriodicalJsonTask periodicalJsonTask,
             final boolean skipGzipHeader,
+            final boolean isAuthRequired,
             final String... symbols) {
 
         super(selected, output, errorListener, logger);
@@ -110,6 +121,7 @@ public abstract class SingleWsRestFeed extends MdFeed {
         this.symbols = symbols;
         this.periodicalJsonTask = periodicalJsonTask;
         this.skipGzipHeader = skipGzipHeader;
+        this.isAuthRequired = isAuthRequired;
 
         mgmtService =
                 Executors.newSingleThreadScheduledExecutor(
@@ -256,10 +268,15 @@ public abstract class SingleWsRestFeed extends MdFeed {
                 httpClient = HttpClient.newBuilder().
                         executor(wsRestExecutorService).build();
 
+                String websocketUrl = wsUrl;
+                if (isAuthRequired) {
+                    websocketUrl = authenticate(wsUrl);
+                }
+
                 webSocket = httpClient.
                         newWebSocketBuilder().
                         connectTimeout(Duration.ofSeconds(10)).
-                        buildAsync(URI.create(wsUrl),
+                        buildAsync(URI.create(websocketUrl),
                                 wsListener).join();
 
             } catch (final Throwable t) {
@@ -343,6 +360,28 @@ public abstract class SingleWsRestFeed extends MdFeed {
     }
 
     /**
+     * @param relativeUrl
+     */
+    protected CharSequence post(String relativeUrl) {
+        CharSequence response = null;
+        String fullUrl = restUrl + relativeUrl;
+
+        try {
+            response = httpClient.send(
+                    HttpRequest.newBuilder(new URI(fullUrl)).POST(HttpRequest.BodyPublishers.noBody()).build(),
+                    HttpResponse.BodyHandlers.ofString()).body();
+        } catch (URISyntaxException e) {
+            logger().warning("Error: url: " + fullUrl + " is not valid", e);
+        } catch (InterruptedException e) {
+            logger().warning("Error: url: " + fullUrl + " InterruptedException", e);
+        } catch (IOException e) {
+            logger().warning("Error: url: " + fullUrl + " IOException", e);
+        }
+
+        return response;
+    }
+
+    /**
      * @param jsonWriter
      * @param symbols
      */
@@ -359,4 +398,9 @@ public abstract class SingleWsRestFeed extends MdFeed {
      * @param body
      */
     protected abstract void onRestJson(String id, CharSequence body);
+
+    /**
+     * @param wsUrl
+     */
+    protected abstract String authenticate(String wsUrl);
 }
