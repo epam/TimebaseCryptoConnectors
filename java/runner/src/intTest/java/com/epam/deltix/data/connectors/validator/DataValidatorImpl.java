@@ -5,10 +5,16 @@ import com.epam.deltix.containers.MutableString;
 import com.epam.deltix.containers.interfaces.LogProcessor;
 import com.epam.deltix.containers.interfaces.Severity;
 import com.epam.deltix.dfp.Decimal64Utils;
+import com.epam.deltix.qsrv.hf.tickdb.pub.*;
+import com.epam.deltix.timebase.messages.InstrumentMessage;
 import com.epam.deltix.timebase.messages.TypeConstants;
 import com.epam.deltix.timebase.messages.universal.*;
 import com.epam.deltix.util.collections.generated.ObjectArrayList;
 import org.testcontainers.shaded.org.apache.commons.lang.NotImplementedException;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 @SuppressWarnings("all")
 public class DataValidatorImpl implements DataValidator {
@@ -240,6 +246,58 @@ public class DataValidatorImpl implements DataValidator {
     @Override
     public Severity getMinimalSeverityToLog() {
         return minSeverity;
+    }
+
+    public static void main(String[] args) {
+        DXTickDB db = TickDBFactory.openFromUrl("dxtick://localhost:8011", true);
+        final DXTickStream stream = db.getStream("huobi-futures-test");
+
+        Map<String, DataValidator> validators = new HashMap<>();
+        AtomicLong errors = new AtomicLong();
+
+        try (TickCursor cursor = stream.select(TimeConstants.TIMESTAMP_UNKNOWN, new SelectionOptions(false, true))) {
+            int messages = 0;
+            while (cursor.next()) {
+                InstrumentMessage message = cursor.getMessage();
+                if (message.getSymbol() == null) {
+                    continue;
+                }
+
+                // validate
+                if (message instanceof PackageHeaderInfo) {
+                    PackageHeaderInfo packageHeader = (PackageHeaderInfo) message;
+                    DataValidator validator = validators.computeIfAbsent(
+                        message.getSymbol().toString(),
+                        k -> createValidator(k, (sender, severity, exception, stringMessage) -> {
+                                if (severity == Severity.ERROR) {
+                                    errors.addAndGet(1);
+                                    System.out.println(severity + " | " + stringMessage);
+                                } else {
+                                    System.out.println(severity + " | " + stringMessage);
+                                }
+
+                                if (exception != null) {
+                                    exception.printStackTrace();
+                                }
+                            }
+                        )
+                    );
+
+                    validator.sendPackage(packageHeader);
+                }
+            }
+        }
+    }
+
+    private static DataValidator createValidator(String symbol, LogProcessor log) {
+        DataValidatorImpl validator = new DataValidatorImpl(symbol, log,
+            Decimal64Utils.parse("0.0000000000000000001"), Decimal64Utils.parse("0.0000000000000000001"),
+            true
+        );
+        validator.setCheckEmptySide(true);
+        validator.setCheckBidMoreThanAsk(true);
+
+        return validator;
     }
 
 }
