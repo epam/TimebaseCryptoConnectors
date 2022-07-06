@@ -46,20 +46,33 @@ public class KucoinFeed extends MdSingleWsRestFeed {
         String symbolsString = symbolsStringBuilder.deleteCharAt(symbolsStringBuilder.length() - 1)
                 .toString().toUpperCase();
 
-        JsonValue subscriptionJson = JsonValue.newObject();
-        JsonObject body = subscriptionJson.asObject();
+        //Order book updates subscription
+        JsonValue orderBookUpdatesJson = JsonValue.newObject();
+        JsonObject orderBookUpdatesBody = orderBookUpdatesJson.asObject();
 
-        body.putInteger("id", 1);
-        body.putString("type", "subscribe");
-        body.putString("topic", "/market/level2:" + symbolsString);
-        body.putBoolean("response", false);
+        orderBookUpdatesBody.putInteger("id", 1);
+        orderBookUpdatesBody.putString("type", "subscribe");
+        orderBookUpdatesBody.putString("topic", "/market/level2:" + symbolsString);
+        orderBookUpdatesBody.putBoolean("response", false);
 
         Arrays.asList(symbols).forEach(symbol -> {
             Queue<JsonObject> updatesQueue = new LinkedList<>();
             updatesBufferMap.put(symbol, updatesQueue);
         });
+        orderBookUpdatesJson.toJsonAndEoj(jsonWriter);
 
-        subscriptionJson.toJsonAndEoj(jsonWriter);
+        //Trades subscription
+        JsonValue tradesJson = JsonValue.newObject();
+        JsonObject tradesBody = tradesJson.asObject();
+
+        tradesBody.putInteger("id", 2);
+        tradesBody.putString("type", "subscribe");
+        tradesBody.putString("topic", "/market/match:" + symbolsString);
+        tradesBody.putBoolean("response", false);
+        tradesBody.putBoolean("privateChannel", false);
+
+        tradesJson.toJsonAndEoj(jsonWriter);
+
         lastPingTime = System.currentTimeMillis();
         initBookSnapshots(symbols);
     }
@@ -75,8 +88,10 @@ public class KucoinFeed extends MdSingleWsRestFeed {
         JsonValue jsonValue = jsonParser.eoj();
         JsonObject object = jsonValue.asObject();
 
-        if ("trade.l2update".equals(object.getString("subject"))) {
-            JsonObject jasonData = object.getObject("data");
+        String subject = object.getString("subject");
+        JsonObject jasonData = object.getObject("data");
+
+        if ("trade.l2update".equals(subject)) {
             String symbol = jasonData.getString("symbol").toLowerCase();
 
             Queue<JsonObject> buffer = updatesBufferMap.get(symbol);
@@ -95,8 +110,16 @@ public class KucoinFeed extends MdSingleWsRestFeed {
                     }
                 }
             }
+        } else if ("trade.l3match".equals(subject)) {
+            String symbol = jasonData.getString("symbol").toLowerCase();
+            Long timestamp = jasonData.getLong("time");
+            long price = jasonData.getDecimal64Required("price");
+            long size = jasonData.getDecimal64Required("size");
+
+            processor().onTrade(symbol, timestamp, price, size);
         }
 
+        //ping server
         long now = System.currentTimeMillis();
         long timeDelta = now - lastPingTime;
 
