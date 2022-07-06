@@ -20,7 +20,6 @@ import java.util.concurrent.atomic.AtomicLong;
 public class DataValidatorImpl implements DataValidator {
     L1DataValidator l1dataValidator;
     L2DataValidator l2dataValidator;
-    L3DataValidator l3dataValidator;
     private boolean isL1Data, isL2Data, isL3Data;
     private PackageHeader l1header = new PackageHeader();
     private PackageHeader l2header = new PackageHeader();
@@ -38,20 +37,19 @@ public class DataValidatorImpl implements DataValidator {
 
     private boolean waitingForSnapshot = true;
 
+    private long anchorPrice = Decimal64Utils.NULL;
+
     public DataValidatorImpl(CharSequence symbol, LogProcessor logProcessor, long tickPrice, long tickSize, boolean checkNegativePrice) {
         this.logProcessor = logProcessor;
         l1dataValidator = new L1DataValidator(symbol, logProcessor, tickPrice, tickSize, checkNegativePrice);
         l2dataValidator = new L2DataValidator(symbol, logProcessor, tickPrice, tickSize, checkNegativePrice);
-        l3dataValidator = new L3DataValidator(symbol, logProcessor, tickPrice, tickSize, checkNegativePrice);
         if (Decimal64Utils.isNaN(tickPrice)) {
             l1dataValidator.checkTickPrice = false;
             l2dataValidator.checkTickPrice = false;
-            l3dataValidator.checkTickPrice = false;
         }
         if (Decimal64Utils.isNaN(tickSize)) {
             l1dataValidator.checkTickSize = false;
             l2dataValidator.checkTickSize = false;
-            l3dataValidator.checkTickSize = false;
         }
 
         l1header.setEntries(new ObjectArrayList<>());
@@ -118,21 +116,18 @@ public class DataValidatorImpl implements DataValidator {
         }
         if (l1header.getEntries().size() > 0) l1dataValidator.sendPackage(l1header);
         if (l2header.getEntries().size() > 0) l2dataValidator.sendPackage(l2header);
-        if (l3header.getEntries().size() > 0) l3dataValidator.sendPackage(l3header);
     }
 
     public void setCheckBidMoreThanAsk(boolean value) {
         this.checkBidMoreThanAsk = value;
         l1dataValidator.checkBidMoreThanAsk = value;
         l2dataValidator.checkBidMoreThanAsk = value;
-        l3dataValidator.checkBidMoreThanAsk = value;
     }
 
     public void setCheckEmptySide(boolean value) {
         this.checkEmptySide = value;
         l1dataValidator.checkEmptySide = value;
         l2dataValidator.checkEmptySide = value;
-        l3dataValidator.checkEmptySide = value;
     }
 
     public void setL2MarketDepth(short marketDepth) {
@@ -146,12 +141,9 @@ public class DataValidatorImpl implements DataValidator {
             l2dataValidator.checkExchangeMisPrice = true;
             l1dataValidator.exchangeMisPrice = misprisingLevel;
             l1dataValidator.checkExchangeMisPrice = true;
-            l3dataValidator.exchangeMisPrice = misprisingLevel;
-            l3dataValidator.checkExchangeMisPrice = true;
         } else {
             l2dataValidator.checkExchangeMisPrice = false;
             l1dataValidator.checkExchangeMisPrice = false;
-            l3dataValidator.checkExchangeMisPrice = false;
         }
     }
 
@@ -161,12 +153,9 @@ public class DataValidatorImpl implements DataValidator {
             l2dataValidator.checkLevelMisPrice = true;
             l1dataValidator.levelMisPrice = misprisingLevel;
             l1dataValidator.checkLevelMisPrice = true;
-            l3dataValidator.levelMisPrice = misprisingLevel;
-            l3dataValidator.checkLevelMisPrice = true;
         } else {
             l2dataValidator.checkLevelMisPrice = false;
             l1dataValidator.checkLevelMisPrice = false;
-            l3dataValidator.checkLevelMisPrice = false;
         }
     }
 
@@ -176,12 +165,9 @@ public class DataValidatorImpl implements DataValidator {
             l2dataValidator.checkPackageMisPrice = true;
             l1dataValidator.packageMisPrice = misprisingLevel;
             l1dataValidator.checkPackageMisPrice = true;
-            l3dataValidator.packageMisPrice = misprisingLevel;
-            l3dataValidator.checkPackageMisPrice = true;
         } else {
             l2dataValidator.checkPackageMisPrice = false;
             l1dataValidator.checkPackageMisPrice = false;
-            l3dataValidator.checkPackageMisPrice = false;
         }
     }
 
@@ -230,7 +216,6 @@ public class DataValidatorImpl implements DataValidator {
         this.logProcessor = logger;
         l1dataValidator.setLogger(logger);
         l2dataValidator.setLogger(logger);
-        l3dataValidator.setLogger(logger);
     }
 
     private Severity minSeverity = Severity.INFO;
@@ -240,7 +225,6 @@ public class DataValidatorImpl implements DataValidator {
         this.minSeverity = minSeverity;
         l1dataValidator.setMinimalSeverityToLog(minSeverity);
         l2dataValidator.setMinimalSeverityToLog(minSeverity);
-        l3dataValidator.setMinimalSeverityToLog(minSeverity);
     }
 
     @Override
@@ -249,8 +233,8 @@ public class DataValidatorImpl implements DataValidator {
     }
 
     public static void main(String[] args) {
-        DXTickDB db = TickDBFactory.openFromUrl("dxtick://localhost:8011", true);
-        final DXTickStream stream = db.getStream("huobi-futures-test");
+        DXTickDB db = TickDBFactory.openFromUrl("dxtick://localhost:8160", true);
+        final DXTickStream stream = db.getStream("bitfinex");
 
         Map<String, DataValidator> validators = new HashMap<>();
         AtomicLong errors = new AtomicLong();

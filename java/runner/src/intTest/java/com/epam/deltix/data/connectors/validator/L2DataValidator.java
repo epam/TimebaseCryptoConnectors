@@ -18,6 +18,7 @@ import com.epam.deltix.timebase.orderbook.options.OrderBookOptionsBuilder;
 import com.epam.deltix.timebase.orderbook.options.OrderBookType;
 import com.epam.deltix.timebase.orderbook.options.UpdateMode;
 import com.epam.deltix.util.collections.generated.ObjectArrayList;
+import com.epam.deltix.util.collections.generated.ObjectList;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -280,11 +281,40 @@ public class L2DataValidator implements DataValidator {
     }
 
     private void validationCheck(PackageHeaderInfo headerInfo, BookResetEntry bookResetEntry) {
-        if (!bookResetEntry.hasExchangeId()) {
-            sendMessageToLogger(headerInfo, bookResetEntry.getExchangeId(), "Missed exchangeId in BookResetEntry", Severity.ERROR);
+//        if (!bookResetEntry.hasExchangeId()) {
+//            sendMessageToLogger(headerInfo, bookResetEntry.getExchangeId(), "Missed exchangeId in BookResetEntry", Severity.ERROR);
+//        }
+//        if (bookResetEntry.getModelType() != DataModelType.LEVEL_TWO) {
+//            sendMessageToLogger(headerInfo, bookResetEntry.getExchangeId(), "Bad DataModelType in BookResetEntry", Severity.ERROR);
+//        }
+    }
+
+    private void checkTradePrice(PackageHeaderInfo headerInfo) {
+        ObjectList<BaseEntryInfo> entries = headerInfo.getEntries();
+        for (int i = 0; i < entries.size(); ++i) {
+            BaseEntryInfo entry = entries.get(i);
+            if (entry instanceof TradeEntry) {
+                checkDiffPrice(headerInfo, ((TradeEntry) entry).getPrice());
+            }
         }
-        if (bookResetEntry.getModelType() != DataModelType.LEVEL_TWO) {
-            sendMessageToLogger(headerInfo, bookResetEntry.getExchangeId(), "Bad DataModelType in BookResetEntry", Severity.ERROR);
+    }
+
+    private void checkDiffPrice(PackageHeaderInfo headerInfo, long price) {
+        MarketSide<OrderBookQuote> quotes = book.getMarketSide(QuoteSide.ASK);
+        if (quotes == null || quotes.depth() == 0) {
+            quotes = book.getMarketSide(QuoteSide.BID);
+        }
+
+        if (quotes != null && quotes.depth() > 0) {
+            long anchorPrice = quotes.getQuote(0).getPrice();
+            long diff = Decimal64Utils.isGreater(anchorPrice, price) ?
+                Decimal64Utils.divide(anchorPrice, price) :
+                Decimal64Utils.divide(price, anchorPrice);
+            if (Decimal64Utils.isGreater(diff, Decimal64Utils.fromInt(3))) {
+                sendMessageToLogger(headerInfo, quotes.getQuote(0).getExchangeId(),
+                    "Price difference is lager than 2 (" + Decimal64Utils.toString(anchorPrice) + " : " + Decimal64Utils.toString(price) + ")", Severity.ERROR
+                );
+            }
         }
     }
 
@@ -396,6 +426,9 @@ public class L2DataValidator implements DataValidator {
                 sendMessageToLogger(headerInfo, TypeConstants.EXCHANGE_NULL, "Empty entries list", Severity.WARNING);
                 return;
             }
+
+            checkTradePrice(headerInfo);
+
             checkAllEntriesFields(headerInfo);
             exchangeIds.clear();
             previousBestAsks.clear();
@@ -504,19 +537,19 @@ public class L2DataValidator implements DataValidator {
                 }
 
                 if (bestAskQuote == null && checkEmptySide) {
-                    sendMessageToLogger(headerInfo, bestAskQuote.getExchangeId(), "Ask side is empty", Severity.WARNING);
+                    sendMessageToLogger(headerInfo, exchangeIds.get(i), "Ask side is empty", Severity.WARNING);
                 }
 
                 if (bestBidQuote == null && checkEmptySide) {
-                    sendMessageToLogger(headerInfo, bestAskQuote.getExchangeId(), "Bid side is empty", Severity.WARNING);
+                    sendMessageToLogger(headerInfo, exchangeIds.get(i), "Bid side is empty", Severity.WARNING);
                 }
 
                 if (askQuotes.depth() < minValidNumberOfLevels) {
-                    sendMessageToLogger(headerInfo, bestAskQuote.getExchangeId(), "Ask side has less than minimal valid number of levels", Severity.WARNING);
+                    sendMessageToLogger(headerInfo, exchangeIds.get(i), "Ask side has less than minimal valid number of levels", Severity.WARNING);
                 }
 
                 if (bidQuotes.depth() < minValidNumberOfLevels)  {
-                    sendMessageToLogger(headerInfo, bestAskQuote.getExchangeId(), "Bid side has less than minimal valid number of levels", Severity.WARNING);
+                    sendMessageToLogger(headerInfo, exchangeIds.get(i), "Bid side has less than minimal valid number of levels", Severity.WARNING);
                 }
             }
         } catch (Throwable e) {
