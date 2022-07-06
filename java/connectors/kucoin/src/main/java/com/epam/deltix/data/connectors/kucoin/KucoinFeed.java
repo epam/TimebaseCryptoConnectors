@@ -95,13 +95,6 @@ public class KucoinFeed extends MdSingleWsRestFeed {
                     }
                 }
             }
-        } else if ("trade".equals(object.getString("e"))) {
-            long timestamp = object.getLong("E");
-
-            long price = object.getDecimal64Required("p");
-            long size = object.getDecimal64Required("q");
-
-            processor().onTrade(object.getString("s").toLowerCase(), timestamp, price, size);
         }
 
         long now = System.currentTimeMillis();
