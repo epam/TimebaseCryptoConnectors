@@ -33,6 +33,7 @@ dependencies {
     implementation project(':java:connectors:okcoin')
     implementation project(':java:connectors:okex')
     implementation project(':java:connectors:poloniex')
+    implementation project(':java:connectors:deribit')
 
     implementation 'javax.annotation:javax.annotation-api'
 
