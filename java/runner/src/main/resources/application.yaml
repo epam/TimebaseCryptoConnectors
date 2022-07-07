@@ -189,7 +189,7 @@ connectors:
 
   okcoin:
     stream: okcoin
-    wsUrl: wss://push1-v2.kucoin.com/endpoint
+    wsUrl: wss://real.okcoin.com:8443/ws/v3
     depth: 20
     model:
       - "L1"
