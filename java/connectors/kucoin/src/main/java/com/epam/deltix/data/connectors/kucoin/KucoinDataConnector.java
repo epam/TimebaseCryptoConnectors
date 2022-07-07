@@ -1,11 +1,11 @@
-package com.epam.deltix.data.connectors.binance.futures;
+package com.epam.deltix.data.connectors.kucoin;
 
 import com.epam.deltix.data.connectors.commons.*;
 import com.epam.deltix.data.connectors.commons.annotations.Connector;
 
-@Connector("Binance-Futures")
-public class BinanceFuturesDataConnector extends DataConnector<BinanceFuturesConnectorSettings> {
-    public BinanceFuturesDataConnector(BinanceFuturesConnectorSettings settings) {
+@Connector("Kucoin")
+public class KucoinDataConnector extends DataConnector<KucoinConnectorSettings> {
+    public KucoinDataConnector(KucoinConnectorSettings settings) {
         super(settings, MdModel.availability()
                 .withTrades()
                 .withLevel1()
@@ -20,7 +20,7 @@ public class BinanceFuturesDataConnector extends DataConnector<BinanceFuturesCon
             final String... symbols) {
 
         return errorListener -> {
-            final BinanceFuturesFeed result = new BinanceFuturesFeed(
+            final KucoinFeed result = new KucoinFeed(
                     settings().getWsUrl(),
                     settings().getRestUrl(),
                     settings().getDepth(),
@@ -28,7 +28,7 @@ public class BinanceFuturesDataConnector extends DataConnector<BinanceFuturesCon
                     outputFactory.create(),
                     errorListener,
                     logger(),
-                    false,
+                    true,
                     symbols);
             result.start();
             return result;

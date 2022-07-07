@@ -23,6 +23,7 @@ public class BinanceFuturesFeed extends MdSingleWsRestFeed {
             final CloseableMessageOutput output,
             final ErrorListener errorListener,
             final Logger logger,
+            final boolean isAuthRequired,
             final String... symbols) {
 
         super("BINANCE",
@@ -34,6 +35,7 @@ public class BinanceFuturesFeed extends MdSingleWsRestFeed {
                 output,
                 errorListener,
                 logger,
+                isAuthRequired,
                 symbols);
     }
 
@@ -128,6 +130,11 @@ public class BinanceFuturesFeed extends MdSingleWsRestFeed {
     @Override
     protected void onRestJson(String symbol, CharSequence body) {
         processBookSnapshot(body, symbol);
+    }
+
+    @Override
+    protected String authenticate(String wsUrl) {
+        return null;
     }
 
     private void initBookSnapshots(List<String> symbols) {

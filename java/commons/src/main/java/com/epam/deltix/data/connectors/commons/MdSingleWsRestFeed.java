@@ -15,6 +15,7 @@ public abstract class MdSingleWsRestFeed extends SingleWsRestFeed {
             final CloseableMessageOutput output,
             final ErrorListener errorListener,
             final Logger logger,
+            final boolean isAuthRequired,
             final String... symbols) {
 
         this(exchange,
@@ -27,6 +28,7 @@ public abstract class MdSingleWsRestFeed extends SingleWsRestFeed {
                 errorListener,
                 logger,
                 null,
+                isAuthRequired,
                 symbols);
     }
 
@@ -41,6 +43,7 @@ public abstract class MdSingleWsRestFeed extends SingleWsRestFeed {
             final ErrorListener errorListener,
             final Logger logger,
             final PeriodicalJsonTask periodicalJsonTask,
+            final boolean isAuthRequired,
             final String... symbols) {
 
         this(exchange,
@@ -54,6 +57,7 @@ public abstract class MdSingleWsRestFeed extends SingleWsRestFeed {
                 logger,
                 periodicalJsonTask,
                 false,
+                isAuthRequired,
                 symbols
         );
     }
@@ -70,6 +74,7 @@ public abstract class MdSingleWsRestFeed extends SingleWsRestFeed {
             final Logger logger,
             final PeriodicalJsonTask periodicalJsonTask,
             final boolean skipGzipHeader,
+            final boolean isAuthRequired,
             final String... symbols) {
 
         this(exchange,
@@ -84,6 +89,7 @@ public abstract class MdSingleWsRestFeed extends SingleWsRestFeed {
                 logger,
                 periodicalJsonTask,
                 skipGzipHeader,
+                isAuthRequired,
                 symbols
         );
     }
@@ -101,6 +107,7 @@ public abstract class MdSingleWsRestFeed extends SingleWsRestFeed {
             final Logger logger,
             final PeriodicalJsonTask periodicalJsonTask,
             final boolean skipGzipHeader,
+            final boolean isAuthRequired,
             final String... symbols) {
 
         super(wsUrl,
@@ -112,6 +119,7 @@ public abstract class MdSingleWsRestFeed extends SingleWsRestFeed {
                 logger,
                 periodicalJsonTask,
                 skipGzipHeader,
+                isAuthRequired,
                 symbols);
 
         processor = MdProcessor.create(exchange, output, selected, depth, fixedDepth);
