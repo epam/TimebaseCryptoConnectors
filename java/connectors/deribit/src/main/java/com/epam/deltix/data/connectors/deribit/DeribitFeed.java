@@ -68,38 +68,54 @@ public class DeribitFeed extends MdSingleWsFeed {
         JsonObject params = object.getObject("params");
 
         if (params != null) {
-            JsonObject jsonData = params.getObject("data");
+            String channel = params.getString("channel");
 
-            String type = jsonData.getString("type");
-            long timeStamp = jsonData.getLong("timestamp");
-            String instrument = jsonData.getString("instrument_name").toLowerCase();
-            Long changeId = jsonData.getLong("change_id");
+            if (channel != null) {
+                if (channel.contains("book.")) {
+                    JsonObject jsonData = params.getObject("data");
+                    String instrument = jsonData.getString("instrument_name").toLowerCase();
+                    long timestamp = jsonData.getLong("timestamp");
+                    String type = jsonData.getString("type");
+                    Long changeId = jsonData.getLong("change_id");
 
-            if ("snapshot".equals(type)) {
-                QuoteSequenceProcessor quotesListener = processor().onBookSnapshot(instrument, timeStamp);
+                    if ("snapshot".equals(type)) {
+                        QuoteSequenceProcessor quotesListener = processor().onBookSnapshot(instrument, timestamp);
 
-                processSnapshotSide(quotesListener, jsonData.getArray("bids"), false);
-                processSnapshotSide(quotesListener, jsonData.getArray("asks"), true);
+                        processSnapshotSide(quotesListener, jsonData.getArray("bids"), false);
+                        processSnapshotSide(quotesListener, jsonData.getArray("asks"), true);
 
-                quotesListener.onFinish();
-                changeIdMap.put(instrument, changeId);
+                        quotesListener.onFinish();
+                        changeIdMap.put(instrument, changeId);
 
-            } else if ("change".equals(type)) {
-                long previousChangeId = jsonData.getLong("prev_change_id");
+                    } else if ("change".equals(type)) {
+                        long previousChangeId = jsonData.getLong("prev_change_id");
 
-                if (previousChangeId == changeIdMap.get(instrument)) {
-                    changeIdMap.put(instrument, changeId);
+                        if (previousChangeId == changeIdMap.get(instrument)) {
+                            changeIdMap.put(instrument, changeId);
 
-                    QuoteSequenceProcessor quotesListenerUpdate = processor().onBookUpdate(instrument, timeStamp);
-                    processChanges(quotesListenerUpdate, jsonData.getArray("bids"), false);
-                    processChanges(quotesListenerUpdate, jsonData.getArray("asks"), true);
+                            QuoteSequenceProcessor quotesListenerUpdate = processor().onBookUpdate(instrument, timestamp);
+                            processChanges(quotesListenerUpdate, jsonData.getArray("bids"), false);
+                            processChanges(quotesListenerUpdate, jsonData.getArray("asks"), true);
 
-                    quotesListenerUpdate.onFinish();
-                } else {
-                    unsubscribe(jsonWriter, instrument);
-                    changeIdMap.remove(instrument);
+                            quotesListenerUpdate.onFinish();
+                        } else {
+                            unsubscribe(jsonWriter, instrument);
+                            changeIdMap.remove(instrument);
 
-                    subscribe(jsonWriter, instrument);
+                            subscribe(jsonWriter, instrument);
+                        }
+                    }
+                } else if (channel.contains("trade.")) {
+                    JsonArray dataArray = object.getArrayRequired("data");
+                    for (int i = 0; i < dataArray.size(); ++i) {
+                        JsonObject trade = dataArray.getObjectRequired(i);
+                        long timestamp = trade.getLong("timestamp");
+                        long price = trade.getDecimal64Required("price");
+                        long size = trade.getDecimal64Required("amount");
+                        String instrument = trade.getString("instrument_name");
+
+                        processor().onTrade(instrument, timestamp, price, size);
+                    }
                 }
             }
         }
