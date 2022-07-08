@@ -12,6 +12,8 @@ configurations {
 
 dependencies {
     implementation project(':java:commons')
+    implementation project(':java:connectors:binance-spot')
+    implementation project(':java:connectors:binance-futures')
     implementation project(':java:connectors:bitfinex')
     implementation project(':java:connectors:bitmart')
     implementation project(':java:connectors:bitmex')
@@ -31,6 +33,8 @@ dependencies {
     implementation project(':java:connectors:okcoin')
     implementation project(':java:connectors:okex')
     implementation project(':java:connectors:poloniex')
+    implementation project(':java:connectors:kucoin')
+    implementation project(':java:connectors:deribit')
 
     implementation 'javax.annotation:javax.annotation-api'
 

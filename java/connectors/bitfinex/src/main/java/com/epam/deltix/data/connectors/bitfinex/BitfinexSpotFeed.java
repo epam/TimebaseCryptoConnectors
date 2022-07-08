@@ -184,8 +184,8 @@ public class BitfinexSpotFeed extends MdSingleWsFeed {
                                 processor().onTrade(
                                     channel.symbol(),
                                     trade.getLong(1),
-                                    Decimal64Utils.abs(trade.getDecimal64Required(2)),
-                                    trade.getDecimal64Required(3)
+                                    trade.getDecimal64Required(3),
+                                    Decimal64Utils.abs(trade.getDecimal64Required(2))
                                 );
                             }
                         }
