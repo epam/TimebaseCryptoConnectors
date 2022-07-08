@@ -20,7 +20,7 @@ services:
       - "./timebase-home:/timebase-home"
 
   timebase-admin:
-    image: "epam/timebase-ws-server:1.0.2"
+    image: "epam/timebase-ws-server:1.0.4"
     environment:
       - JAVA_OPTS=
         -Xmx1g
@@ -34,7 +34,7 @@ services:
       - timebase
 
   crypto-connectors:
-    image: "epam/timebase-crypto-connectors:0.1.6"    
+    image: "epam/timebase-crypto-connectors:0.1.10"    
     environment:
       - JAVA_OPTS=
         -Xmx1g
