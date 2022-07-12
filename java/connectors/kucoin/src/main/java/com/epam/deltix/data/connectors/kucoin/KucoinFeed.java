@@ -112,7 +112,7 @@ public class KucoinFeed extends MdSingleWsRestFeed {
             }
         } else if ("trade.l3match".equals(subject)) {
             String symbol = jasonData.getString("symbol").toLowerCase();
-            Long timestamp = jasonData.getLong("time");
+            long timestamp = jasonData.getLong("time");
             long price = jasonData.getDecimal64Required("price");
             long size = jasonData.getDecimal64Required("size");
 
