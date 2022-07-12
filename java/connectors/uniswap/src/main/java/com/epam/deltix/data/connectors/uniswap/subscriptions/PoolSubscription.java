@@ -20,14 +20,41 @@ public class PoolSubscription extends Subscription {
     static {
         QUERY_TEMPLATE.arguments().withOrderBy("id");
         QUERY_TEMPLATE.withScalar("id");
-        QUERY_TEMPLATE.withScalar("liquidity");
-        QUERY_TEMPLATE.withScalar("liquidityProviderCount");
+        QUERY_TEMPLATE.withScalar("createdAtTimestamp");
+        QUERY_TEMPLATE.withScalar("createdAtBlockNumber");
+
         final GraphQlQuery.Object token0 = QUERY_TEMPLATE.withObject("token0");
         token0.withScalar("id");
         token0.withScalar("symbol");
+
         final GraphQlQuery.Object token1 = QUERY_TEMPLATE.withObject("token1");
         token1.withScalar("id");
         token1.withScalar("symbol");
+
+        QUERY_TEMPLATE.withScalar("feeTier");
+        QUERY_TEMPLATE.withScalar("liquidity");
+        QUERY_TEMPLATE.withScalar("sqrtPrice");
+        QUERY_TEMPLATE.withScalar("feeGrowthGlobal0X128");
+        QUERY_TEMPLATE.withScalar("feeGrowthGlobal1X128");
+        QUERY_TEMPLATE.withScalar("token0Price");
+        QUERY_TEMPLATE.withScalar("token1Price");
+        QUERY_TEMPLATE.withScalar("tick");
+        QUERY_TEMPLATE.withScalar("observationIndex");
+        QUERY_TEMPLATE.withScalar("volumeToken0");
+        QUERY_TEMPLATE.withScalar("volumeToken1");
+        QUERY_TEMPLATE.withScalar("volumeUSD");
+        QUERY_TEMPLATE.withScalar("untrackedVolumeUSD");
+        QUERY_TEMPLATE.withScalar("feesUSD");
+        QUERY_TEMPLATE.withScalar("txCount");
+        QUERY_TEMPLATE.withScalar("collectedFeesToken0");
+        QUERY_TEMPLATE.withScalar("collectedFeesToken1");
+        QUERY_TEMPLATE.withScalar("collectedFeesUSD");
+        QUERY_TEMPLATE.withScalar("totalValueLockedToken0");
+        QUERY_TEMPLATE.withScalar("totalValueLockedToken1");
+        QUERY_TEMPLATE.withScalar("totalValueLockedETH");
+        QUERY_TEMPLATE.withScalar("totalValueLockedUSD");
+        QUERY_TEMPLATE.withScalar("totalValueLockedUSDUntracked");
+        QUERY_TEMPLATE.withScalar("liquidityProviderCount");
     }
 
     public PoolSubscription(
