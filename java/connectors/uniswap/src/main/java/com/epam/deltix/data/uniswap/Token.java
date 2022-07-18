@@ -1,6 +1,7 @@
 package com.epam.deltix.data.uniswap;
 
 import com.epam.deltix.data.connectors.commons.Util;
+import com.epam.deltix.data.connectors.commons.json.JsonArray;
 import com.epam.deltix.data.connectors.commons.json.JsonObject;
 import com.epam.deltix.timebase.messages.SchemaElement;
 
@@ -36,9 +37,8 @@ public class Token implements Updatable {
     // derived price in ETH
     private String derivedETH;
     // pools token is in that are white listed for USD pricing
-    //whitelistPools: [Pool!]!
-    //        # derived fields
-    //tokenDayData: [TokenDayData!]! @derivedFrom(field: "token")
+    private String whitelistPoolsIds;
+    private String tokenDayDataIds;
 
     public Token() {
     }
@@ -303,6 +303,56 @@ public class Token implements Updatable {
         return true;
     }
 
+    @SchemaElement
+    public String getWhitelistPoolsIds() {
+        return whitelistPoolsIds;
+    }
+
+    public void setWhitelistPoolsIds(final String whitelistPoolsIds) {
+        this.whitelistPoolsIds = whitelistPoolsIds;
+    }
+
+    public boolean updateWhitelistPoolsIds(final String whitelistPoolsIds) {
+        if (Util.equals(this.whitelistPoolsIds, whitelistPoolsIds)) {
+            return false;
+        }
+        this.whitelistPoolsIds = whitelistPoolsIds;
+        return true;
+    }
+
+    @SchemaElement
+    public String getTokenDayDataIds() {
+        return tokenDayDataIds;
+    }
+
+    public void setTokenDayDataIds(final String tokenDayDataIds) {
+        this.tokenDayDataIds = tokenDayDataIds;
+    }
+
+    public boolean updateTokenDayDataIds(final String tokenDayDataIds) {
+        if (Util.equals(this.tokenDayDataIds, tokenDayDataIds)) {
+            return false;
+        }
+        this.tokenDayDataIds = tokenDayDataIds;
+        return true;
+    }
+
+    private String parseJsonArray(JsonArray array) {
+        StringBuilder itemIdsList = new StringBuilder();
+        if (array != null) {
+            for (int i = 0; i < array.size(); i++) {
+                final JsonObject item = array.getObject(i);
+                String id = item.getString("id");
+                itemIdsList.append(id);
+                if (i != array.size() - 1) {
+                    itemIdsList.append(",");
+                }
+            }
+        }
+
+        return itemIdsList.toString();
+    }
+
     @Override
     public boolean update(final JsonObject from) {
         boolean result = false;
@@ -321,6 +371,15 @@ public class Token implements Updatable {
         result |= updateTotalValueLockedUSD(from.getString("totalValueLockedUSD"));
         result |= updateTotalValueLockedUSDUntracked(from.getString("totalValueLockedUSDUntracked"));
         result |= updateDerivedETH(from.getString("derivedETH"));
+
+        //whitelistPools
+        final JsonArray whitelistPools = from.getArray("whitelistPools");
+        result |= updateWhitelistPoolsIds(parseJsonArray(whitelistPools));
+
+        //tokenDayData
+        final JsonArray tokenDayData = from.getArray("tokenDayData");
+        result |= updateTokenDayDataIds(parseJsonArray(tokenDayData));
+
         return result;
     }
 

@@ -1,6 +1,7 @@
 package com.epam.deltix.data.uniswap;
 
 import com.epam.deltix.data.connectors.commons.Util;
+import com.epam.deltix.data.connectors.commons.json.JsonArray;
 import com.epam.deltix.data.connectors.commons.json.JsonObject;
 import com.epam.deltix.timebase.messages.SchemaElement;
 
@@ -36,10 +37,17 @@ public class Pool implements Updatable {
     private String token0_symbol;
     private String token1_id;
     private String token1_symbol;
+    private String poolHourDataIds;
+    private String poolDayDataIds;
+    private String mintIds;
+    private String burnIds;
+    private String swapIds;
+    private String collectIds;
+    private String tickIds;
 
     @Override
     public String getTbSymbol() {
-        return token0_symbol + '/' + token1_symbol + '-' + id;
+        return token0_symbol + '/' + token1_symbol;
     }
 
     @SchemaElement()
@@ -569,6 +577,125 @@ public class Pool implements Updatable {
         return true;
     }
 
+    @SchemaElement
+    public String getMintIds() {
+        return mintIds;
+    }
+
+    public void setMintIds(final String mintIds) {
+        this.mintIds = mintIds;
+    }
+
+    public boolean updateMintIdsList(final String mintIdsList) {
+        if (Util.equals(this.mintIds, mintIdsList)) {
+            return false;
+        }
+        this.mintIds = mintIdsList;
+        return true;
+    }
+
+    @SchemaElement
+    public String getPoolHourDataIds() {
+        return poolHourDataIds;
+    }
+
+    public void setPoolHourDataIds(final String poolHourDataId) {
+        this.poolHourDataIds = poolHourDataId;
+    }
+
+    public boolean updatePoolHourDataIds(final String poolHourDataId) {
+        if (Util.equals(this.poolHourDataIds, poolHourDataId)) {
+            return false;
+        }
+        this.poolHourDataIds = poolHourDataId;
+        return true;
+    }
+
+    @SchemaElement
+    public String getPoolDayDataIds() {
+        return poolDayDataIds;
+    }
+
+    public void setPoolDayDataIds(final String poolDayDataIds) {
+        this.poolDayDataIds = poolDayDataIds;
+    }
+
+    public boolean updatePoolDayDataIds(final String poolDayDataIds) {
+        if (Util.equals(this.poolDayDataIds, poolDayDataIds)) {
+            return false;
+        }
+        this.poolDayDataIds = poolDayDataIds;
+        return true;
+    }
+
+    @SchemaElement
+    public String getBurnIds() {
+        return burnIds;
+    }
+
+    public void setBurnIds(final String burnIds) {
+        this.burnIds = burnIds;
+    }
+
+    public boolean updateBurnIds(final String burnIdsList) {
+        if (Util.equals(this.burnIds, burnIdsList)) {
+            return false;
+        }
+        this.burnIds = burnIdsList;
+        return true;
+    }
+
+    @SchemaElement
+    public String getSwapIds() {
+        return swapIds;
+    }
+
+    public void setSwapIds(final String swapIds) {
+        this.swapIds = swapIds;
+    }
+
+    public boolean updateSwapIds(final String swapIdsList) {
+        if (Util.equals(this.swapIds, swapIdsList)) {
+            return false;
+        }
+        this.swapIds = swapIdsList;
+        return true;
+    }
+
+    @SchemaElement
+    public String getCollectIds() {
+        return collectIds;
+    }
+
+    public void setCollectIds(final String collectIds) {
+        this.collectIds = collectIds;
+    }
+
+    public boolean updateCollectIds(final String collectIdsList) {
+        if (Util.equals(this.collectIds, collectIdsList)) {
+            return false;
+        }
+        this.collectIds = collectIdsList;
+        return true;
+    }
+
+    @SchemaElement
+    public String getTickIds() {
+        return tickIds;
+    }
+
+    public void setTickIds(final String tickIds) {
+        this.tickIds = tickIds;
+    }
+
+    public boolean updateTickIds(final String tickIdsList) {
+        if (Util.equals(this.tickIds, tickIdsList)) {
+            return false;
+        }
+        this.tickIds = tickIdsList;
+        return true;
+    }
+
     @Override
     public boolean update(final JsonObject from) {
         boolean result = false;
@@ -610,7 +737,6 @@ public class Pool implements Updatable {
         result |= updateToken0_id(token0_id_json);
         result |= updateToken0_symbol(token0_symbol_json);
 
-
         String token1_id_json = null;
         String token1_symbol_json = null;
         final JsonObject token1 = from.getObject("token1");
@@ -621,7 +747,51 @@ public class Pool implements Updatable {
         result |= updateToken1_id(token1_id_json);
         result |= updateToken1_symbol(token1_symbol_json);
 
+        //poolHourData
+        final JsonArray poolHourData = from.getArray("poolHourData");
+        result |= updatePoolHourDataIds(parseJsonArray(poolHourData));
+
+        //poolDayData
+        final JsonArray poolDayData = from.getArray("poolDayData");
+        result |= updatePoolDayDataIds(parseJsonArray(poolDayData));
+
+        //mints
+        final JsonArray mints = from.getArray("mints");
+        result |= updateMintIdsList(parseJsonArray(mints));
+
+        //burns
+        final JsonArray burns = from.getArray("burns");
+        result |= updateBurnIds(parseJsonArray(burns));
+
+        //swaps
+        final JsonArray swaps = from.getArray("swaps");
+        result |= updateSwapIds(parseJsonArray(swaps));
+
+        //collects
+        final JsonArray collects = from.getArray("collects");
+        result |= updateCollectIds(parseJsonArray(collects));
+
+        //ticks
+        final JsonArray ticks = from.getArray("ticks");
+        result |= updateTickIds(parseJsonArray(ticks));
+
         return result;
+    }
+
+    private String parseJsonArray(JsonArray array) {
+        StringBuilder itemIdsList = new StringBuilder();
+        if (array != null) {
+            for (int i = 0; i < array.size(); i++) {
+                final JsonObject item = array.getObject(i);
+                String id = item.getString("id");
+                itemIdsList.append(id);
+                if (i != array.size() - 1) {
+                    itemIdsList.append(",");
+                }
+            }
+        }
+
+        return itemIdsList.toString();
     }
 
     @Override

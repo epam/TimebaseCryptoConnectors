@@ -20,6 +20,15 @@ public class FactorySubscription extends Subscription {
         QUERY_TEMPLATE.withScalar("poolCount");
         QUERY_TEMPLATE.withScalar("txCount");
         QUERY_TEMPLATE.withScalar("totalVolumeUSD");
+        QUERY_TEMPLATE.withScalar("totalVolumeETH");
+        QUERY_TEMPLATE.withScalar("totalFeesUSD");
+        QUERY_TEMPLATE.withScalar("totalFeesETH");
+        QUERY_TEMPLATE.withScalar("untrackedVolumeUSD");
+        QUERY_TEMPLATE.withScalar("totalValueLockedUSD");
+        QUERY_TEMPLATE.withScalar("totalValueLockedETH");
+        QUERY_TEMPLATE.withScalar("totalValueLockedUSDUntracked");
+        QUERY_TEMPLATE.withScalar("totalValueLockedETHUntracked");
+        QUERY_TEMPLATE.withScalar("owner");
     }
 
     public FactorySubscription(

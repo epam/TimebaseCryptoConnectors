@@ -1,27 +1,21 @@
 package com.epam.deltix.data.connectors.uniswap;
 
-import com.epam.deltix.data.connectors.commons.CloseableMessageOutput;
-import com.epam.deltix.data.connectors.commons.CloseableMessageOutputFactory;
-import com.epam.deltix.data.connectors.commons.DataConnector;
-import com.epam.deltix.data.connectors.commons.MdFeed;
-import com.epam.deltix.data.connectors.commons.MdModel;
-import com.epam.deltix.data.connectors.commons.RetriableFactory;
+import com.epam.deltix.data.connectors.commons.*;
 import com.epam.deltix.data.connectors.commons.annotations.Connector;
-import com.epam.deltix.data.uniswap.BundleAction;
-import com.epam.deltix.data.uniswap.FactoryAction;
-import com.epam.deltix.data.uniswap.PoolAction;
-import com.epam.deltix.data.uniswap.TokenAction;
+import com.epam.deltix.data.uniswap.*;
 import com.epam.deltix.timebase.messages.InstrumentMessage;
 
 @Connector("UNISWAP")
 public class UniswapDataConnector extends DataConnector<UniswapConnectorSettings> {
     public UniswapDataConnector(final UniswapConnectorSettings settings) {
         super(settings, MdModel.availability()
-            .withCustom(
-                    FactoryAction.class,
-                    BundleAction.class,
-                    PoolAction.class,
-                    TokenAction.class)
+                .withCustom(
+                        FactoryAction.class,
+                        BundleAction.class,
+                        PoolAction.class,
+                        TokenAction.class,
+                        PositionAction.class,
+                        TickAction.class)
                 .build()
         );
     }
@@ -40,8 +34,9 @@ public class UniswapDataConnector extends DataConnector<UniswapConnectorSettings
                     errorListener,
                     logger(),
                     5_000,
+                    settings().getInstruments(),
                     symbols
-                    );
+            );
             result.start();
             return result;
         };
@@ -52,7 +47,8 @@ public class UniswapDataConnector extends DataConnector<UniswapConnectorSettings
                 new UniswapConnectorSettings(
                         "uniswap",
                         "dxtick://localhost:8011",
-                        "uniswap"
+                        "uniswap",
+                        "BUSD/WETH" + "=" + "0x4fabb145d64652a948d72533023f6e7a623c7c53" + "/" + "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
                 )
         );
 
@@ -79,9 +75,11 @@ public class UniswapDataConnector extends DataConnector<UniswapConnectorSettings
                                 FactoryAction.class,
                                 BundleAction.class,
                                 PoolAction.class,
-                                TokenAction.class).
+                                TokenAction.class,
+                                PositionAction.class,
+                                TickAction.class).
                         build(),
-                "BUSD/WETH", "/ICHI"
+                "BUSD/WETH"
         );
 
         System.in.read();

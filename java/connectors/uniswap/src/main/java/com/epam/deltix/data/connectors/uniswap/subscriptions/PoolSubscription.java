@@ -55,6 +55,28 @@ public class PoolSubscription extends Subscription {
         QUERY_TEMPLATE.withScalar("totalValueLockedUSD");
         QUERY_TEMPLATE.withScalar("totalValueLockedUSDUntracked");
         QUERY_TEMPLATE.withScalar("liquidityProviderCount");
+
+        final GraphQlQuery.Object poolHourDataId = QUERY_TEMPLATE.withObject("poolHourData");
+        poolHourDataId.withScalar("id");
+
+        final GraphQlQuery.Object poolDayData = QUERY_TEMPLATE.withObject("poolDayData");
+        poolDayData.withScalar("id");
+
+        final GraphQlQuery.Object mints = QUERY_TEMPLATE.withObject("mints");
+        mints.withScalar("id");
+
+        final GraphQlQuery.Object burns = QUERY_TEMPLATE.withObject("burns");
+        burns.withScalar("id");
+
+        final GraphQlQuery.Object swaps = QUERY_TEMPLATE.withObject("swaps");
+        swaps.withScalar("id");
+
+        final GraphQlQuery.Object collects = QUERY_TEMPLATE.withObject("collects");
+        collects.withScalar("id");
+
+        final GraphQlQuery.Object ticks = QUERY_TEMPLATE.withObject("ticks");
+        ticks.withScalar("id");
+
     }
 
     public PoolSubscription(
@@ -80,17 +102,9 @@ public class PoolSubscription extends Subscription {
             final GraphQlQuery.Query query = QUERY_TEMPLATE.copy();
             Predicate<JsonObject> filter = object -> true;
 
-            if (symbol.hasToken0()) {
-                query.arguments().withWhere("token0 : \"" + symbol.token0Id()  + "\"");
-                if (symbol.hasToken1()) {
-                    filter = object -> {
-                        final JsonObject token1 = object.getObjectRequired("token1");
-                        return symbol.token1Id().equals(token1.getStringRequired("id"));
-                    };
-                }
-            } else {
-                assert symbol.hasToken1();
-                query.arguments().withWhere("token1 : \"" + symbol.token1Id()  + "\"");
+            if (symbol.hasToken0() && symbol.hasToken1()) {
+                query.arguments().withWhere("token0: \"" + symbol.token0Id() + "\", " +
+                        "token1: \"" + symbol.token1Id() + "\"");
             }
 
             return new UniswapCollectionPoller<>(
