@@ -36,6 +36,8 @@ dependencies {
     implementation project(':java:connectors:kucoin')
     implementation project(':java:connectors:deribit')
 
+    implementation project(':java:connectors:uniswap')
+
     implementation 'javax.annotation:javax.annotation-api'
 
     implementation 'org.springframework.boot:spring-boot-starter-web'

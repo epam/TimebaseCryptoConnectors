@@ -33,6 +33,12 @@ public class TokenSubscription extends Subscription {
         QUERY_TEMPLATE.withScalar("totalValueLockedUSD");
         QUERY_TEMPLATE.withScalar("totalValueLockedUSDUntracked");
         QUERY_TEMPLATE.withScalar("derivedETH");
+
+        final GraphQlQuery.Object whitelistPools = QUERY_TEMPLATE.withObject("whitelistPools");
+        whitelistPools.withScalar("id");
+
+        final GraphQlQuery.Object tokenDayData = QUERY_TEMPLATE.withObject("tokenDayData");
+        tokenDayData.withScalar("id");
     }
 
     public TokenSubscription(

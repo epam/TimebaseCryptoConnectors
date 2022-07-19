@@ -7,15 +7,18 @@ import com.epam.deltix.data.connectors.commons.annotations.ConnectorSettings;
 public class UniswapConnectorSettings extends DataConnectorSettings {
 
     private String subgraphUrl = "https://api.thegraph.com/subgraphs/name/ianlapham/uniswap-v3-subgraph";
+    String instruments;
 
     public UniswapConnectorSettings() {
         super();
     }
 
-    public UniswapConnectorSettings(final String name, final String tbUrl, final String stream) {
+    public UniswapConnectorSettings(final String name, final String tbUrl, final String stream,
+                                    final String instruments) {
         super(tbUrl, stream);
         setName(name);
         setSubgraphUrl(subgraphUrl);
+        setInstruments(instruments);
     }
 
     public String getSubgraphUrl() {
@@ -26,4 +29,11 @@ public class UniswapConnectorSettings extends DataConnectorSettings {
         this.subgraphUrl = subgraphUrl;
     }
 
+    public String getInstruments() {
+        return instruments;
+    }
+
+    public void setInstruments(String instruments) {
+        this.instruments = instruments;
+    }
 }
