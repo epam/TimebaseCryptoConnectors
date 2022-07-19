@@ -58,6 +58,10 @@ dependencies {
     intTestRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
 }
 
+configurations.all {
+    exclude group: 'org.finos.timebase-ce', module: 'timebase-s3'
+}
+
 ext {
     dockerImageName = 'timebase-crypto-connectors'
 }

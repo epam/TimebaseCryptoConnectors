@@ -41,4 +41,8 @@ configure(leafProjects) {
                 findAll { it instanceof ProjectDependency }.
                 forEach { jar.from project(it.getDependencyProject().path).sourceSets.main.output }
     }
+
+    configurations.all {
+        exclude group: 'org.finos.timebase-ce', module: 'timebase-s3'
+    }
 }
