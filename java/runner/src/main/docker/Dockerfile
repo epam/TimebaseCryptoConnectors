@@ -1,4 +1,4 @@
-FROM alpine:3.15.4
+FROM alpine:3.16.1
 
 ENV LANG=C.UTF-8
 COPY runner /runner
