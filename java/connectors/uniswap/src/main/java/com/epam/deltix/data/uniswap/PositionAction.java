@@ -29,7 +29,7 @@ public class PositionAction extends MarketMessage implements UpdatableAction<Pos
 
     @Override
     public void setLast(boolean last) {
-        this.isLast = isLast;
+        this.isLast = last;
     }
 
     @SchemaElement()
