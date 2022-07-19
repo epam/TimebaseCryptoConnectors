@@ -1,4 +1,4 @@
-FROM alpine:3.16.1
+FROM alpine:3.15.4
 
 ENV LANG=C.UTF-8
 COPY runner /runner
@@ -33,7 +33,11 @@ RUN ALPINE_GLIBC_BASE_URL="https://github.com/sgerrand/alpine-pkg-glibc/releases
         "$ALPINE_GLIBC_BASE_PACKAGE_FILENAME" \
         "$ALPINE_GLIBC_BIN_PACKAGE_FILENAME" \
         "$ALPINE_GLIBC_I18N_PACKAGE_FILENAME" && \
-    apk add musl=1.2.3-r0 && \
+    apk add musl=1.2.2-r7 && \
+    apk add --update-cache \
+            libcrypto1.1=1.1.1q-r0 \
+            libssl1.1=1.1.1q-r0 && \
+    rm -rf /var/cache/apk/* \
     chmod +x /runner/runner.sh
 
 ENV JAVA_OPTS=-verbose:gc
