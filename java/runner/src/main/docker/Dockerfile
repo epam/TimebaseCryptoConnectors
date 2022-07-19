@@ -33,7 +33,7 @@ RUN ALPINE_GLIBC_BASE_URL="https://github.com/sgerrand/alpine-pkg-glibc/releases
         "$ALPINE_GLIBC_BASE_PACKAGE_FILENAME" \
         "$ALPINE_GLIBC_BIN_PACKAGE_FILENAME" \
         "$ALPINE_GLIBC_I18N_PACKAGE_FILENAME" && \
-    apk add musl=1.2.2-r7 && \
+    apk add musl=1.2.3-r0 && \
     chmod +x /runner/runner.sh
 
 ENV JAVA_OPTS=-verbose:gc
