@@ -19,10 +19,6 @@ tasks.withType(JavaCompile) {
     options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
 }
 
-configurations.all {
-    exclude group: 'org.finos.timebase-ce', module: 'timebase-s3'
-}
-
 test {
     useJUnitPlatform()
     testLogging {
