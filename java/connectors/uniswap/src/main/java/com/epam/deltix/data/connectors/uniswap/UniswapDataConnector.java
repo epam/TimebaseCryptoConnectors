@@ -15,7 +15,17 @@ public class UniswapDataConnector extends DataConnector<UniswapConnectorSettings
                         PoolAction.class,
                         TokenAction.class,
                         PositionAction.class,
-                        TickAction.class)
+                        TickAction.class,
+                        SwapAction.class,
+                        MintAction.class,
+                        BurnAction.class,
+                        CollectAction.class,
+                        FlashAction.class,
+                        TransactionAction.class,
+                        PositionSnapshotAction.class,
+                        UniswapDayDataAction.class,
+                        TokenDayDataAction.class,
+                        TokenHourDataAction.class)
                 .build()
         );
     }

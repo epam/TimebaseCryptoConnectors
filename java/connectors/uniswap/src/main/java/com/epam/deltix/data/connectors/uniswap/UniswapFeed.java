@@ -118,6 +118,96 @@ public class UniswapFeed extends HttpFeed {
             ));
         }
 
+        if (selected.custom(SwapAction.class)) {
+            subscriptions.add(new SwapSubscription(
+                    uri,
+                    this,
+                    logger(),
+                    identifiedUniswapSymbols
+            ));
+        }
+
+        if (selected.custom(MintAction.class)) {
+            subscriptions.add(new MintSubscription(
+                    uri,
+                    this,
+                    logger(),
+                    identifiedUniswapSymbols
+            ));
+        }
+
+        if (selected.custom(BurnAction.class)) {
+            subscriptions.add(new BurnSubscription(
+                    uri,
+                    this,
+                    logger(),
+                    identifiedUniswapSymbols
+            ));
+        }
+
+        if (selected.custom(CollectAction.class)) {
+            subscriptions.add(new CollectSubscription(
+                    uri,
+                    this,
+                    logger(),
+                    identifiedUniswapSymbols
+            ));
+        }
+
+        if (selected.custom(FlashAction.class)) {
+            subscriptions.add(new FlashSubscription(
+                    uri,
+                    this,
+                    logger(),
+                    identifiedUniswapSymbols
+            ));
+        }
+
+        if (selected.custom(TransactionAction.class)) {
+            subscriptions.add(new TransactionSubscription(
+                    uri,
+                    this,
+                    logger(),
+                    identifiedUniswapSymbols
+            ));
+        }
+
+        if (selected.custom(PositionSnapshotAction.class)) {
+            subscriptions.add(new PositionSnapshotSubscription(
+                    uri,
+                    this,
+                    logger(),
+                    identifiedUniswapSymbols
+            ));
+        }
+
+        if (selected.custom(UniswapDayDataAction.class)) {
+            subscriptions.add(new UniswapDayDataSubscription(
+                    uri,
+                    this,
+                    logger(),
+                    identifiedUniswapSymbols
+            ));
+        }
+
+        if (selected.custom(TokenDayDataAction.class)) {
+            subscriptions.add(new TokenDayDataSubscription(
+                    uri,
+                    this,
+                    logger(),
+                    identifiedUniswapSymbols
+            ));
+        }
+
+        if (selected.custom(TokenHourDataAction.class)) {
+            subscriptions.add(new TokenHourDataSubscription(
+                    uri,
+                    this,
+                    logger(),
+                    identifiedUniswapSymbols
+            ));
+        }
+
         for (final Subscription subscription : subscriptions) {
             for (final HttpPoller poller : subscription.get()) {
                 schedule(poller, pollTimeoutMillis);
