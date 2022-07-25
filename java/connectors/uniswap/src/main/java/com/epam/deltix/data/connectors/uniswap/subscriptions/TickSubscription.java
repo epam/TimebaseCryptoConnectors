@@ -4,18 +4,22 @@ import com.epam.deltix.data.connectors.commons.GraphQlQuery;
 import com.epam.deltix.data.connectors.commons.HttpPoller;
 import com.epam.deltix.data.connectors.commons.Logger;
 import com.epam.deltix.data.connectors.commons.MessageOutput;
+import com.epam.deltix.data.connectors.commons.json.JsonObject;
 import com.epam.deltix.data.connectors.uniswap.UniswapCollectionPoller;
 import com.epam.deltix.data.uniswap.Tick;
 import com.epam.deltix.data.uniswap.TickAction;
+import com.epam.deltix.data.uniswap.UniswapDayData;
+import com.epam.deltix.data.uniswap.UniswapDayDataAction;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Predicate;
 
 public class TickSubscription extends Subscription {
     private static final GraphQlQuery.Query QUERY_TEMPLATE = GraphQlQuery.query("ticks");
 
     static {
-        QUERY_TEMPLATE.arguments().withOrderBy("id");
+        QUERY_TEMPLATE.arguments().withOrderBy("createdAtTimestamp");
         QUERY_TEMPLATE.withScalar("id");
         QUERY_TEMPLATE.withScalar("poolAddress");
         QUERY_TEMPLATE.withScalar("tickIdx");
@@ -52,11 +56,20 @@ public class TickSubscription extends Subscription {
 
     @Override
     public Collection<HttpPoller> get() {
+        long now = System.currentTimeMillis() / 1000;
+
+        final GraphQlQuery.Query query = QUERY_TEMPLATE.copy();
+        Predicate<JsonObject> filter = object -> true;
+
+        query.arguments().withWhere("createdAtTimestamp: " + "\"" + now + "\"");
+
         return List.of(new UniswapCollectionPoller<>(
                 uri,
-                QUERY_TEMPLATE,
-                Tick::new,
-                TickAction::new,
-                messageOutput));
+                query,
+                filter,
+                UniswapDayData::new,
+                UniswapDayDataAction::new,
+                messageOutput,
+                false));
         }
 }
