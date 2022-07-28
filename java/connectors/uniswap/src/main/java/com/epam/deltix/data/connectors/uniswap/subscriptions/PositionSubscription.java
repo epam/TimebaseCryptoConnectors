@@ -67,8 +67,14 @@ public class PositionSubscription extends Subscription {
         return Arrays.stream(symbols).map(symbol -> {
             final GraphQlQuery.Query query = QUERY_TEMPLATE.copy();
 
-            query.arguments().withWhere("token0: \"" + symbol.token0Id() + "\", " +
-                    "token1: \"" + symbol.token1Id() + "\"");
+            if (symbol.hasToken0() && symbol.hasToken1()) {
+                query.arguments().withWhere("token0: \"" + symbol.token0Id() + "\", " +
+                        "token1: \"" + symbol.token1Id() + "\"");
+            } else if (symbol.hasToken0()) {
+                query.arguments().withWhere("token0: \"" + symbol.token0Id() + "\"");
+            } else if (symbol.hasToken1()) {
+                query.arguments().withWhere("token1: \"" + symbol.token1Id() + "\"");
+            }
 
             return new UniswapCollectionPoller<>(
                     uri,

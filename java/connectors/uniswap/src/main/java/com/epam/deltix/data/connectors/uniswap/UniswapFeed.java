@@ -10,7 +10,6 @@ public class UniswapFeed extends HttpFeed {
     private final String uri;
     private final int pollTimeoutMillis;
     private final String[] symbols;
-    private Map<String, String> instrumentsMap = new HashMap<>();
 
     public UniswapFeed(
             final String uri,
@@ -19,7 +18,6 @@ public class UniswapFeed extends HttpFeed {
             final ErrorListener errorListener,
             final Logger logger,
             final int pollTimeoutMillis,
-            final String instruments,
             final String... symbols
     ) {
         super(selected, output, errorListener, logger);
@@ -27,11 +25,6 @@ public class UniswapFeed extends HttpFeed {
         this.uri = uri;
         this.pollTimeoutMillis = pollTimeoutMillis;
         this.symbols = symbols != null ? symbols : new String[]{};
-        Arrays.stream(Util.splitInstruments(instruments))
-                .map(String::trim).forEach(e -> {
-                    String[] item = e.split("=");
-                    instrumentsMap.put(item[0], item[1]);
-                });
     }
 
     @Override
@@ -44,18 +37,7 @@ public class UniswapFeed extends HttpFeed {
             identifiedUniswapSymbols = new IdentifiedUniswapSymbol[]{};
         } else {
             try {
-                if (instrumentsMap.size() > 0) {
-                    identifiedUniswapSymbols = instrumentsMap.keySet().stream().map(e -> {
-                        String[] ids = instrumentsMap.get(e).split("/");
-                        return new IdentifiedUniswapSymbol(
-                                new UniswapSymbol(e),
-                                ids[0],
-                                ids[1]
-                        );
-                    }).toArray(IdentifiedUniswapSymbol[]::new);
-                } else {
-                    identifiedUniswapSymbols = getIdentifiedUniswapSymbols();
-                }
+                identifiedUniswapSymbols = getIdentifiedUniswapSymbols();
             } catch (final Throwable t) {
                 onError(t);
                 return; // cannot continue without ids.

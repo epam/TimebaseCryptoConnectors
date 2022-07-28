@@ -79,6 +79,12 @@ public class SwapSubscription extends Subscription {
                 query.arguments().withWhere("token0: \"" + symbol.token0Id() + "\", " +
                         "token1: \"" + symbol.token1Id() + "\"," +
                         "timestamp_gte: \"" + now + "\"");
+            } else if (symbol.hasToken0()) {
+                query.arguments().withWhere("token0: \"" + symbol.token0Id() + "\", " +
+                        "timestamp_gte: \"" + now + "\"");
+            } else if (symbol.hasToken1()) {
+                query.arguments().withWhere("token1: \"" + symbol.token1Id() + "\", " +
+                        "timestamp_gte: \"" + now + "\"");
             }
 
             return new UniswapCollectionPoller<>(

@@ -105,6 +105,10 @@ public class PoolSubscription extends Subscription {
             if (symbol.hasToken0() && symbol.hasToken1()) {
                 query.arguments().withWhere("token0: \"" + symbol.token0Id() + "\", " +
                         "token1: \"" + symbol.token1Id() + "\"");
+            } else if (symbol.hasToken0()) {
+                query.arguments().withWhere("token0: \"" + symbol.token0Id() + "\"");
+            } else if (symbol.hasToken1()) {
+                query.arguments().withWhere("token1: \"" + symbol.token1Id() + "\"");
             }
 
             return new UniswapCollectionPoller<>(

@@ -44,7 +44,6 @@ public class UniswapDataConnector extends DataConnector<UniswapConnectorSettings
                     errorListener,
                     logger(),
                     5_000,
-                    settings().getInstruments(),
                     symbols
             );
             result.start();
@@ -57,8 +56,7 @@ public class UniswapDataConnector extends DataConnector<UniswapConnectorSettings
                 new UniswapConnectorSettings(
                         "uniswap",
                         "dxtick://localhost:8011",
-                        "uniswap",
-                        "BUSD/WETH" + "=" + "0x4fabb145d64652a948d72533023f6e7a623c7c53" + "/" + "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+                        "uniswap"
                 )
         );
 
