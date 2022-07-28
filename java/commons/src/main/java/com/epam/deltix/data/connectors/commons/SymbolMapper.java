@@ -75,16 +75,6 @@ public class SymbolMapper implements CloseableMessageOutputFactory {
                 }
 
                 if (to == null) {
-                    String[] symbols = from.toString().split("/");
-                    List<String> symbolsList = Arrays.asList(symbols).stream()
-                            .filter(symbol -> mapping.containsValue(symbol))
-                            .collect(Collectors.toList());
-                    if(symbolsList.size() > 0) {
-                        to = symbolsList.get(0);
-                    }
-                }
-
-                if (to == null) {
                     output.send(message);
                     return;
                 }

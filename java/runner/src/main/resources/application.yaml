@@ -282,4 +282,4 @@ connectors:
       - "com.epam.deltix.data.uniswap.UniswapDayDataAction"
       - "com.epam.deltix.data.uniswap.TokenDayDataAction"
       - "com.epam.deltix.data.uniswap.TokenHourDataAction"
-    instruments: "UMIIE=UMIIE,/DAI=DAI,BUSD/WETH=BUSD/WETH,BUSD/USDC=BUSD/USDC"
+    instruments: "BUSD/WETH=BUSD/WETH,BUSD/USDC=BUSD/USDC"
