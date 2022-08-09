@@ -4,12 +4,18 @@ import com.epam.deltix.data.connectors.commons.*;
 import com.epam.deltix.data.connectors.uniswap.subscriptions.*;
 import com.epam.deltix.data.uniswap.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 public class UniswapFeed extends HttpFeed {
     private final String uri;
     private final int pollTimeoutMillis;
     private final String[] symbols;
+    private final String uniswapApiUrl;
+    private final int amount;
+    private final int depth;
 
     public UniswapFeed(
             final String uri,
@@ -18,6 +24,9 @@ public class UniswapFeed extends HttpFeed {
             final ErrorListener errorListener,
             final Logger logger,
             final int pollTimeoutMillis,
+            final int amount,
+            final int depth,
+            final String uniswapApiUrl,
             final String... symbols
     ) {
         super(selected, output, errorListener, logger);
@@ -25,6 +34,9 @@ public class UniswapFeed extends HttpFeed {
         this.uri = uri;
         this.pollTimeoutMillis = pollTimeoutMillis;
         this.symbols = symbols != null ? symbols : new String[]{};
+        this.uniswapApiUrl = uniswapApiUrl;
+        this.amount = amount;
+        this.depth = depth;
     }
 
     @Override
@@ -127,65 +139,14 @@ public class UniswapFeed extends HttpFeed {
             ));
         }
 
-        if (selected.custom(CollectAction.class)) {
-            subscriptions.add(new CollectSubscription(
-                    uri,
+        if (selected.level2()) {
+            subscriptions.add(new PriceSubscription(
+                    uniswapApiUrl,
                     this,
                     logger(),
-                    identifiedUniswapSymbols
-            ));
-        }
-
-        if (selected.custom(FlashAction.class)) {
-            subscriptions.add(new FlashSubscription(
-                    uri,
-                    this,
-                    logger(),
-                    identifiedUniswapSymbols
-            ));
-        }
-
-        if (selected.custom(TransactionAction.class)) {
-            subscriptions.add(new TransactionSubscription(
-                    uri,
-                    this,
-                    logger(),
-                    identifiedUniswapSymbols
-            ));
-        }
-
-        if (selected.custom(PositionSnapshotAction.class)) {
-            subscriptions.add(new PositionSnapshotSubscription(
-                    uri,
-                    this,
-                    logger(),
-                    identifiedUniswapSymbols
-            ));
-        }
-
-        if (selected.custom(UniswapDayDataAction.class)) {
-            subscriptions.add(new UniswapDayDataSubscription(
-                    uri,
-                    this,
-                    logger(),
-                    identifiedUniswapSymbols
-            ));
-        }
-
-        if (selected.custom(TokenDayDataAction.class)) {
-            subscriptions.add(new TokenDayDataSubscription(
-                    uri,
-                    this,
-                    logger(),
-                    identifiedUniswapSymbols
-            ));
-        }
-
-        if (selected.custom(TokenHourDataAction.class)) {
-            subscriptions.add(new TokenHourDataSubscription(
-                    uri,
-                    this,
-                    logger(),
+                    selected,
+                    amount,
+                    depth,
                     identifiedUniswapSymbols
             ));
         }

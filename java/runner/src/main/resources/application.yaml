@@ -251,6 +251,7 @@ connectors:
       - "L2"
       - "TRADES"
     instruments: "btc-usdt=BTC/USDT,eth-usdt=ETH/USDT"
+
   deribit:
     stream: deribit
     wsUrl: wss://test.deribit.com/ws/api/v2
@@ -263,6 +264,7 @@ connectors:
 
   uniswap:
     stream: uniswap
+    type: uniswap
     model:
       - "CUSTOM"
     modelTypes:
@@ -282,4 +284,13 @@ connectors:
       - "com.epam.deltix.data.uniswap.UniswapDayDataAction"
       - "com.epam.deltix.data.uniswap.TokenDayDataAction"
       - "com.epam.deltix.data.uniswap.TokenHourDataAction"
-    instruments: "BUSD/WETH=BUSD/WETH,BUSD/USDC=BUSD/USDC"
+    instruments: "USDC/WETH=USDC/WETH"
+
+  uniswap-l2:
+    stream: uniswap-l2
+    type: uniswap
+    depth: 50
+    amount: 100
+    model:
+      - "L2"
+    instruments: "USDC/WETH=USDC/WETH,USDC/WBTC=USDC/WBTC,USDC/DAI=USDC/DAI"

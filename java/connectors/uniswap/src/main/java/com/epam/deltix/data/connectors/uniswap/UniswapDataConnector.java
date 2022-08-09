@@ -26,6 +26,7 @@ public class UniswapDataConnector extends DataConnector<UniswapConnectorSettings
                         UniswapDayDataAction.class,
                         TokenDayDataAction.class,
                         TokenHourDataAction.class)
+                .withLevel2()
                 .build()
         );
     }
@@ -43,7 +44,10 @@ public class UniswapDataConnector extends DataConnector<UniswapConnectorSettings
                     outputFactory.create(),
                     errorListener,
                     logger(),
-                    5_000,
+                    10_000,
+                    settings().getAmount(),
+                    settings().getDepth(),
+                    settings().getUniswapApiUrl(),
                     symbols
             );
             result.start();
