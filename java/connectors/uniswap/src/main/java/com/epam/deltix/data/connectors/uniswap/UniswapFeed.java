@@ -4,13 +4,18 @@ import com.epam.deltix.data.connectors.commons.*;
 import com.epam.deltix.data.connectors.uniswap.subscriptions.*;
 import com.epam.deltix.data.uniswap.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 public class UniswapFeed extends HttpFeed {
     private final String uri;
     private final int pollTimeoutMillis;
     private final String[] symbols;
-    private Map<String, String> instrumentsMap = new HashMap<>();
+    private final String uniswapApiUrl;
+    private final int amount;
+    private final int depth;
 
     public UniswapFeed(
             final String uri,
@@ -19,7 +24,9 @@ public class UniswapFeed extends HttpFeed {
             final ErrorListener errorListener,
             final Logger logger,
             final int pollTimeoutMillis,
-            final String instruments,
+            final int amount,
+            final int depth,
+            final String uniswapApiUrl,
             final String... symbols
     ) {
         super(selected, output, errorListener, logger);
@@ -27,11 +34,9 @@ public class UniswapFeed extends HttpFeed {
         this.uri = uri;
         this.pollTimeoutMillis = pollTimeoutMillis;
         this.symbols = symbols != null ? symbols : new String[]{};
-        Arrays.stream(Util.splitInstruments(instruments))
-                .map(String::trim).forEach(e -> {
-                    String[] item = e.split("=");
-                    instrumentsMap.put(item[0], item[1]);
-                });
+        this.uniswapApiUrl = uniswapApiUrl;
+        this.amount = amount;
+        this.depth = depth;
     }
 
     @Override
@@ -44,18 +49,7 @@ public class UniswapFeed extends HttpFeed {
             identifiedUniswapSymbols = new IdentifiedUniswapSymbol[]{};
         } else {
             try {
-                if (instrumentsMap.size() > 0) {
-                    identifiedUniswapSymbols = instrumentsMap.keySet().stream().map(e -> {
-                        String[] ids = instrumentsMap.get(e).split("/");
-                        return new IdentifiedUniswapSymbol(
-                                new UniswapSymbol(e),
-                                ids[0],
-                                ids[1]
-                        );
-                    }).toArray(IdentifiedUniswapSymbol[]::new);
-                } else {
-                    identifiedUniswapSymbols = getIdentifiedUniswapSymbols();
-                }
+                identifiedUniswapSymbols = getIdentifiedUniswapSymbols();
             } catch (final Throwable t) {
                 onError(t);
                 return; // cannot continue without ids.
@@ -114,6 +108,45 @@ public class UniswapFeed extends HttpFeed {
                     uri,
                     this,
                     logger(),
+                    identifiedUniswapSymbols
+            ));
+        }
+
+        if (selected.custom(SwapAction.class)) {
+            subscriptions.add(new SwapSubscription(
+                    uri,
+                    this,
+                    logger(),
+                    identifiedUniswapSymbols
+            ));
+        }
+
+        if (selected.custom(MintAction.class)) {
+            subscriptions.add(new MintSubscription(
+                    uri,
+                    this,
+                    logger(),
+                    identifiedUniswapSymbols
+            ));
+        }
+
+        if (selected.custom(BurnAction.class)) {
+            subscriptions.add(new BurnSubscription(
+                    uri,
+                    this,
+                    logger(),
+                    identifiedUniswapSymbols
+            ));
+        }
+
+        if (selected.level2()) {
+            subscriptions.add(new PriceSubscription(
+                    uniswapApiUrl,
+                    this,
+                    logger(),
+                    selected,
+                    amount,
+                    depth,
                     identifiedUniswapSymbols
             ));
         }

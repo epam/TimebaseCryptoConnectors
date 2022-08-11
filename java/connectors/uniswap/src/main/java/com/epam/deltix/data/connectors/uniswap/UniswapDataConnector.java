@@ -15,7 +15,18 @@ public class UniswapDataConnector extends DataConnector<UniswapConnectorSettings
                         PoolAction.class,
                         TokenAction.class,
                         PositionAction.class,
-                        TickAction.class)
+                        TickAction.class,
+                        SwapAction.class,
+                        MintAction.class,
+                        BurnAction.class,
+                        CollectAction.class,
+                        FlashAction.class,
+                        TransactionAction.class,
+                        PositionSnapshotAction.class,
+                        UniswapDayDataAction.class,
+                        TokenDayDataAction.class,
+                        TokenHourDataAction.class)
+                .withLevel2()
                 .build()
         );
     }
@@ -33,8 +44,10 @@ public class UniswapDataConnector extends DataConnector<UniswapConnectorSettings
                     outputFactory.create(),
                     errorListener,
                     logger(),
-                    5_000,
-                    settings().getInstruments(),
+                    10_000,
+                    settings().getAmount(),
+                    settings().getDepth(),
+                    settings().getUniswapApiUrl(),
                     symbols
             );
             result.start();
@@ -47,8 +60,7 @@ public class UniswapDataConnector extends DataConnector<UniswapConnectorSettings
                 new UniswapConnectorSettings(
                         "uniswap",
                         "dxtick://localhost:8011",
-                        "uniswap",
-                        "BUSD/WETH" + "=" + "0x4fabb145d64652a948d72533023f6e7a623c7c53" + "/" + "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+                        "uniswap"
                 )
         );
 

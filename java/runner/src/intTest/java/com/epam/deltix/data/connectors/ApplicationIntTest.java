@@ -81,6 +81,7 @@ public class ApplicationIntTest extends TbIntTestPreparation {
                 toArray(ConnectorStream[]::new);
 
         return Arrays.stream(connectorStreams).
+                filter(connector -> !connector.stream.equals("uniswap-l2")).
                 map(c -> DynamicTest.dynamicTest(
                         c.connector,
                         () -> tryReadSomeData(c)

@@ -29,11 +29,13 @@ public class TokenIdentifier {
         private final String id;
         private final String symbol;
         private final String name;
+        private final String txCount;
 
-        private Info(final String id, final String symbol, final String name) {
+        private Info(final String id, final String symbol, final String name, final String txCount) {
             this.id = id;
             this.symbol = symbol;
             this.name = name;
+            this.txCount = txCount;
         }
 
         public String id() {
@@ -48,6 +50,10 @@ public class TokenIdentifier {
             return name;
         }
 
+        public String txCount() {
+            return txCount;
+        }
+
         @Override
         public String toString() {
             return symbol + " [" + id + "] (" + name + ')';
@@ -60,6 +66,7 @@ public class TokenIdentifier {
         QUERY_TEMPLATE.withScalar("id");
         QUERY_TEMPLATE.withScalar("symbol");
         QUERY_TEMPLATE.withScalar("name");
+        QUERY_TEMPLATE.withScalar("txCount");
     }
 
     private final String uri;
@@ -121,11 +128,12 @@ public class TokenIdentifier {
                     final String id = object.getStringRequired("id");
                     final String symbol = object.getStringRequired("symbol");
                     final String name = object.getStringRequired("name");
+                    final String txCount = object.getStringRequired("txCount");
 
                     final Info info = result.get(symbol);
-                    final Info newInfo = new Info(id, symbol, name);
+                    final Info newInfo = new Info(id, symbol, name, txCount);
 
-                    if (info != null) {
+                    if (info != null && Integer.parseInt(info.txCount()) > Integer.parseInt(txCount)) {
                         System.out.println("Symbol " +
                                 info + " was found. Skipping the duplicating one " + newInfo); // TODO: logging
                         return;

@@ -69,7 +69,7 @@ public class SymbolMapper implements CloseableMessageOutputFactory {
                     return;
                 }
 
-                final String to;
+                String to;
                 synchronized (mapping) {
                     to = mapping.get(from);
                 }

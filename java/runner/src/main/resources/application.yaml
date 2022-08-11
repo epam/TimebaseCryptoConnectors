@@ -251,6 +251,7 @@ connectors:
       - "L2"
       - "TRADES"
     instruments: "btc-usdt=BTC/USDT,eth-usdt=ETH/USDT"
+
   deribit:
     stream: deribit
     wsUrl: wss://test.deribit.com/ws/api/v2
@@ -261,16 +262,35 @@ connectors:
       - "TRADES"
     instruments: "ada_usdc-perpetual=ADA/USDC,algo_usdc-perpetual=ALGO/USDC,avax_usdc-perpetual=AVAX/USDC"
 
-#  uniswap:
-#    stream: uniswap
-#    model:
-#      - "CUSTOM"
-#    modelTypes:
-#      - "com.epam.deltix.data.uniswap.FactoryAction"
-#      - "com.epam.deltix.data.uniswap.BundleAction"
-#      - "com.epam.deltix.data.uniswap.PoolAction"
-#      - "com.epam.deltix.data.uniswap.TokenAction"
-#      - "com.epam.deltix.data.uniswap.PositionAction"
-#      - "com.epam.deltix.data.uniswap.TickAction"
-#    instruments: "BUSD/WETH=0x4fabb145d64652a948d72533023f6e7a623c7c53/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2,
-#    BUSD/USDC=0x4fabb145d64652a948d72533023f6e7a623c7c53/0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+  uniswap:
+    stream: uniswap
+    type: uniswap
+    model:
+      - "CUSTOM"
+    modelTypes:
+      - "com.epam.deltix.data.uniswap.FactoryAction"
+      - "com.epam.deltix.data.uniswap.BundleAction"
+      - "com.epam.deltix.data.uniswap.PoolAction"
+      - "com.epam.deltix.data.uniswap.TokenAction"
+      - "com.epam.deltix.data.uniswap.PositionAction"
+      - "com.epam.deltix.data.uniswap.TickAction"
+      - "com.epam.deltix.data.uniswap.SwapAction"
+      - "com.epam.deltix.data.uniswap.MintAction"
+      - "com.epam.deltix.data.uniswap.BurnAction"
+      - "com.epam.deltix.data.uniswap.CollectAction"
+      - "com.epam.deltix.data.uniswap.FlashAction"
+      - "com.epam.deltix.data.uniswap.TransactionAction"
+      - "com.epam.deltix.data.uniswap.PositionSnapshotAction"
+      - "com.epam.deltix.data.uniswap.UniswapDayDataAction"
+      - "com.epam.deltix.data.uniswap.TokenDayDataAction"
+      - "com.epam.deltix.data.uniswap.TokenHourDataAction"
+    instruments: "USDC/WETH=USDC/WETH"
+
+  uniswap-l2:
+    stream: uniswap-l2
+    type: uniswap
+    depth: 50
+    amount: 100
+    model:
+      - "L2"
+    instruments: "USDC/WETH=USDC/WETH,USDC/WBTC=USDC/WBTC,USDC/DAI=USDC/DAI"
