@@ -47,6 +47,10 @@ allprojects {
             assemblyEnabled = false
         }
     }
+
+    configurations.all {
+        exclude group: 'org.finos.timebase-ce', module: 'timebase-s3'
+    }
 }
 
 idea {
