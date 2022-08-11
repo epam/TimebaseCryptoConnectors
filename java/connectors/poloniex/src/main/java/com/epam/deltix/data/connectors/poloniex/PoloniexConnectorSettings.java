@@ -6,7 +6,7 @@ import com.epam.deltix.data.connectors.commons.annotations.ConnectorSettings;
 @ConnectorSettings("Poloniex")
 public class PoloniexConnectorSettings extends DataConnectorSettings {
 
-    private String wsUrl = "wss://api2.poloniex.com";
+    private String wsUrl = "wss://ws.poloniex.com/ws/public";
 
     public PoloniexConnectorSettings() {
         super();
