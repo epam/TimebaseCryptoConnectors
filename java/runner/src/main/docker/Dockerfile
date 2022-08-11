@@ -4,6 +4,7 @@ ENV LANG=C.UTF-8
 COPY runner /runner
 
 # Here we install GNU libc (aka glibc) and set C.UTF-8 locale as default.
+RUN apk add --no-cache zlib=1.2.12-r3
 RUN apk add --no-cache openjdk11-jdk
 RUN ALPINE_GLIBC_BASE_URL="https://github.com/sgerrand/alpine-pkg-glibc/releases/download" && \
     ALPINE_GLIBC_PACKAGE_VERSION="2.30-r0" && \
