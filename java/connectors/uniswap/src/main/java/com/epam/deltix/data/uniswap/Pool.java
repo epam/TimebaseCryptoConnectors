@@ -586,7 +586,7 @@ public class Pool implements Updatable {
         this.mintIds = mintIds;
     }
 
-    public boolean updateMintIdsList(final String mintIdsList) {
+    public boolean updateMintIds(final String mintIdsList) {
         if (Util.equals(this.mintIds, mintIdsList)) {
             return false;
         }
@@ -757,7 +757,7 @@ public class Pool implements Updatable {
 
         //mints
         final JsonArray mints = from.getArray("mints");
-        result |= updateMintIdsList(parseJsonArray(mints));
+        result |= updateMintIds(parseJsonArray(mints));
 
         //burns
         final JsonArray burns = from.getArray("burns");

@@ -1,9 +1,10 @@
-FROM alpine:3.15.4
+FROM alpine:3.16.1
 
 ENV LANG=C.UTF-8
 COPY runner /runner
 
 # Here we install GNU libc (aka glibc) and set C.UTF-8 locale as default.
+RUN apk add --no-cache zlib=1.2.12-r3
 RUN apk add --no-cache openjdk11-jdk
 RUN ALPINE_GLIBC_BASE_URL="https://github.com/sgerrand/alpine-pkg-glibc/releases/download" && \
     ALPINE_GLIBC_PACKAGE_VERSION="2.30-r0" && \
@@ -33,7 +34,9 @@ RUN ALPINE_GLIBC_BASE_URL="https://github.com/sgerrand/alpine-pkg-glibc/releases
         "$ALPINE_GLIBC_BASE_PACKAGE_FILENAME" \
         "$ALPINE_GLIBC_BIN_PACKAGE_FILENAME" \
         "$ALPINE_GLIBC_I18N_PACKAGE_FILENAME" && \
-    apk add musl=1.2.2-r7 && \
+    apk add musl=1.2.3-r0 && \
+    apk add --no-cache libcrypto1.1=1.1.1q-r0 \
+            libssl1.1=1.1.1q-r0 && \
     chmod +x /runner/runner.sh
 
 ENV JAVA_OPTS=-verbose:gc
