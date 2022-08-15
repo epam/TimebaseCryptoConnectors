@@ -179,13 +179,13 @@ connectors:
 
   poloniex:
     stream: poloniex
-    wsUrl: wss://api2.poloniex.com
+    wsUrl: wss://ws.poloniex.com/ws/public
     depth: 20
     model:
       - "L1"
       - "L2"
       - "TRADES"
-    instruments: "BTC_DASH=BTC/DASH, BTC_ETC=BTC/ETC"
+    instruments: "BTC_USDT=BTC/USDT,BTC_BNB=BTC/BNB,ADA_BTC=ADA/BTC,ETH_USDC=ETH/USDT"
 
   okcoin:
     stream: okcoin
