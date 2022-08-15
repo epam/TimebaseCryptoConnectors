@@ -185,7 +185,7 @@ connectors:
       - "L1"
       - "L2"
       - "TRADES"
-    instruments: "BTC_ETC=BTC/ETC,USDT_BTC=USDT/BTC,BTC_DASH=BTC/DASH"
+    instruments: "BTC_USDT=BTC/USDT,BTC_BNB=BTC/BNB,ADA_BTC=ADA/BTC,ETH_USDC=ETH/USDT"
 
   okcoin:
     stream: okcoin
