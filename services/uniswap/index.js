@@ -16,20 +16,21 @@ const {
 const JSBI = require("jsbi");
 const lodash_1 = __importDefault(require("lodash"));
 const config_1 = require("@uniswap/smart-order-router/build/main/routers/alpha-router/config");
+const config = require("./config");
 
 const provider = new ethers.providers.JsonRpcProvider(
-  "https://mainnet.infura.io/v3/7c5e05d631124f3fa65b04bff935862d"
+  config.blockchain_mainnet_node_url
 );
 const tokenABI = [
   "function name() view returns (string)",
   "function symbol() view returns (string)",
   "function decimals() view returns (uint)",
 ];
-const chainId = 1;
+const chainId = config.chainId;
 
 var app = express();
-app.listen(3001, () => {
-  console.log("Server running on port 3001");
+app.listen(config.port, () => {
+  console.log("Server running on port:", config.port);
 });
 
 app.get("/price", (req, res, next) => {

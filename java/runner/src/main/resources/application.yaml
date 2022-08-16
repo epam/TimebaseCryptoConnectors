@@ -293,4 +293,4 @@ connectors:
     amount: 100
     model:
       - "L2"
-    instruments: "USDC/WETH=USDC/WETH,USDC/WBTC=USDC/WBTC,USDC/DAI=USDC/DAI"
+    instruments: "USDC/WETH=USDC/WETH,USDC/WBTC=USDC/WBTC,USDC/SUSHI=USDC/SUSHI"
