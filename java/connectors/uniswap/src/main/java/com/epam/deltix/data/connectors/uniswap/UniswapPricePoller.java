@@ -34,7 +34,7 @@ public class UniswapPricePoller implements HttpPoller {
             final String token1id,
             final Logger logger,
             final String name) {
-        processor = MdProcessor.create("UNISWAP", messageOutput, selected, depth, depth);
+        processor = MdProcessor.create("UNISWAP", messageOutput, selected, depth);
         this.token0Id = token0Id;
         this.token1id = token1id;
         this.uri = uri;
