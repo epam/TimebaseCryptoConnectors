@@ -149,13 +149,15 @@ async function getQuotes(
     tokenIn = token1;
     tokenOut = token0;
   }
-  const gasModel = await router.v3GasModelFactory.buildGasModel(
-    router.chainId,
+
+  const v3gasModel = await router.v3GasModelFactory.buildGasModel({
+    chainId: router.chainId,
     gasPriceWei,
-    router.v3PoolProvider,
-    quoteToken,
-    router.l2GasDataProvider
-  );
+    v3poolProvider: router.v3PoolProvider,
+    token: quoteToken,
+    v2poolProvider: router.v2PoolProvider,
+    l2GasDataProvider: router.l2GasDataProvider,
+  });
 
   const quotePromises = [];
   quotePromises.push(
@@ -165,7 +167,7 @@ async function getQuotes(
       amounts,
       percents,
       quoteToken,
-      gasModel,
+      v3gasModel,
       tradeType,
       routingConfig
     )
