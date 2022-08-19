@@ -5,6 +5,7 @@ import com.epam.deltix.data.connectors.commons.json.*;
 import com.epam.deltix.dfp.Decimal64Utils;
 import com.epam.deltix.qsrv.hf.tickdb.pub.TimeConstants;
 import com.epam.deltix.timebase.messages.TypeConstants;
+import com.epam.deltix.timebase.messages.universal.AggressorSide;
 
 import java.util.Arrays;
 
@@ -145,8 +146,11 @@ public class KrakenSpotFeed extends MdSingleWsFeed {
                     long price = trade.getDecimal64Required(0);
                     long size = trade.getDecimal64Required(1);
                     long timestamp = Util.parseTime(trade.getString(2));
+                    String tradeDirection = trade.getString(3);
 
-                    processor().onTrade(instrument, timestamp, price, size);
+                    AggressorSide side = "b".equalsIgnoreCase(tradeDirection) ? AggressorSide.BUY : AggressorSide.SELL;
+
+                    processor().onTrade(instrument, timestamp, price, size, side);
                 }
             }
         }

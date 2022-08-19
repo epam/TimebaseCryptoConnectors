@@ -4,6 +4,7 @@ import com.epam.deltix.data.connectors.commons.*;
 import com.epam.deltix.data.connectors.commons.json.*;
 import com.epam.deltix.dfp.Decimal64Utils;
 import com.epam.deltix.timebase.messages.TypeConstants;
+import com.epam.deltix.timebase.messages.universal.AggressorSide;
 
 import java.util.Arrays;
 
@@ -98,11 +99,16 @@ public class OkcoinSpotFeed extends MdSingleWsFeed {
             JsonArray jsonData = object.getArray("data");
             for (int i = 0; i < jsonData.size(); ++i) {
                 JsonObject trade = jsonData.getObject(i);
+
+                String tradeSide = trade.getString("side");
+                AggressorSide side = "buy".equalsIgnoreCase(tradeSide) ? AggressorSide.BUY : AggressorSide.SELL;
+
                 processor().onTrade(
                     trade.getString("instrument_id"),
                     dtParser.set(trade.getStringRequired("timestamp")).millis(),
                     trade.getDecimal64Required("price"),
-                    trade.getDecimal64Required("size")
+                    trade.getDecimal64Required("size"),
+                    side
                 );
             }
         }

@@ -3,6 +3,7 @@ package com.epam.deltix.data.connectors.bybit;
 import com.epam.deltix.data.connectors.commons.*;
 import com.epam.deltix.data.connectors.commons.json.*;
 import com.epam.deltix.timebase.messages.TypeConstants;
+import com.epam.deltix.timebase.messages.universal.AggressorSide;
 
 import java.util.Arrays;
 
@@ -144,8 +145,11 @@ public class BybitFuturesFeed extends MdSingleWsFeed {
                     long price = trade.getDecimal64("price");
                     long size = trade.getDecimal64("size");
                     long timestamp = dtParser.set(trade.getStringRequired("timestamp")).millis();
+                    String tradeSide = trade.getString("side");
 
-                    processor().onTrade(instrument, timestamp, price, size);
+                    AggressorSide side = "buy".equalsIgnoreCase(tradeSide) ? AggressorSide.BUY : AggressorSide.SELL;
+
+                    processor().onTrade(instrument, timestamp, price, size, side);
                 }
             }
         }

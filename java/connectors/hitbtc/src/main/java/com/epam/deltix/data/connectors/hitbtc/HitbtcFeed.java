@@ -4,6 +4,7 @@ import com.epam.deltix.data.connectors.commons.*;
 import com.epam.deltix.data.connectors.commons.json.*;
 import com.epam.deltix.dfp.Decimal64Utils;
 import com.epam.deltix.timebase.messages.TypeConstants;
+import com.epam.deltix.timebase.messages.universal.AggressorSide;
 
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicLong;
@@ -106,10 +107,14 @@ public class HitbtcFeed extends MdSingleWsFeed {
                 update.forEachArray((instrument, trades) -> {
                     for (int i = 0; i < trades.size(); ++i) {
                         JsonObject trade = trades.getObject(i);
+                        String tradeDirection = trade.getString("s");
+                        AggressorSide side = "buy".equalsIgnoreCase(tradeDirection) ? AggressorSide.BUY : AggressorSide.SELL;
+
                         processor().onTrade(instrument,
                             trade.getLongRequired("t"),
                             trade.getDecimal64Required("p"),
-                            trade.getDecimal64Required("q")
+                            trade.getDecimal64Required("q"),
+                            side
                         );
                     }
                 });
