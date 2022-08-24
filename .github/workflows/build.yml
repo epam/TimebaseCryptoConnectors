@@ -3,10 +3,10 @@ name: Build CI
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: [main-*]
   pull_request:
     types: [opened, synchronize]
-    branches: [main]
+    branches: [main-*]
 
 env:
   GRADLE_OPTS: "-Dorg.gradle.daemon=false"
@@ -84,3 +84,11 @@ jobs:
       - name: Run Integration tests
         run: |
           ./gradlew intTest
+      - name: Upload Integration test results
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: integration-test-results
+          path: |
+            ./java/runner/build/reports/tests/intTest
+            ./java/runner/build/intTest

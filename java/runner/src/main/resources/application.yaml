@@ -250,7 +250,7 @@ connectors:
       - "L1"
       - "L2"
       - "TRADES"
-    instruments: "btc-usdt=BTC/USDT,eth-usdt=ETH/USDT"
+    instruments: "btc-usdt=BTC/USDT,eth-usdt=ETH/USDT,eth-btc=ETH/BTC,ltc-usdt=LTC/USDT,doge-usdt=DOGE/USDT,mana-usdt=MANA/USDT"
 
   deribit:
     stream: deribit
@@ -260,7 +260,7 @@ connectors:
       - "L1"
       - "L2"
       - "TRADES"
-    instruments: "ada_usdc-perpetual=ADA/USDC,algo_usdc-perpetual=ALGO/USDC,avax_usdc-perpetual=AVAX/USDC"
+    instruments: "ada_usdc-perpetual=ADA/USDC,avax_usdc-perpetual=AVAX/USDC,sol_usdc-perpetual=SOL/USDC,xrp_usdc-perpetual=XRP/USDC"
 
   uniswap:
     stream: uniswap
