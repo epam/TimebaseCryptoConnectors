@@ -62,6 +62,9 @@
         <Package name="deltix.snmp.mond.web"/>
     </Match>
 
+    <Match>
+        <Package name="com.epam.deltix.data.connectors.validator"/>
+    </Match>
 
     <!-- exclude code generator (not a part of runtime)
     <Match>

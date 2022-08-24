@@ -215,6 +215,9 @@ configure(leafProjects) {
 //
 //            dependency 'com.sun.xml.bind:jaxb-impl:2.3.0'
 
+            dependency 'com.epam.deltix:orderbook-core:1.0.16'
+            dependency 'com.epam.deltix:containers:3.1.2'
+
             dependency 'junit:junit:4.13.1'
             dependency "org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion"
             dependency "org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion"

@@ -84,3 +84,11 @@ jobs:
       - name: Run Integration tests
         run: |
           ./gradlew intTest
+      - name: Upload Integration test results
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: integration-test-results
+          path: |
+            ./java/runner/build/reports/tests/intTest
+            ./java/runner/build/intTest
