@@ -3,10 +3,10 @@ name: Build CI
 on:
   workflow_dispatch:
   push:
-    branches: [main-*]
+    branches: [main, int-tests-actual]
   pull_request:
     types: [opened, synchronize]
-    branches: [main-*]
+    branches: [main, int-tests-actual]
 
 env:
   GRADLE_OPTS: "-Dorg.gradle.daemon=false"
