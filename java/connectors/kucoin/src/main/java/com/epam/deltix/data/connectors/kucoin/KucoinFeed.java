@@ -42,7 +42,7 @@ public class KucoinFeed extends MdSingleWsRestFeed {
     @Override
     protected void subscribe(JsonWriter jsonWriter, String... symbols) {
         StringBuilder symbolsStringBuilder = new StringBuilder();
-        Arrays.stream(symbols).forEach(symbol -> symbolsStringBuilder.append(symbol).append(","));
+        Arrays.stream(symbols).forEach(symbol -> symbolsStringBuilder.append(symbol.toLowerCase()).append(","));
         String symbolsString = symbolsStringBuilder.deleteCharAt(symbolsStringBuilder.length() - 1)
                 .toString().toUpperCase();
 
@@ -57,7 +57,7 @@ public class KucoinFeed extends MdSingleWsRestFeed {
 
         Arrays.asList(symbols).forEach(symbol -> {
             Queue<JsonObject> updatesQueue = new LinkedList<>();
-            updatesBufferMap.put(symbol, updatesQueue);
+            updatesBufferMap.put(symbol.toLowerCase(), updatesQueue);
         });
         orderBookUpdatesJson.toJsonAndEoj(jsonWriter);
 
