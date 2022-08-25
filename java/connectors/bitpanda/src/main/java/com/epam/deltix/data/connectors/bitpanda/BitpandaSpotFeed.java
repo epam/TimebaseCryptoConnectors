@@ -4,6 +4,7 @@ import com.epam.deltix.data.connectors.commons.*;
 import com.epam.deltix.data.connectors.commons.json.*;
 import com.epam.deltix.dfp.Decimal64Utils;
 import com.epam.deltix.timebase.messages.TypeConstants;
+import com.epam.deltix.timebase.messages.universal.AggressorSide;
 
 import java.util.Arrays;
 
@@ -88,8 +89,11 @@ public class BitpandaSpotFeed extends MdSingleWsFeed {
 
             long price = object.getDecimal64Required("price");
             long size = object.getDecimal64Required("amount");
+            String tradeDirection = object.getString("taker_side");
 
-            processor().onTrade(instrument, timestamp, price, size);
+            AggressorSide side = "buy".equalsIgnoreCase(tradeDirection) ? AggressorSide.BUY : AggressorSide.SELL;
+
+            processor().onTrade(instrument, timestamp, price, size, side);
         }
     }
 

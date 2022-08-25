@@ -5,6 +5,7 @@ import com.epam.deltix.data.connectors.commons.json.*;
 import com.epam.deltix.dfp.Decimal64Utils;
 import com.epam.deltix.qsrv.hf.tickdb.pub.TimeConstants;
 import com.epam.deltix.timebase.messages.TypeConstants;
+import com.epam.deltix.timebase.messages.universal.AggressorSide;
 
 import java.util.*;
 
@@ -115,8 +116,11 @@ public class KucoinFeed extends MdSingleWsRestFeed {
             long timestamp = jasonData.getLong("time");
             long price = jasonData.getDecimal64Required("price");
             long size = jasonData.getDecimal64Required("size");
+            String tradeDirection = jasonData.getString("side");
 
-            processor().onTrade(symbol, timestamp, price, size);
+            AggressorSide side = "buy".equalsIgnoreCase(tradeDirection) ? AggressorSide.BUY : AggressorSide.SELL;
+
+            processor().onTrade(symbol, timestamp, price, size, side);
         }
 
         //ping server

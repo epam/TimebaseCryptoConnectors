@@ -4,6 +4,7 @@ import com.epam.deltix.data.connectors.commons.*;
 import com.epam.deltix.data.connectors.commons.json.*;
 import com.epam.deltix.dfp.Decimal64Utils;
 import com.epam.deltix.timebase.messages.TypeConstants;
+import com.epam.deltix.timebase.messages.universal.AggressorSide;
 
 import java.util.Arrays;
 
@@ -119,8 +120,11 @@ public class BybitSpotFeed extends MdSingleWsFeed {
                     long timestamp = trade.getLong("t");
                     long price = trade.getDecimal64Required("p");
                     long size = trade.getDecimal64Required("q");
+                    boolean isBuySide = trade.getBoolean("m");
 
-                    processor().onTrade(instrument, timestamp, price, size);
+                    AggressorSide side = isBuySide ? AggressorSide.BUY : AggressorSide.SELL;
+
+                    processor().onTrade(instrument, timestamp, price, size, side);
                 }
             }
         }

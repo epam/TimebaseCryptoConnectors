@@ -9,6 +9,7 @@ import com.epam.deltix.data.connectors.commons.json.JsonWriter;
 import com.epam.deltix.dfp.Decimal64Utils;
 import com.epam.deltix.timebase.messages.TimeStampedMessage;
 import com.epam.deltix.timebase.messages.TypeConstants;
+import com.epam.deltix.timebase.messages.universal.AggressorSide;
 
 import java.util.Arrays;
 
@@ -79,11 +80,15 @@ public class CoinbaseFeed extends MdSingleWsFeed {
         switch (type) {
             case "ticker": {
                 final String productId = object.getStringRequired("product_id");
+                String tradeDirection = object.getString("side");
+                AggressorSide side = "buy".equalsIgnoreCase(tradeDirection) ? AggressorSide.BUY : AggressorSide.SELL;
+
                 processor().onTrade(
                         productId,
                         TimeStampedMessage.TIMESTAMP_UNKNOWN,
                         object.getDecimal64Required("price"),
-                        object.getDecimal64Required("last_size"));
+                        object.getDecimal64Required("last_size"),
+                        side);
                 break;
             }
 

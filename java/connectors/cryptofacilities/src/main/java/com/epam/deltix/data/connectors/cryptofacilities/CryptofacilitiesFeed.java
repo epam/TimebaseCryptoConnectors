@@ -8,6 +8,7 @@ import com.epam.deltix.data.connectors.commons.json.JsonValueParser;
 import com.epam.deltix.data.connectors.commons.json.JsonWriter;
 import com.epam.deltix.dfp.Decimal64Utils;
 import com.epam.deltix.timebase.messages.TypeConstants;
+import com.epam.deltix.timebase.messages.universal.AggressorSide;
 
 import java.util.Arrays;
 
@@ -108,11 +109,15 @@ public class CryptofacilitiesFeed extends MdSingleWsFeed {
             );
             quotesListener.onFinish();
         } else if ("trade".equalsIgnoreCase(feed)) {
+            String tradeDirection = object.getString("side");
+            AggressorSide side = "buy".equalsIgnoreCase(tradeDirection) ? AggressorSide.BUY : AggressorSide.SELL;
+
             processor().onTrade(
                 instrument,
                 timestamp,
                 object.getDecimal64Required("price"),
-                object.getDecimal64Required("qty")
+                object.getDecimal64Required("qty"),
+                side
             );
         }
     }

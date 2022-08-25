@@ -4,6 +4,7 @@ import com.epam.deltix.data.connectors.commons.*;
 import com.epam.deltix.data.connectors.commons.json.*;
 import com.epam.deltix.dfp.Decimal64Utils;
 import com.epam.deltix.timebase.messages.TypeConstants;
+import com.epam.deltix.timebase.messages.universal.AggressorSide;
 import com.epam.deltix.util.collections.generated.LongToObjectHashMap;
 
 import java.util.Arrays;
@@ -119,11 +120,16 @@ public class PoloniexFeed extends MdSingleWsFeed {
             JsonArray dataArray = object.getArrayRequired("data");
             for (int i = 0; i < dataArray.size(); ++i) {
                 JsonObject trade = dataArray.getObjectRequired(i);
+
                 long timestamp = trade.getLong("ts");
                 String symbol = trade.getString("symbol");
                 long price = trade.getDecimal64Required("price");
                 long size = trade.getDecimal64Required("quantity");
-                processor().onTrade(symbol, timestamp, price, size);
+                String tradeDirection = trade.getString("takerSide");
+
+                AggressorSide side = "buy".equalsIgnoreCase(tradeDirection) ? AggressorSide.BUY : AggressorSide.SELL;
+
+                processor().onTrade(symbol, timestamp, price, size, side);
             }
         }
     }

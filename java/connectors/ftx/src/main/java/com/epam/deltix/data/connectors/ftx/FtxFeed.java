@@ -4,6 +4,7 @@ import com.epam.deltix.data.connectors.commons.*;
 import com.epam.deltix.data.connectors.commons.json.*;
 import com.epam.deltix.dfp.Decimal64Utils;
 import com.epam.deltix.timebase.messages.TypeConstants;
+import com.epam.deltix.timebase.messages.universal.AggressorSide;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -125,7 +126,11 @@ public class FtxFeed extends MdSingleWsFeed {
                     long price = Decimal64Utils.fromBigDecimal(trade.getDecimalRequired("price"));
                     long size = Decimal64Utils.fromBigDecimal(trade.getDecimalRequired("size"));
                     long timestamp = OffsetDateTime.parse(trade.getString("time")).toInstant().toEpochMilli();
-                    processor().onTrade(instrument, timestamp, price, size);
+                    String tradeDirection = trade.getString("side");
+
+                    AggressorSide side = "buy".equalsIgnoreCase(tradeDirection) ? AggressorSide.BUY : AggressorSide.SELL;
+
+                    processor().onTrade(instrument, timestamp, price, size, side);
                 }
             }
         }

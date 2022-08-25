@@ -2,6 +2,7 @@ package com.epam.deltix.data.connectors.coinflex;
 
 import com.epam.deltix.data.connectors.commons.*;
 import com.epam.deltix.data.connectors.commons.json.*;
+import com.epam.deltix.timebase.messages.universal.AggressorSide;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -86,11 +87,16 @@ public class CoinflexSpotFeed extends MdSingleWsFeed {
             JsonArray jsonData = object.getArray("data");
             for (int i = 0; i < jsonData.size(); ++i) {
                 JsonObject trade = jsonData.getObject(i);
+                String tradeDirection = trade.getString("side");
+
+                AggressorSide side = "buy".equalsIgnoreCase(tradeDirection) ? AggressorSide.BUY : AggressorSide.SELL;
+
                 processor().onTrade(
                     trade.getString("marketCode"),
                     Long.parseLong(trade.getStringRequired("timestamp")),
                     trade.getDecimal64Required("price"),
-                    trade.getDecimal64Required("quantity")
+                    trade.getDecimal64Required("quantity"),
+                    side
                 );
             }
         }
