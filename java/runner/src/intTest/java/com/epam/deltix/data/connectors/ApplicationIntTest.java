@@ -187,7 +187,7 @@ public class ApplicationIntTest extends TbIntTestPreparation {
                                     if (exception != null) {
                                         LOG.log(Level.SEVERE, "Exception", exception);
                                     }
-                                }
+                                }, stream
                             )
                         );
 
@@ -211,10 +211,10 @@ public class ApplicationIntTest extends TbIntTestPreparation {
         Assertions.assertEquals(0L, errors.get());
     }
 
-    private static DataValidator createValidator(String symbol, LogProcessor log) {
+    private static DataValidator createValidator(String symbol, LogProcessor log, DXTickStream stream) {
         DataValidatorImpl validator = new DataValidatorImpl(symbol, log,
             Decimal64Utils.parse("0.0000000000000000001"), Decimal64Utils.parse("0.0000000000000000001"),
-            true
+            true, stream
         );
         validator.setCheckEmptySide(true);
         validator.setCheckBidMoreThanAsk(true);

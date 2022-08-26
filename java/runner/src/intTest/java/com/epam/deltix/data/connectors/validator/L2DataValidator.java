@@ -8,6 +8,7 @@ import com.epam.deltix.containers.generated.LongArrayList;
 import com.epam.deltix.containers.interfaces.LogProcessor;
 import com.epam.deltix.containers.interfaces.Severity;
 import com.epam.deltix.dfp.Decimal64Utils;
+import com.epam.deltix.qsrv.hf.tickdb.pub.DXTickStream;
 import com.epam.deltix.timebase.messages.TypeConstants;
 import com.epam.deltix.timebase.messages.universal.*;
 import com.epam.deltix.timebase.orderbook.api.MarketSide;
@@ -22,6 +23,7 @@ import com.epam.deltix.util.collections.generated.ObjectList;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Set;
 
 @SuppressWarnings("all")
 public class L2DataValidator implements DataValidator {
@@ -46,9 +48,15 @@ public class L2DataValidator implements DataValidator {
     private DecimalLongArrayList previousBestBids = new DecimalLongArrayList();
     boolean checkBidMoreThanAsk = true;
     boolean checkEmptySide = true;
+    final private DXTickStream stream;
+
+    private static final Set<String> SKIP_CONNECTORS_TRADE_SIDE_VALIDATION = Set.of(
+            "binance-futures", "binance-spot"
+    );
 
     @SuppressWarnings({"unused", "WeakerAccess"})
-    public L2DataValidator(CharSequence symbol, LogProcessor logProcessor, long tickPrice, long tickSize, boolean checkNegativePrice) {
+    public L2DataValidator(CharSequence symbol, LogProcessor logProcessor, long tickPrice, long tickSize,
+                           boolean checkNegativePrice, DXTickStream stream) {
         this.symbol = symbol;
         this.logger = logProcessor;
         incrementHeader.setEntries(new ObjectArrayList<>());
@@ -57,6 +65,7 @@ public class L2DataValidator implements DataValidator {
         this.tickPrice = tickPrice;
         this.tickSize = tickSize;
         this.checkNegativePrice = checkNegativePrice;
+        this.stream = stream;
 
         book = OrderBookFactory.create(
             new OrderBookOptionsBuilder()
@@ -294,7 +303,35 @@ public class L2DataValidator implements DataValidator {
         for (int i = 0; i < entries.size(); ++i) {
             BaseEntryInfo entry = entries.get(i);
             if (entry instanceof TradeEntry) {
+                validateTradeFields(headerInfo, (TradeEntry) entry);
                 checkDiffPrice(headerInfo, ((TradeEntry) entry).getPrice());
+            }
+        }
+    }
+
+    private void validateTradeFields(PackageHeaderInfo headerInfo, TradeEntry entry) {
+        MarketSide<OrderBookQuote> quotes = book.getMarketSide(QuoteSide.ASK);
+        if (quotes == null || quotes.depth() == 0) {
+            quotes = book.getMarketSide(QuoteSide.BID);
+        }
+
+        if (Decimal64Utils.isNull(entry.getPrice()) || Decimal64Utils.isZero(entry.getPrice())) {
+            sendMessageToLogger(headerInfo, quotes.getQuote(0).getExchangeId(),
+                    "Trade price is null or zero", Severity.ERROR
+            );
+        }
+
+        if (Decimal64Utils.isNull(entry.getSize()) || Decimal64Utils.isZero(entry.getSize())) {
+            sendMessageToLogger(headerInfo, quotes.getQuote(0).getExchangeId(),
+                    "Trade size is null or zero", Severity.ERROR
+            );
+        }
+
+        if (!SKIP_CONNECTORS_TRADE_SIDE_VALIDATION.contains(stream.toString())) {
+            if (entry.getSide() == null) {
+                sendMessageToLogger(headerInfo, quotes.getQuote(0).getExchangeId(),
+                        "Trade side doesn't exist", Severity.ERROR
+                );
             }
         }
     }
