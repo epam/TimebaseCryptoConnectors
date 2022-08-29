@@ -23,7 +23,7 @@ We developed a Uniswap Market Data Connector to aggregate data from Uniswap prot
 
 Market data connector can be configured to query general information about Uniswap, information about pools, information about tokens etc. 
 
-> Read more [here]() to learn how to configure connector to get raw data. 
+> Read more [here](#configuration-to-get-raw-data) to learn how to configure connector to get raw data. 
 
 ![](/img/raw.png)
 
@@ -57,7 +57,7 @@ You can get the following information from Uniswap with this configuration of th
 
 Market data connector can be configured to query quotes for tokens. We use this data to build a tiered order book.  
 
-> Read more [here]() to learn how to configure connector to get quotes. 
+> Read more [here](#configuration-to-get-quotes) to learn how to configure connector to get quotes. 
 
 ![](/img/quotes.png)
 
@@ -71,8 +71,8 @@ Quotes are returned in a JSON format as an array of prices and amounts for both 
   "asks": 
   [
     [
-      21290.6492895, // price
-      2 //amount
+      21290.6492895,
+      2
     ],
     [
       21293.4869725,
