@@ -50,7 +50,7 @@ public class ApplicationIntTest extends TbIntTestPreparation {
 
     private static final Set<String> SKIP_CONNECTORS = Set.of("uniswap", "uniswap-l2");
     private static final Set<String> SKIP_CONNECTORS_DATA_VALIDATION = Set.of(
-        "uniswap", "uniswap-l2", "ascendex", "deribit", "coinflex"
+        "uniswap", "uniswap-l2", "ascendex", "deribit", "coinflex", "cryptofacilities", "bitfinex"
     );
 
     public static final GenericContainer APP_CONTAINER = new GenericContainer(
