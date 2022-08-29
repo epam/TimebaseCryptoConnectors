@@ -29,7 +29,7 @@ Market data connector can be configured to query general information about Unisw
 
 In this case, the connector sends requests to Uniswap via The Subgraph and writes to TimeBase stream the received data. Below, you can see what this type of data looks like in JSON format in TimeBase Web Admin application. 
 
-![](/img/tb-raw.png)
+![](/docs/img/tb-raw.png)
 
 You can get the following information from Uniswap with this configuration of the connector: 
 
@@ -59,7 +59,7 @@ Market data connector can be configured to query quotes for tokens. We use this 
 
 > Read more [here](#configuration-to-get-quotes) to learn how to configure connector to get quotes. 
 
-![](/img/quotes.png)
+![](/docs/img/quotes.png)
 
 We developed a **Price Handler** service to collect quotes from Uniswap. Price Handler uses Uniswap Alpha Router to get the best prices from V2 and V3 protocols for specific volumes of the selected tokens. 
 
@@ -95,12 +95,11 @@ Quotes are returned in a JSON format as an array of prices and amounts for both 
 
 Market Data Connector queries this data from Price Handler and uses them to build a tiered order book. Below, you can see what this type of data looks like in JSON format in TimeBase Web Admin application.
 
-![](/img/tb-l2.png)
+![](/docs/img/tb-l2.png)
 
 Or visualized as an order book: 
 
-![](/img/tb-book.png)
-
+![](/docs/img/tb-book.png)
 
 ## Configuration
 
@@ -141,7 +140,6 @@ uniswap:
 * `model` - must be **CUSTOM**.
 * `modelTypes` - see the list of supported types in the table below.
 * `instruments` - ERC20/ERC20  pair of tokens we create order book for.
-
 
 ### Configuration to Get Quotes
 
