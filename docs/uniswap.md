@@ -197,7 +197,7 @@ Configure **Price Handler** service to fetch quotes from Uniswap.
 1.	Start Price Handler service:
     - In Docker: TBD
     - From the service location run `npm install` and then `node index.js`
-2.	Launch the data connector itself:
+2.	[Launch the data connector itself](https://github.com/epam/TimebaseCryptoConnectors#start-connectors):
     - Configure application.yaml
     - Run docker-compose.yml
 
