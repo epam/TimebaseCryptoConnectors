@@ -25,7 +25,7 @@ Market data connector can be configured to query general information about Unisw
 
 > Read more [here](#configuration-to-get-raw-data) to learn how to configure connector to get raw data. 
 
-![](/img/raw.png)
+![](docs/img/raw.png)
 
 In this case, the connector sends requests to Uniswap via The Subgraph and writes to TimeBase stream the received data. Below, you can see what this type of data looks like in JSON format in TimeBase Web Admin application. 
 
