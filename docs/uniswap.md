@@ -7,7 +7,7 @@ The protocol is implemented as a set of persistent, non-upgradable smart contrac
 
 # Glossary 
 
-* **Token** is a representation of an asset, right, ownership, access, cryptocurrency, or anything else that is not unique in and of itself but can be transferred. Learn more.
+* **Token** is a representation of an asset, right, ownership, access, cryptocurrency, or anything else that is not unique in and of itself but can be transferred.
 * **ERC-20 Token** is the technical standard for fungible tokens created using the Ethereum blockchain. [Learn more](https://www.investopedia.com/news/what-erc20-and-what-does-it-mean-ethereum/).
 * **Pool** is a contract deployed by the V3 factory that pairs two ERC-20 tokens. Different pools may have different fees despite containing the same token pair. 
 * **Smart contracts** are conditions written into the coding that execute different aspects of a transaction between parties.
