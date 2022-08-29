@@ -190,7 +190,7 @@ Configure **Price Handler** service to fetch quotes from Uniswap.
     + Enter any **Key Name**.
 3.	Click **Manage Key** and select **MAINNET** in the **Network Endpoints**. **This connector supports only MAINNET network**.
 4.	Copy the **MAINNET** network endpoint.
-5.	In the **config.js** (under uniswap/service folder), pass the **MAINNET** network endpoint as `blockchain_mainnet_node_url` property value.
+5.	In the **config.js** (under [uniswap/service folder](https://github.com/epam/TimebaseCryptoConnectors/tree/main/services/uniswap)), pass the **MAINNET** network endpoint as `blockchain_mainnet_node_url` property value.
 
 ## Launch
 
