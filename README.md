@@ -62,3 +62,4 @@ By default, we launch with the [default](https://raw.githubusercontent.com/epam/
 |[Kucoin](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/kucoin)|SPOT, Futures|
 |[OKEX](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/okex)|SPOT, Linear and Inverse SWAP, Inverse and Linear Futures|
 |[POLONIEX](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/poloniex)|SPOT|
+|[Uniswap](https://github.com/epam/TimebaseCryptoConnectors/blob/main/docs/uniswap.md)|ERC-20 SWAP|
