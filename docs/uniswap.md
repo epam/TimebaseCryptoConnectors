@@ -105,7 +105,7 @@ Or visualized as an order book:
 
 ### Configuration to Get Raw Data
 
-Create an instance of the Uniswap Market Data Connector with this configuration to get raw data from Uniswap. Add this block to the **application.yaml** configuration file:
+Create an instance of the Uniswap Market Data Connector with this configuration to get raw data from Uniswap. Add this block to the [application.yaml](https://raw.githubusercontent.com/epam/TimebaseCryptoConnectors/main/java/runner/src/main/resources/application.yaml) configuration file:
 
 ```yaml
 # example of a Uniswap market data connector configuration for application.yaml
@@ -143,7 +143,7 @@ uniswap:
 
 ### Configuration to Get Quotes
 
-Create an instance of the Uniswap Market Data Connector with this configuration to get quotes for the selected tokens from Uniswap. Add this block to the **application.yaml** configuration file:
+Create an instance of the Uniswap Market Data Connector with this configuration to get quotes for the selected tokens from Uniswap. Add this block to the [application.yaml](https://raw.githubusercontent.com/epam/TimebaseCryptoConnectors/main/java/runner/src/main/resources/application.yaml) configuration file:
 
 ```yaml
 # example of configuration for application.yaml
