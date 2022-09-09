@@ -50,7 +50,7 @@ public class ApplicationIntTest extends TbIntTestPreparation {
 
     private static final Set<String> SKIP_CONNECTORS = Set.of("uniswap", "uniswap-l2");
     private static final Set<String> SKIP_CONNECTORS_DATA_VALIDATION = Set.of(
-        "uniswap", "uniswap-l2", "ascendex", "deribit", "coinflex"
+        "uniswap", "uniswap-l2", "ascendex", "deribit", "coinflex", "cryptofacilities", "bitfinex"
     );
 
     public static final GenericContainer APP_CONTAINER = new GenericContainer(
@@ -187,7 +187,7 @@ public class ApplicationIntTest extends TbIntTestPreparation {
                                     if (exception != null) {
                                         LOG.log(Level.SEVERE, "Exception", exception);
                                     }
-                                }
+                                }, stream
                             )
                         );
 
@@ -211,10 +211,10 @@ public class ApplicationIntTest extends TbIntTestPreparation {
         Assertions.assertEquals(0L, errors.get());
     }
 
-    private static DataValidator createValidator(String symbol, LogProcessor log) {
+    private static DataValidator createValidator(String symbol, LogProcessor log, DXTickStream stream) {
         DataValidatorImpl validator = new DataValidatorImpl(symbol, log,
             Decimal64Utils.parse("0.0000000000000000001"), Decimal64Utils.parse("0.0000000000000000001"),
-            true
+            true, stream
         );
         validator.setCheckEmptySide(true);
         validator.setCheckBidMoreThanAsk(true);

@@ -250,7 +250,9 @@ connectors:
       - "L1"
       - "L2"
       - "TRADES"
-    instruments: "btc-usdt=BTC/USDT,eth-usdt=ETH/USDT,eth-btc=ETH/BTC,ltc-usdt=LTC/USDT,doge-usdt=DOGE/USDT,mana-usdt=MANA/USDT"
+    instruments: "REQ-BTC=REQ/BTC,REQ-ETH=REQ/ETH,DEXE-BTC=DEXE/BTC,DEXE-USDT=DEXE/USDT,SOUL-BTC=SOUL/BTC,
+    btc-usdt=BTC/USDT,eth-usdt=ETH/USDT,eth-btc=ETH/BTC,ltc-usdt=LTC/USDT,doge-usdt=DOGE/USDT,
+    mana-usdt=MANA/USDT,XRP-USDT=XRP/USDT,LTC-USDT=LTC/USDT"
 
   deribit:
     stream: deribit

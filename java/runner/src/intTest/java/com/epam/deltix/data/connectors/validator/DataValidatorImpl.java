@@ -34,15 +34,17 @@ public class DataValidatorImpl implements DataValidator {
     private short marketDepth, minValidNumberOfLevels;
     private MutableString logBuilder = new MutableString();
     private LogProcessor logProcessor;
+    final private DXTickStream stream;
 
     private boolean waitingForSnapshot = true;
 
     private long anchorPrice = Decimal64Utils.NULL;
 
-    public DataValidatorImpl(CharSequence symbol, LogProcessor logProcessor, long tickPrice, long tickSize, boolean checkNegativePrice) {
+    public DataValidatorImpl(CharSequence symbol, LogProcessor logProcessor, long tickPrice, long tickSize,
+                             boolean checkNegativePrice, DXTickStream stream) {
         this.logProcessor = logProcessor;
         l1dataValidator = new L1DataValidator(symbol, logProcessor, tickPrice, tickSize, checkNegativePrice);
-        l2dataValidator = new L2DataValidator(symbol, logProcessor, tickPrice, tickSize, checkNegativePrice);
+        l2dataValidator = new L2DataValidator(symbol, logProcessor, tickPrice, tickSize, checkNegativePrice, stream);
         if (Decimal64Utils.isNaN(tickPrice)) {
             l1dataValidator.checkTickPrice = false;
             l2dataValidator.checkTickPrice = false;
@@ -59,6 +61,7 @@ public class DataValidatorImpl implements DataValidator {
         this.tickSize = tickSize;
         this.checkNegativePrice = checkNegativePrice;
         this.symbol = symbol;
+        this.stream = stream;
     }
 
     @Override
@@ -263,7 +266,8 @@ public class DataValidatorImpl implements DataValidator {
                                 if (exception != null) {
                                     exception.printStackTrace();
                                 }
-                            }
+                            },
+                            stream
                         )
                     );
 
@@ -273,10 +277,10 @@ public class DataValidatorImpl implements DataValidator {
         }
     }
 
-    private static DataValidator createValidator(String symbol, LogProcessor log) {
+    private static DataValidator createValidator(String symbol, LogProcessor log, DXTickStream strem) {
         DataValidatorImpl validator = new DataValidatorImpl(symbol, log,
             Decimal64Utils.parse("0.0000000000000000001"), Decimal64Utils.parse("0.0000000000000000001"),
-            true
+            true, strem
         );
         validator.setCheckEmptySide(true);
         validator.setCheckBidMoreThanAsk(true);
