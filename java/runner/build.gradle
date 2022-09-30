@@ -37,6 +37,7 @@ dependencies {
     implementation project(':java:connectors:deribit')
 
     implementation project(':java:connectors:uniswap')
+    implementation project(':java:connectors:uniswap-subgraph')
 
     implementation 'javax.annotation:javax.annotation-api'
 

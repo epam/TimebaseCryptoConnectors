@@ -264,9 +264,9 @@ connectors:
       - "TRADES"
     instruments: "ada_usdc-perpetual=ADA/USDC,avax_usdc-perpetual=AVAX/USDC,sol_usdc-perpetual=SOL/USDC,xrp_usdc-perpetual=XRP/USDC"
 
-  uniswap:
-    stream: uniswap
-    type: uniswap
+  uniswap-subgraph:
+    stream: uniswap-subgraph
+    type: uniswap-subgraph
     model:
       - "CUSTOM"
     modelTypes:
@@ -290,9 +290,19 @@ connectors:
 
   uniswap-l2:
     stream: uniswap-l2
-    type: uniswap
+    type: uniswap-subgraph
     depth: 50
     amount: 100
+    model:
+      - "L2"
+      - "L2"
+    instruments: "USDC/WETH=USDC/WETH,USDC/WBTC=USDC/WBTC,USDC/SUSHI=USDC/SUSHI"
+
+  uniswap:
+    stream: uniswap
+    depth: 20
+    amount: 10
+    nodeUrl: ""
     model:
       - "L2"
     instruments: "USDC/WETH=USDC/WETH,USDC/WBTC=USDC/WBTC,USDC/SUSHI=USDC/SUSHI"

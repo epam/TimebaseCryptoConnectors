@@ -222,7 +222,7 @@ async function getQuotes(
   for (let i = 0; i < percents.length; i++) {
     const persentsToQuoteArray = percentToSortedQuotes[percents[i]];
     const bestQuote = persentsToQuoteArray[0];
-    const size = parseInt(amounts[i].toExact());
+    const size = parseFloat(amounts[i].toExact());
     const quote = parseFloat(bestQuote.quote.toExact()) / size;
     const level = [quote, size];
     quotes.push(level);

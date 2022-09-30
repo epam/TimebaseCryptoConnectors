@@ -1,12 +1,13 @@
-package com.epam.deltix.data.connectors.uniswap;
+package com.epam.deltix.data.connectors.uniswapsubgraph;
 
 import com.epam.deltix.data.connectors.commons.DataConnectorSettings;
 import com.epam.deltix.data.connectors.commons.annotations.ConnectorSettings;
 
-@ConnectorSettings("UNISWAP")
+@ConnectorSettings("UNISWAP-SUBGRAPH")
 public class UniswapConnectorSettings extends DataConnectorSettings {
+
     private String subgraphUrl = "https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3";
-    private String nodeUrl;
+    private String uniswapApiUrl = "http://localhost:3001/";
     private int amount;
 
     public UniswapConnectorSettings() {
@@ -27,12 +28,12 @@ public class UniswapConnectorSettings extends DataConnectorSettings {
         this.subgraphUrl = subgraphUrl;
     }
 
-    public String getNodeUrl() {
-        return nodeUrl;
+    public String getUniswapApiUrl() {
+        return uniswapApiUrl;
     }
 
-    public void setNodeUrl(String nodeUrl) {
-        this.nodeUrl = nodeUrl;
+    public void setUniswapApiUrl(String uniswapApiUrl) {
+        this.uniswapApiUrl = uniswapApiUrl;
     }
 
     public int getAmount() {

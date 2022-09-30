@@ -48,9 +48,9 @@ public class ApplicationIntTest extends TbIntTestPreparation {
 
     private static final Logger LOG = Logger.getLogger(ApplicationIntTest.class.getName());
 
-    private static final Set<String> SKIP_CONNECTORS = Set.of("uniswap", "uniswap-l2");
+    private static final Set<String> SKIP_CONNECTORS = Set.of("uniswap", "uniswap-l2", "uniswap-subgraph");
     private static final Set<String> SKIP_CONNECTORS_DATA_VALIDATION = Set.of(
-        "uniswap", "uniswap-l2", "ascendex", "deribit", "coinflex", "cryptofacilities", "bitfinex"
+        "uniswap", "uniswap-l2", "ascendex", "deribit", "coinflex", "cryptofacilities", "bitfinex", "uniswap-subgraph"
     );
 
     public static final GenericContainer APP_CONTAINER = new GenericContainer(

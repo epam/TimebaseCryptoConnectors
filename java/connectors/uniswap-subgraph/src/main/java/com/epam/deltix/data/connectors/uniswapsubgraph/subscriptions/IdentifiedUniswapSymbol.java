@@ -1,6 +1,10 @@
-package com.epam.deltix.data.connectors.uniswap.subscriptions;
+package com.epam.deltix.data.connectors.uniswapsubgraph.subscriptions;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class IdentifiedUniswapSymbol extends UniswapSymbol {
     public static IdentifiedUniswapSymbol[] identify(

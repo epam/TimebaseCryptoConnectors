@@ -1,47 +1,37 @@
 package com.epam.deltix.data.connectors.uniswap;
 
 import com.epam.deltix.data.connectors.commons.*;
-import com.epam.deltix.data.connectors.commons.json.JsonArray;
-import com.epam.deltix.data.connectors.commons.json.JsonObject;
-import com.epam.deltix.data.connectors.commons.json.JsonValue;
-import com.epam.deltix.data.connectors.commons.json.JsonValueParser;
+import com.epam.deltix.data.connectors.uniswap.quoter.aggregator.QuoteAggregator;
+import com.epam.deltix.dfp.Decimal64Utils;
+import com.epam.deltix.qsrv.hf.tickdb.pub.TimeConstants;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.math.BigDecimal;
 import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.time.Duration;
 
 public class UniswapPricePoller implements HttpPoller {
     private final MdProcessor processor;
-    private String token0Id;
-    private String token1id;
-    private String uri;
-    private int amount;
-    private int depth;
-    private Logger logger;
-    private String name;
+    private final int amount;
+    private final int depth;
+    private final Logger logger;
+    private final String name;
+    private final QuoteAggregator aggregator;
 
     public UniswapPricePoller(
-            final String uri,
-            final GraphQlQuery.Query queryTemplate,
             final MessageOutput messageOutput,
             final MdModel.Options selected,
             final int amount,
             final int depth,
-            final String token0Id,
-            final String token1id,
             final Logger logger,
-            final String name) {
+            final String name,
+            final QuoteAggregator aggregator) {
         processor = MdProcessor.create("UNISWAP", messageOutput, selected, depth);
-        this.token0Id = token0Id;
-        this.token1id = token1id;
-        this.uri = uri;
         this.amount = amount;
         this.logger = logger;
         this.name = name;
         this.depth = depth;
+        this.aggregator = aggregator;
     }
 
     @Override
@@ -49,7 +39,7 @@ public class UniswapPricePoller implements HttpPoller {
             final HttpClient client,
             final Runnable continuator,
             final ErrorListener errorListener) {
-        client.executor().get().execute(new UniswapPricePoller.PriceRequest(client, continuator, errorListener));
+        client.executor().get().execute(new PriceRequest(client, continuator, errorListener));
     }
 
     private class PriceRequest implements Runnable {
@@ -68,57 +58,35 @@ public class UniswapPricePoller implements HttpPoller {
 
         @Override
         public void run() {
-            String fullUrl = uri + "price?token0=" + token0Id + "&token1=" + token1id
-                    + "&amount=" + amount + "&depth=" + depth;
-            HttpClient httpClient = HttpClient
-                    .newBuilder()
-                    .connectTimeout(Duration.ofSeconds(10))
-                    .build();
-            try {
-                try {
-                    HttpResponse<String> response = httpClient.send(
-                            HttpRequest.newBuilder(new URI(fullUrl)).GET().build(),
-                            HttpResponse.BodyHandlers.ofString());
-                    processQuotes(response.body());
-                } catch (URISyntaxException e) {
-                    logger.warning("Error: url: " + fullUrl + " is not valid", e);
-                }
-            } catch (final Throwable t) {
-                errorListener.onError(t);
-            }
+            JSONObject orderBook = aggregator.buildLevel2(new BigDecimal(amount), depth);
+            processQuotes(orderBook);
             continuator.run();
         }
 
-        private void processQuotes(String body) {
-            JsonValueParser jsonParser = new JsonValueParser();
-            jsonParser.parse(body);
-
-            JsonValue jsonValue = jsonParser.eoj();
-            JsonObject object = jsonValue.asObject();
-            long time = object.getLong("timestamp");
-            QuoteSequenceProcessor quotesListener = processor.onBookSnapshot(name, time);
-            processSnapshotSide(quotesListener, object.getArray("asks"), true);
-            processSnapshotSide(quotesListener, object.getArray("bids"), false);
+        private void processQuotes(JSONObject quotes) {
+            QuoteSequenceProcessor quotesListener = processor.onBookSnapshot(name, TimeConstants.USE_CURRENT_TIME);
+            processSnapshotSide(quotesListener, quotes.getJSONArray("asks"), true);
+            processSnapshotSide(quotesListener, quotes.getJSONArray("bids"), false);
             quotesListener.onFinish();
         }
 
-        protected void processSnapshotSide(QuoteSequenceProcessor quotesListener, JsonArray quotePairs, boolean ask) {
+        protected void processSnapshotSide(QuoteSequenceProcessor quotesListener, JSONArray quotePairs, boolean ask) {
             if (quotePairs == null) {
                 return;
             }
 
-            for (int i = 0; i < quotePairs.size(); i++) {
-                final JsonArray pair = quotePairs.getArrayRequired(i);
-                if (pair.size() < 2) {
+            for (int i = 0; i < quotePairs.length(); i++) {
+                final JSONArray pair = quotePairs.getJSONArray(i);
+                if (pair.length() < 2) {
                     throw new IllegalArgumentException("Unexpected size of "
                             + (ask ? "an ask" : "a bid")
                             + " quote: "
-                            + pair.size());
+                            + pair.length());
                 }
 
                 quotesListener.onQuote(
-                        pair.getDecimal64Required(0),
-                        pair.getDecimal64Required(1),
+                        Decimal64Utils.parse(pair.getString(0)),
+                        Decimal64Utils.parse(pair.getString(1)),
                         ask
                 );
             }
