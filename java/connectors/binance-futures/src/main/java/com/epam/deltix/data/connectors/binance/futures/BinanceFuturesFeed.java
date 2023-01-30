@@ -121,8 +121,10 @@ public class BinanceFuturesFeed extends MdSingleWsRestFeed {
 
                 long price = wsData.getDecimal64Required("p");
                 long size = wsData.getDecimal64Required("q");
+                boolean buyerMarketMaker = wsData.getBooleanRequired("m");
+                AggressorSide side = buyerMarketMaker ? AggressorSide.SELL : AggressorSide.BUY;
 
-                processor().onTrade(wsData.getString("s").toLowerCase(), timestamp, price, size);
+                processor().onTrade(wsData.getString("s").toLowerCase(), timestamp, price, size, side);
             }
         }
     }
