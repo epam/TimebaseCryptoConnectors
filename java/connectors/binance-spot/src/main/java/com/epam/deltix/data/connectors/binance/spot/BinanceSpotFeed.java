@@ -5,6 +5,7 @@ import com.epam.deltix.data.connectors.commons.json.*;
 import com.epam.deltix.dfp.Decimal64Utils;
 import com.epam.deltix.qsrv.hf.tickdb.pub.TimeConstants;
 import com.epam.deltix.timebase.messages.TypeConstants;
+import com.epam.deltix.timebase.messages.universal.AggressorSide;
 
 import java.util.*;
 
@@ -121,8 +122,10 @@ public class BinanceSpotFeed extends MdSingleWsRestFeed {
 
             long price = object.getDecimal64Required("p");
             long size = object.getDecimal64Required("q");
+            boolean buyerMarketMaker = object.getBooleanRequired("m");
+            AggressorSide side = buyerMarketMaker ? AggressorSide.SELL : AggressorSide.BUY;
 
-            processor().onTrade(object.getString("s").toLowerCase(), timestamp, price, size);
+            processor().onTrade(object.getString("s").toLowerCase(), timestamp, price, size, side);
         }
     }
 
