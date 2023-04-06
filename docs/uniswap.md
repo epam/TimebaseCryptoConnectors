@@ -51,7 +51,7 @@ You can get the following information from Uniswap with this configuration of th
 |UniswapDayDataAction|Data accumulated and condensed into day stats across the entire Uniswap.|
 |TokenDayDataAction|Data accumulated and condensed into day stats for the selected token.|
 
-> Refer to [Uniswap glossary](https://docs.uniswap.org/protocol/concepts/V3-overview/glossary) for more information 
+> Refer to [Uniswap glossary](https://docs.uniswap.org/concepts/glossary) for more information 
 
 ### Quotes
 
