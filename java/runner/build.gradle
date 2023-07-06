@@ -24,7 +24,6 @@ dependencies {
     implementation project(':java:connectors:coinflex')
     implementation project(':java:connectors:ascendex')
     implementation project(':java:connectors:cryptofacilities')
-    implementation project(':java:connectors:ftx')
     implementation project(':java:connectors:hitbtc')
     implementation project(':java:connectors:huobi-futures')
     implementation project(':java:connectors:huobi-spot')

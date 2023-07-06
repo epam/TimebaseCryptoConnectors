@@ -1,1 +1,0 @@
-# FTX Data Connector

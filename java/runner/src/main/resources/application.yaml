@@ -65,16 +65,6 @@ connectors:
       - "TRADES"
     instruments: "BTC220930, LTC220930"
 
-  ftx:
-    stream: ftx
-    wsUrl: wss://ftx.com/ws
-    depth: 20
-    model:
-      - "L1"
-      - "L2"
-      - "TRADES"
-    instruments: "USDT-PERP,LTC/USDT"
-
   bybit-linear-futures:
     type: bybit-futures
     stream: bybit-futures
