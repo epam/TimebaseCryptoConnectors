@@ -4,7 +4,7 @@ plugins {
     // See https://github.com/spring-gradle-plugins/dependency-management-plugin
 	
     id 'io.spring.dependency-management' version '1.0.11.RELEASE'
-    id 'com.github.spotbugs' version '4.2.3' apply false
+    id 'com.github.spotbugs' version '5.0.13' apply false
     id 'com.github.hierynomus.license-report' version '0.15.0'
 
     id 'com.github.jk1.dependency-license-report' version '2.0'
@@ -136,18 +136,18 @@ configure(leafProjects) {
 
             dependency group: 'io.github.green4j', name: 'green-jelly', version: '0.1.0'
 
-            dependency 'org.springframework:spring-core:5.3.20' // conflict resolution
+            dependency 'org.springframework:spring-core:5.3.27' // conflict resolution
 
             dependency group: "org.springframework.boot", name: "spring-boot-starter-web", version:springBootVersion
             dependency group: "org.springframework.boot", name: "spring-boot-starter-actuator", version:springBootVersion
 
-            dependencySet(group: 'org.apache.tomcat.embed', version: '9.0.69') {
+            dependencySet(group: 'org.apache.tomcat.embed', version: '9.0.72') {
                 entry 'tomcat-embed-core' // Tomcat core
                 entry 'tomcat-embed-jasper' // Tomcat JSP support
                 entry 'tomcat-embed-logging-juli' // Tomcat Logging
             }
 
-//            dependency 'com.google.guava:guava:30.1.1-jre'
+            dependency 'com.google.guava:guava:32.0.0-jre'
             dependency 'com.google.code.gson:gson:2.8.9'
 //            dependency 'com.google.code.findbugs:jsr305:3.0.2'
 //            dependency 'com.google.code.findbugs:annotations:3.0.1'
