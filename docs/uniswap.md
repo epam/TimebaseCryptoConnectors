@@ -184,7 +184,7 @@ Uniswap Market Data Connector with a certain periodicity sends REST calls to **P
 
 Configure **Price Handler** service to fetch quotes from Uniswap.
 
-1.	Navigate to [Infura](https://infura.io/) and create a new account. **Free infura.io plan allows up to 100k requests per day**.
+1.	Navigate to **infura.io** and create a new account. **Free infura.io plan allows up to 100k requests per day**.
 2.	Click **CREATE NEW KEY** to create a new key.
     + Select **Web3 API (Formerly Ethereum)** as a **Network**.
     + Enter any **Key Name**.
