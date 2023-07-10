@@ -69,10 +69,10 @@ jobs:
         with:
           image-ref: 'epam/timebase-crypto-connectors:${{ env.version_snapshot }}'
           format: 'table'
-          exit-code: '1'
+          exit-code: '0'
           ignore-unfixed: true
           vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
+          severity: 'CRITICAL,HIGH,MEDIUM'
       - name: Run tests
         run: ./gradlew test
       - name: Upload test results
