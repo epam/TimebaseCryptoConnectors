@@ -3,7 +3,7 @@ plugins {
     // Helps to avoid re-declaring dependency version in each subproject.
     // See https://github.com/spring-gradle-plugins/dependency-management-plugin
 	
-    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id 'io.spring.dependency-management' version '1.1.4'
     id 'com.github.spotbugs' version '5.0.13' apply false
     id 'com.github.hierynomus.license-report' version '0.15.0'
 
@@ -136,7 +136,7 @@ configure(leafProjects) {
 
             dependency group: 'io.github.green4j', name: 'green-jelly', version: '0.1.0'
 
-            dependency 'org.springframework:spring-core:5.3.27' // conflict resolution
+            dependency "org.springframework:spring-core:$springVersion"
 
             dependency group: "org.springframework.boot", name: "spring-boot-starter-web", version:springBootVersion
             dependency group: "org.springframework.boot", name: "spring-boot-starter-actuator", version:springBootVersion
@@ -256,7 +256,7 @@ configure(leafProjects) {
 
     jar {
         manifest {
-            baseName archivesBaseName
+            archiveBaseName = archivesBaseName
             description description
             attributes 'Manifest-Version': "1.0",
                     'Created-By': vendor,
@@ -319,7 +319,7 @@ configure(leafProjects) {
 
     task generateTestJar(type: Jar) {
         description 'Generates JAR with test classes'
-        classifier 'tests'
+        archiveClassifier = 'tests'
         from sourceSets.test.output
     }
 
