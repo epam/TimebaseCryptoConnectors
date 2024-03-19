@@ -3,7 +3,7 @@ name: Build CI
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: [main-actualize]
   pull_request:
     types: [opened, synchronize]
     branches: [main]
@@ -92,3 +92,9 @@ jobs:
           path: |
             ./java/runner/build/reports/tests/intTest
             ./java/runner/build/intTest
+      - name: Report Tests
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: Integration Tests
+          path: ./java/runner/build/test-results/intTest/*.xml
