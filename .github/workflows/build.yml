@@ -99,3 +99,6 @@ jobs:
           name: Integration Test Reports
           path: ./java/runner/build/test-results/intTest/*.xml
           reporter: java-junit
+          fail-on-error: false
+      - name: Adding to summary
+        run: echo '### Hello world! 🚀' >> $GITHUB_STEP_SUMMARY
