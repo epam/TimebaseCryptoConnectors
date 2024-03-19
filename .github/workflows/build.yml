@@ -104,4 +104,4 @@ jobs:
           path: ./java/runner/build/test-results/intTest/*.xml
           reporter: java-junit
           fail-on-error: false
-          only-summary: true
+          only-summary: false
