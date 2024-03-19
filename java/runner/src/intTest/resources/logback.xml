@@ -21,6 +21,6 @@
 		<appender-ref ref="STDOUT" />
 	</root>
 
-    <logger name="com.epam.deltix.data.connectors" level="DEBUG" />
+    <logger name="com.epam.deltix.data.connectors" level="INFO" />
 
 </configuration>

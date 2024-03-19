@@ -76,7 +76,7 @@ jobs:
       - name: Run tests
         run: ./gradlew test
       - name: Upload test results
-        if: ${{ failure() }}
+        if: always()
         uses: actions/upload-artifact@v2
         with:
           path: build/reports/junit
@@ -85,7 +85,7 @@ jobs:
         run: |
           ./gradlew intTest
       - name: Upload Integration test results
-        if: ${{ failure() }}
+        if: always()
         uses: actions/upload-artifact@v2
         with:
           name: integration-test-results
@@ -94,7 +94,8 @@ jobs:
             ./java/runner/build/intTest
       - name: Report Tests
         uses: dorny/test-reporter@v1
-        if: success() || failure()
+        if: always()
         with:
-          name: Integration Tests
+          name: Integration Test Reports
           path: ./java/runner/build/test-results/intTest/*.xml
+          reporter: java-junit
