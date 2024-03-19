@@ -101,4 +101,5 @@ jobs:
           reporter: java-junit
           fail-on-error: false
       - name: Adding to summary
+        if: always()
         run: echo '### Hello world! 🚀' >> $GITHUB_STEP_SUMMARY

@@ -78,8 +78,8 @@ public class IntegrationTest extends TbIntTestPreparation {
 
         Thread.sleep(10_000);
 
-        Arrays.stream(listConnectors()).sorted(Comparator.comparing(c -> c.connector))
-            .forEach(c -> reports.put(c.connector, c));
+//        Arrays.stream(listConnectors()).sorted(Comparator.comparing(c -> c.connector))
+//            .forEach(c -> reports.put(c.connector, c));
     }
 
     @AfterAll
@@ -102,16 +102,16 @@ public class IntegrationTest extends TbIntTestPreparation {
     }
 
     @TestFactory
-    Stream<DynamicTest> testDataFeedInTbSmoke() throws Exception {
+    Stream<DynamicTest> testDataFeedConnection() throws Exception {
         return reports.values().stream()
             .map(c -> DynamicTest.dynamicTest(
                 "Connection To " + c.connector,
-                () -> tryReadSomeData(c)
+                () -> tryReadSomeData(c, "Test Connection")
             ));
     }
 
     @TestFactory
-    Stream<DynamicTest> testDataFeedInTbValidateOrderBook() throws Exception {
+    Stream<DynamicTest> testDataFeedL2Validate() throws Exception {
         return reports.values().stream()
             .filter(c -> !SKIP_CONNECTORS_DATA_VALIDATION.contains(c.stream))
             .map(c -> DynamicTest.dynamicTest(
@@ -132,24 +132,31 @@ public class IntegrationTest extends TbIntTestPreparation {
             toArray(TestConnectorReports[]::new);
     }
 
-    void tryReadSomeData(final TestConnectorReports connector) {
+    void tryReadSomeData(final TestConnectorReports connector, final String testName) {
         // we are trying to read N messages
         final int expectedNumOfMessages = SMOKE_READ_MESSAGES;
         final int timeoutSeconds = READ_TIMEOUT_S;
 
-        final DXTickStream stream = db.getStream(connector.stream);
+        try {
+            final DXTickStream stream = db.getStream(connector.stream);
 
-        Assertions.assertNotNull(stream, "Connector " + connector + " not started as expected. " +
+            Assertions.assertNotNull(stream, "Connector " + connector + " not started as expected. " +
                 "No output stream found.");
 
-        try (TickCursor cursor = stream.select(TimeConstants.TIMESTAMP_UNKNOWN,
+            try (TickCursor cursor = stream.select(TimeConstants.TIMESTAMP_UNKNOWN,
                 new SelectionOptions(true, true))) {
-            int messages = 0;
-            while (readWithTimeout(timeoutSeconds, cursor, connector)) {
-                if (++messages == expectedNumOfMessages) {
-                    break;
+                int messages = 0;
+                while (readWithTimeout(timeoutSeconds, cursor, connector)) {
+                    if (++messages == expectedNumOfMessages) {
+                        break;
+                    }
                 }
             }
+
+            connector.addTestOk(testName);
+        } catch (Throwable t) {
+            connector.addTestError(testName, t);
+            throw t;
         }
     }
 
@@ -272,6 +279,8 @@ public class IntegrationTest extends TbIntTestPreparation {
         private final String connector;
         private final String stream;
 
+        private final Map<String, TestReport> reports = new LinkedHashMap<>();
+
         private TestConnectorReports(final JsonObject fromJsom) {
             this(fromJsom.getStringRequired("name"),
                     fromJsom.getStringRequired("stream"));
@@ -282,9 +291,43 @@ public class IntegrationTest extends TbIntTestPreparation {
             this.stream = stream;
         }
 
+        private void addTestOk(String name) {
+            reports.put(name, new TestReport(name));
+        }
+
+        private void addTestError(String name, Throwable error) {
+            reports.put(name, new TestReport(name, error));
+        }
+
         @Override
         public String toString() {
             return "connector='" + connector + "', stream='" + stream + '\'';
         }
+    }
+
+    private static class TestReport {
+        private final String name;
+        private final TestStatus status;
+        private final Throwable error;
+
+        public TestReport(String name) {
+            this(name, TestStatus.OK, null);
+        }
+
+        public TestReport(String name, Throwable error) {
+            this(name, TestStatus.FAILED, error);
+        }
+
+        public TestReport(String name, TestStatus status, Throwable error) {
+            this.name = name;
+            this.status = status;
+            this.error = error;
+        }
+    }
+
+    private enum TestStatus {
+        OK,
+        FAILED,
+        SKIPPED
     }
 }
