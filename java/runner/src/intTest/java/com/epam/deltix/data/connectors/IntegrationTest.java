@@ -76,7 +76,6 @@ public class IntegrationTest extends TbIntTestPreparation {
 
         Arrays.stream(listConnectors())
             .sorted(Comparator.comparing(TestConnectorReports::connector))
-            .limit(5)
             .forEach(c -> reports.put(c.connector(), c));
     }
 
@@ -113,15 +112,15 @@ public class IntegrationTest extends TbIntTestPreparation {
             ));
     }
 
-//    @TestFactory
-//    @Order(2)
-//    Stream<DynamicTest> testDataFeedL2Validate() {
-//        return reports.values().stream()
-//            .map(c -> DynamicTest.dynamicTest(
-//                "Validate L2 for " + c.connector(),
-//                () -> c.runTest(ReportGenerator.VALIDATE_L2_REPORT, () -> tryBuildOrderBook(c))
-//            ));
-//    }
+    @TestFactory
+    @Order(2)
+    Stream<DynamicTest> testDataFeedL2Validate() {
+        return reports.values().stream()
+            .map(c -> DynamicTest.dynamicTest(
+                "Validate L2 for " + c.connector(),
+                () -> c.runTest(ReportGenerator.VALIDATE_L2_REPORT, () -> tryBuildOrderBook(c))
+            ));
+    }
 
     private static TestConnectorReports[] listConnectors() throws Exception {
         final JsonArray connectors =
