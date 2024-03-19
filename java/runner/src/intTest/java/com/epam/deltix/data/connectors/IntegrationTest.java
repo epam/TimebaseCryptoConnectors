@@ -3,9 +3,10 @@ package com.epam.deltix.data.connectors;
 import com.epam.deltix.containers.interfaces.LogProcessor;
 import com.epam.deltix.containers.interfaces.Severity;
 import com.epam.deltix.data.connectors.commons.json.JsonArray;
-import com.epam.deltix.data.connectors.commons.json.JsonObject;
 import com.epam.deltix.data.connectors.commons.json.JsonValue;
 import com.epam.deltix.data.connectors.commons.json.JsonValueParser;
+import com.epam.deltix.data.connectors.reports.ReportGenerator;
+import com.epam.deltix.data.connectors.reports.TestConnectorReports;
 import com.epam.deltix.data.connectors.test.fixtures.integration.TbIntTestPreparation;
 import com.epam.deltix.data.connectors.validator.DataValidator;
 import com.epam.deltix.data.connectors.validator.DataValidatorImpl;
@@ -18,14 +19,9 @@ import com.epam.deltix.qsrv.hf.tickdb.pub.TickCursor;
 import com.epam.deltix.qsrv.hf.tickdb.pub.TickDBFactory;
 import com.epam.deltix.qsrv.hf.tickdb.pub.TimeConstants;
 import com.epam.deltix.timebase.messages.InstrumentMessage;
-import com.epam.deltix.timebase.messages.universal.PackageHeaderInfo;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DynamicTest;
-import org.junit.jupiter.api.TestFactory;
+import com.epam.deltix.timebase.messages.universal.*;
+import com.epam.deltix.util.collections.generated.ObjectList;
+import org.junit.jupiter.api.*;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.images.builder.ImageFromDockerfile;
@@ -42,6 +38,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class IntegrationTest extends TbIntTestPreparation {
@@ -78,14 +75,17 @@ public class IntegrationTest extends TbIntTestPreparation {
 
         Thread.sleep(10_000);
 
-//        Arrays.stream(listConnectors()).sorted(Comparator.comparing(c -> c.connector))
-//            .forEach(c -> reports.put(c.connector, c));
+        Arrays.stream(listConnectors())
+            .sorted(Comparator.comparing(TestConnectorReports::connector))
+            .forEach(c -> reports.put(c.connector(), c));
     }
 
     @AfterAll
     static void afterAll() {
         APP_CONTAINER.stop();
         TIMEBASE_CONTAINER.stop();
+
+        ReportGenerator.generate(new File("build/test-report.md"), "## Connector Statuses", reports);
     }
 
     DXTickDB db;
@@ -102,21 +102,23 @@ public class IntegrationTest extends TbIntTestPreparation {
     }
 
     @TestFactory
-    Stream<DynamicTest> testDataFeedConnection() throws Exception {
+    @Order(1)
+    Stream<DynamicTest> testDataFeedConnection() {
         return reports.values().stream()
             .map(c -> DynamicTest.dynamicTest(
-                "Connection To " + c.connector,
-                () -> tryReadSomeData(c, "Test Connection")
+                "Connection To " + c.connector(),
+                () -> c.runTest(ReportGenerator.CONNECTION_REPORT, () -> tryReadSomeData(c))
             ));
     }
 
     @TestFactory
-    Stream<DynamicTest> testDataFeedL2Validate() throws Exception {
+    @Order(2)
+    Stream<DynamicTest> testDataFeedL2Validate() {
         return reports.values().stream()
-            .filter(c -> !SKIP_CONNECTORS_DATA_VALIDATION.contains(c.stream))
+//            .filter(c -> !SKIP_CONNECTORS_DATA_VALIDATION.contains(c.stream()))
             .map(c -> DynamicTest.dynamicTest(
-                "Validate L2 for " + c.connector,
-                () -> tryBuildOrderBook(c)
+                "Validate L2 for " + c.connector(),
+                () -> c.runTest(ReportGenerator.VALIDATE_L2_REPORT, () -> tryBuildOrderBook(c))
             ));
     }
 
@@ -128,35 +130,28 @@ public class IntegrationTest extends TbIntTestPreparation {
         return connectors.items().
             map(JsonValue::asObjectRequired).
             map(TestConnectorReports::new).
-            filter(connector -> !SKIP_CONNECTORS.contains(connector.stream)).
+            filter(connector -> !SKIP_CONNECTORS.contains(connector.stream())).
             toArray(TestConnectorReports[]::new);
     }
 
-    void tryReadSomeData(final TestConnectorReports connector, final String testName) {
+    void tryReadSomeData(final TestConnectorReports connector) {
         // we are trying to read N messages
         final int expectedNumOfMessages = SMOKE_READ_MESSAGES;
         final int timeoutSeconds = READ_TIMEOUT_S;
 
-        try {
-            final DXTickStream stream = db.getStream(connector.stream);
+        final DXTickStream stream = db.getStream(connector.stream());
 
-            Assertions.assertNotNull(stream, "Connector " + connector + " not started as expected. " +
-                "No output stream found.");
+        Assertions.assertNotNull(stream, "Connector " + connector + " not started as expected. " +
+            "No output stream found.");
 
-            try (TickCursor cursor = stream.select(TimeConstants.TIMESTAMP_UNKNOWN,
-                new SelectionOptions(true, true))) {
-                int messages = 0;
-                while (readWithTimeout(timeoutSeconds, cursor, connector)) {
-                    if (++messages == expectedNumOfMessages) {
-                        break;
-                    }
+        try (TickCursor cursor = stream.select(TimeConstants.TIMESTAMP_UNKNOWN,
+            new SelectionOptions(true, true))) {
+            int messages = 0;
+            while (readWithTimeout(timeoutSeconds, cursor, connector)) {
+                if (++messages == expectedNumOfMessages) {
+                    break;
                 }
             }
-
-            connector.addTestOk(testName);
-        } catch (Throwable t) {
-            connector.addTestError(testName, t);
-            throw t;
         }
     }
 
@@ -164,7 +159,7 @@ public class IntegrationTest extends TbIntTestPreparation {
         final int expectedNumOfMessages = VALIDATION_READ_MESSAGES;
         final int timeoutSeconds = READ_TIMEOUT_S;
 
-        final DXTickStream stream = db.getStream(connector.stream);
+        final DXTickStream stream = db.getStream(connector.stream());
 
         Assertions.assertNotNull(stream, "Connector " + connector + " not started as expected. " +
             "No output stream found.");
@@ -172,6 +167,7 @@ public class IntegrationTest extends TbIntTestPreparation {
         Map<String, DataValidator> validators = new HashMap<>();
         AtomicLong errors = new AtomicLong();
 
+        Set<String> supportedModel = new HashSet<>();
         try (TickCursor cursor = stream.select(TimeConstants.TIMESTAMP_UNKNOWN, new SelectionOptions(false, true))) {
             int messages = 0;
             while (readWithTimeout(timeoutSeconds, cursor, connector)) {
@@ -183,6 +179,7 @@ public class IntegrationTest extends TbIntTestPreparation {
                 // validate
                 if (message instanceof PackageHeaderInfo) {
                     PackageHeaderInfo packageHeader = (PackageHeaderInfo) message;
+                    updateSupportedModel(packageHeader, supportedModel);
                     DataValidator validator = validators.computeIfAbsent(
                         message.getSymbol().toString(),
                         k -> createValidator(k, (sender, severity, exception, stringMessage) -> {
@@ -214,9 +211,29 @@ public class IntegrationTest extends TbIntTestPreparation {
             }
         } finally {
             exportStream(stream);
+            connector.addTestMessage(
+                ReportGenerator.SUPPORTED_MODEL_REPORT,
+                supportedModel.stream().sorted().collect(Collectors.joining(","))
+            );
         }
 
         Assertions.assertEquals(0L, errors.get());
+    }
+
+    private static void updateSupportedModel(PackageHeaderInfo packageHeader, Set<String> supportedModel) {
+        ObjectList<BaseEntryInfo> entries = packageHeader.getEntries();
+        if (entries != null) {
+            for (int i = 0; i < entries.size(); ++i) {
+                BaseEntryInfo entry = entries.get(i);
+                if (entry instanceof TradeEntryInfo) {
+                    supportedModel.add("TRADES");
+                } else if (entry instanceof L1EntryInfo) {
+                    supportedModel.add("L1");
+                } else if (entry instanceof L2EntryNewInfo || entry instanceof L2EntryUpdateInfo) {
+                    supportedModel.add("L2");
+                }
+            }
+        }
     }
 
     private static Boolean readWithTimeout(long timeoutSeconds, TickCursor cursor, TestConnectorReports connector) {
@@ -275,59 +292,4 @@ public class IntegrationTest extends TbIntTestPreparation {
         return new JsonValueParser().parseAndEoj(response.body());
     }
 
-    private static class TestConnectorReports {
-        private final String connector;
-        private final String stream;
-
-        private final Map<String, TestReport> reports = new LinkedHashMap<>();
-
-        private TestConnectorReports(final JsonObject fromJsom) {
-            this(fromJsom.getStringRequired("name"),
-                    fromJsom.getStringRequired("stream"));
-        }
-
-        private TestConnectorReports(final String connector, final String stream) {
-            this.connector = connector;
-            this.stream = stream;
-        }
-
-        private void addTestOk(String name) {
-            reports.put(name, new TestReport(name));
-        }
-
-        private void addTestError(String name, Throwable error) {
-            reports.put(name, new TestReport(name, error));
-        }
-
-        @Override
-        public String toString() {
-            return "connector='" + connector + "', stream='" + stream + '\'';
-        }
-    }
-
-    private static class TestReport {
-        private final String name;
-        private final TestStatus status;
-        private final Throwable error;
-
-        public TestReport(String name) {
-            this(name, TestStatus.OK, null);
-        }
-
-        public TestReport(String name, Throwable error) {
-            this(name, TestStatus.FAILED, error);
-        }
-
-        public TestReport(String name, TestStatus status, Throwable error) {
-            this.name = name;
-            this.status = status;
-            this.error = error;
-        }
-    }
-
-    private enum TestStatus {
-        OK,
-        FAILED,
-        SKIPPED
-    }
 }
