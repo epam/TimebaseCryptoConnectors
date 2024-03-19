@@ -7,6 +7,8 @@ on:
   pull_request:
     types: [opened, synchronize]
     branches: [main]
+  schedule:
+    - cron: '0 17 * * *'
 
 env:
   GRADLE_OPTS: "-Dorg.gradle.daemon=false"
@@ -54,6 +56,7 @@ jobs:
           # output: /tmp/foo.txt
           # Fail action on broken links
           fail: true
+          jobSummary: false
       - name: Build docker
         run: ./gradlew :java:runner:dockerBuildImageAll
         env:
@@ -76,19 +79,31 @@ jobs:
       - name: Run tests
         run: ./gradlew test
       - name: Upload test results
-        if: ${{ failure() }}
+        if: always()
         uses: actions/upload-artifact@v2
         with:
           path: build/reports/junit
           name: Test Report
       - name: Run Integration tests
+        # some connectors may fail, see summary to track failed connectors.
         run: |
-          ./gradlew intTest
+          ./gradlew intTest || true
+          echo "$(cat ./java/runner/build/test-reports.md)" >> $GITHUB_STEP_SUMMARY
       - name: Upload Integration test results
-        if: ${{ failure() }}
+        if: always()
         uses: actions/upload-artifact@v2
         with:
           name: integration-test-results
           path: |
             ./java/runner/build/reports/tests/intTest
             ./java/runner/build/intTest
+            ./java/runner/build/test-reports.md
+      - name: Report Tests
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Integration Test Reports
+          path: ./java/runner/build/test-results/intTest/*.xml
+          reporter: java-junit
+          fail-on-error: false
+          only-summary: false

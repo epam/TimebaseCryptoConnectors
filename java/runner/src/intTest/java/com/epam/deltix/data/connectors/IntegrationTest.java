@@ -3,9 +3,10 @@ package com.epam.deltix.data.connectors;
 import com.epam.deltix.containers.interfaces.LogProcessor;
 import com.epam.deltix.containers.interfaces.Severity;
 import com.epam.deltix.data.connectors.commons.json.JsonArray;
-import com.epam.deltix.data.connectors.commons.json.JsonObject;
 import com.epam.deltix.data.connectors.commons.json.JsonValue;
 import com.epam.deltix.data.connectors.commons.json.JsonValueParser;
+import com.epam.deltix.data.connectors.reports.ReportGenerator;
+import com.epam.deltix.data.connectors.reports.TestConnectorReports;
 import com.epam.deltix.data.connectors.test.fixtures.integration.TbIntTestPreparation;
 import com.epam.deltix.data.connectors.validator.DataValidator;
 import com.epam.deltix.data.connectors.validator.DataValidatorImpl;
@@ -18,14 +19,9 @@ import com.epam.deltix.qsrv.hf.tickdb.pub.TickCursor;
 import com.epam.deltix.qsrv.hf.tickdb.pub.TickDBFactory;
 import com.epam.deltix.qsrv.hf.tickdb.pub.TimeConstants;
 import com.epam.deltix.timebase.messages.InstrumentMessage;
-import com.epam.deltix.timebase.messages.universal.PackageHeaderInfo;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DynamicTest;
-import org.junit.jupiter.api.TestFactory;
+import com.epam.deltix.timebase.messages.universal.*;
+import com.epam.deltix.util.collections.generated.ObjectList;
+import org.junit.jupiter.api.*;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.images.builder.ImageFromDockerfile;
@@ -38,20 +34,20 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class ApplicationIntTest extends TbIntTestPreparation {
+public class IntegrationTest extends TbIntTestPreparation {
 
-    private static final Logger LOG = Logger.getLogger(ApplicationIntTest.class.getName());
+    private static final Logger LOG = Logger.getLogger(IntegrationTest.class.getName());
 
     private static final Set<String> SKIP_CONNECTORS = Set.of("uniswap", "uniswap-l2");
-    private static final Set<String> SKIP_CONNECTORS_DATA_VALIDATION = Set.of(
-        "uniswap", "uniswap-l2", "ascendex", "deribit", "coinflex", "cryptofacilities", "bitfinex"
-    );
 
     public static final GenericContainer APP_CONTAINER = new GenericContainer(
             new ImageFromDockerfile("localhost/timebase-crypto-connectors:snapshot").
@@ -64,11 +60,12 @@ public class ApplicationIntTest extends TbIntTestPreparation {
             withFileSystemBind("build/intTest/config", "/runner/config", BindMode.READ_WRITE).
             withStartupTimeout(Duration.ofMinutes(5));
 
-    private static final int SMOKE_READ_TIMEOUT_S = 30;
-    private static final int SMOKE_READ_MESSAGES = 10;
+    private static final int READ_TIMEOUT_S = 10;
 
-    private static final int VALIDATION_READ_TIMEOUT_S = 300;
+    private static final int SMOKE_READ_MESSAGES = 100;
     private static final int VALIDATION_READ_MESSAGES = 1000;
+
+    private static Map<String, TestConnectorReports> reports = new LinkedHashMap<>();
 
     @BeforeAll
     static void beforeAll() throws Exception {
@@ -76,12 +73,20 @@ public class ApplicationIntTest extends TbIntTestPreparation {
         APP_CONTAINER.start();
 
         Thread.sleep(10_000);
+
+        Arrays.stream(listConnectors())
+            .sorted(Comparator.comparing(TestConnectorReports::connector))
+            .forEach(c -> reports.put(c.connector(), c));
     }
 
     @AfterAll
     static void afterAll() {
         APP_CONTAINER.stop();
         TIMEBASE_CONTAINER.stop();
+
+        ReportGenerator.generate(new File("build/test-reports.md"),
+            "### Status Report (" + LocalDateTime.now().withNano(0).withSecond(0) + ")",
+            reports);
     }
 
     DXTickDB db;
@@ -98,63 +103,63 @@ public class ApplicationIntTest extends TbIntTestPreparation {
     }
 
     @TestFactory
-    Stream<DynamicTest> testDataFeedInTbSmoke() throws Exception {
-        return Arrays.stream(listStreams()).
-            map(c -> DynamicTest.dynamicTest(
-                c.connector,
-                () -> tryReadSomeData(c)
+    @Order(1)
+    Stream<DynamicTest> testDataFeedConnection() {
+        return reports.values().stream()
+            .map(c -> DynamicTest.dynamicTest(
+                "Connection To " + c.connector(),
+                () -> c.runTest(ReportGenerator.CONNECTION_REPORT, () -> tryReadSomeData(c))
             ));
     }
 
     @TestFactory
-    Stream<DynamicTest> testDataFeedInTbValidateOrderBook() throws Exception {
-        return Arrays.stream(listStreams()).filter(c -> !SKIP_CONNECTORS_DATA_VALIDATION.contains(c.stream)).
-            map(c -> DynamicTest.dynamicTest(
-                c.connector,
-                () -> tryBuildOrderBook(c)
+    @Order(2)
+    Stream<DynamicTest> testDataFeedL2Validate() {
+        return reports.values().stream()
+            .map(c -> DynamicTest.dynamicTest(
+                "Validate L2 for " + c.connector(),
+                () -> c.runTest(ReportGenerator.VALIDATE_L2_REPORT, () -> tryBuildOrderBook(c))
             ));
     }
 
-    private static ConnectorStream[] listStreams() throws Exception {
+    private static TestConnectorReports[] listConnectors() throws Exception {
         final JsonArray connectors =
             rest("http://localhost:" + APP_CONTAINER.getFirstMappedPort() + "/api/v0/connectors").
                 asArrayRequired();
 
         return connectors.items().
             map(JsonValue::asObjectRequired).
-            map(ConnectorStream::new).
-            filter(connector -> !SKIP_CONNECTORS.contains(connector.stream)).
-            toArray(ConnectorStream[]::new);
+            map(TestConnectorReports::new).
+            filter(connector -> !SKIP_CONNECTORS.contains(connector.stream())).
+            toArray(TestConnectorReports[]::new);
     }
 
-    void tryReadSomeData(final ConnectorStream connector) {
+    void tryReadSomeData(final TestConnectorReports connector) {
         // we are trying to read N messages
         final int expectedNumOfMessages = SMOKE_READ_MESSAGES;
-        final int timeoutSeconds = SMOKE_READ_TIMEOUT_S;
+        final int timeoutSeconds = READ_TIMEOUT_S;
 
-        final DXTickStream stream = db.getStream(connector.stream);
+        final DXTickStream stream = db.getStream(connector.stream());
 
         Assertions.assertNotNull(stream, "Connector " + connector + " not started as expected. " +
-                "No output stream found.");
+            "No output stream found.");
 
         try (TickCursor cursor = stream.select(TimeConstants.TIMESTAMP_UNKNOWN,
-                new SelectionOptions(true, true))) {
-            Assertions.assertTimeoutPreemptively(Duration.ofSeconds(timeoutSeconds), () -> {
-                int messages = 0;
-                while (cursor.next()) {
-                    if (++messages == expectedNumOfMessages) {
-                        break;
-                    }
+            new SelectionOptions(true, true))) {
+            int messages = 0;
+            while (readWithTimeout(timeoutSeconds, cursor, connector)) {
+                if (++messages == expectedNumOfMessages) {
+                    break;
                 }
-            }, "Cannot read data for the " + connector);
+            }
         }
     }
 
-    void tryBuildOrderBook(final ConnectorStream connector) {
+    void tryBuildOrderBook(final TestConnectorReports connector) {
         final int expectedNumOfMessages = VALIDATION_READ_MESSAGES;
-        final int timeoutSeconds = VALIDATION_READ_TIMEOUT_S;
+        final int timeoutSeconds = READ_TIMEOUT_S;
 
-        final DXTickStream stream = db.getStream(connector.stream);
+        final DXTickStream stream = db.getStream(connector.stream());
 
         Assertions.assertNotNull(stream, "Connector " + connector + " not started as expected. " +
             "No output stream found.");
@@ -162,53 +167,80 @@ public class ApplicationIntTest extends TbIntTestPreparation {
         Map<String, DataValidator> validators = new HashMap<>();
         AtomicLong errors = new AtomicLong();
 
+        Set<String> supportedModel = new HashSet<>();
         try (TickCursor cursor = stream.select(TimeConstants.TIMESTAMP_UNKNOWN, new SelectionOptions(false, true))) {
-            Assertions.assertTimeoutPreemptively(Duration.ofSeconds(timeoutSeconds), () -> {
-                int messages = 0;
-                while (cursor.next()) {
-                    InstrumentMessage message = cursor.getMessage();
-                    if (message.getSymbol() == null) {
-                        continue;
+            int messages = 0;
+            while (readWithTimeout(timeoutSeconds, cursor, connector)) {
+                InstrumentMessage message = cursor.getMessage();
+                if (message.getSymbol() == null) {
+                    continue;
+                }
+
+                // validate
+                if (message instanceof PackageHeaderInfo) {
+                    PackageHeaderInfo packageHeader = (PackageHeaderInfo) message;
+                    updateSupportedModel(packageHeader, supportedModel);
+                    DataValidator validator = validators.computeIfAbsent(
+                        message.getSymbol().toString(),
+                        k -> createValidator(k, (sender, severity, exception, stringMessage) -> {
+                                if (severity == Severity.ERROR) {
+                                    errors.addAndGet(1);
+                                    LOG.severe(severity + " | " + stringMessage);
+                                } else {
+                                    LOG.warning(severity + " | " + stringMessage);
+                                }
+
+                                if (exception != null) {
+                                    LOG.log(Level.SEVERE, "Exception", exception);
+                                }
+                            }, stream
+                        )
+                    );
+
+                    validator.sendPackage(packageHeader);
+
+                    if (++messages % 100 == 0) {
+                        LOG.info("Processed " + messages + " package headers");
                     }
 
-                    // validate
-                    if (message instanceof PackageHeaderInfo) {
-                        PackageHeaderInfo packageHeader = (PackageHeaderInfo) message;
-                        DataValidator validator = validators.computeIfAbsent(
-                            message.getSymbol().toString(),
-                            k -> createValidator(k, (sender, severity, exception, stringMessage) -> {
-                                    if (severity == Severity.ERROR) {
-                                        errors.addAndGet(1);
-                                        LOG.severe(severity + " | " + stringMessage);
-                                    } else {
-                                        LOG.warning(severity + " | " + stringMessage);
-                                    }
-
-                                    if (exception != null) {
-                                        LOG.log(Level.SEVERE, "Exception", exception);
-                                    }
-                                }, stream
-                            )
-                        );
-
-                        validator.sendPackage(packageHeader);
-
-                        if (++messages % 100 == 0) {
-                            LOG.info("Processed " + messages + " package headers");
-                        }
-
-                        if (messages == expectedNumOfMessages) {
-                            LOG.info("Processed " + messages + " package headers");
-                            break;
-                        }
+                    if (messages == expectedNumOfMessages) {
+                        LOG.info("Processed " + messages + " package headers");
+                        break;
                     }
                 }
-            }, "Cannot read data for the " + connector);
+            }
         } finally {
             exportStream(stream);
+            connector.addTestMessage(
+                ReportGenerator.SUPPORTED_MODEL_REPORT,
+                supportedModel.stream().sorted().collect(Collectors.joining(","))
+            );
         }
 
         Assertions.assertEquals(0L, errors.get());
+    }
+
+    private static void updateSupportedModel(PackageHeaderInfo packageHeader, Set<String> supportedModel) {
+        ObjectList<BaseEntryInfo> entries = packageHeader.getEntries();
+        if (entries != null) {
+            for (int i = 0; i < entries.size(); ++i) {
+                BaseEntryInfo entry = entries.get(i);
+                if (entry instanceof TradeEntryInfo) {
+                    supportedModel.add("TRADES");
+                } else if (entry instanceof L1EntryInfo) {
+                    supportedModel.add("L1");
+                } else if (entry instanceof L2EntryNewInfo || entry instanceof L2EntryUpdateInfo) {
+                    supportedModel.add("L2");
+                }
+            }
+        }
+    }
+
+    private static Boolean readWithTimeout(long timeoutSeconds, TickCursor cursor, TestConnectorReports connector) {
+        return Assertions.assertTimeoutPreemptively(
+            Duration.ofSeconds(timeoutSeconds), cursor::next,
+            "Cannot read data for the " + connector
+        );
     }
 
     private static DataValidator createValidator(String symbol, LogProcessor log, DXTickStream stream) {
@@ -260,23 +292,4 @@ public class ApplicationIntTest extends TbIntTestPreparation {
         return new JsonValueParser().parseAndEoj(response.body());
     }
 
-    private static class ConnectorStream {
-        private final String connector;
-        private final String stream;
-
-        private ConnectorStream(final JsonObject fromJsom) {
-            this(fromJsom.getStringRequired("name"),
-                    fromJsom.getStringRequired("stream"));
-        }
-
-        private ConnectorStream(final String connector, final String stream) {
-            this.connector = connector;
-            this.stream = stream;
-        }
-
-        @Override
-        public String toString() {
-            return "connector='" + connector + "', stream='" + stream + '\'';
-        }
-    }
 }

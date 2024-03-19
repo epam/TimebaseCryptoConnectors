@@ -81,6 +81,9 @@ public class BitmartSpotFeed extends MdSingleWsFeed {
 
         JsonObject object = jsonValue.asObject();
         String type = object.getString("table");
+        if (type == null) {
+            return;
+        }
         String[] typeSplitted = type.split("/");
         if (typeSplitted.length < 2) {
             return;
