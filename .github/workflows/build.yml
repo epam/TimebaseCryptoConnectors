@@ -83,9 +83,10 @@ jobs:
           path: build/reports/junit
           name: Test Report
       - name: Run Integration tests
+        # some connectors may fail, see summary to track failed connectors.
         run: |
           ./gradlew intTest || true
-        # some connectors may fail, see summary to track failed connectors.
+          echo "$(cat ./java/runner/build/test-reports.md)" >> $GITHUB_STEP_SUMMARY
       - name: Upload Integration test results
         if: always()
         uses: actions/upload-artifact@v2
@@ -94,6 +95,7 @@ jobs:
           path: |
             ./java/runner/build/reports/tests/intTest
             ./java/runner/build/intTest
+            ./java/runner/build/test-reports.md
       - name: Report Tests
         uses: dorny/test-reporter@v1
         if: always()
@@ -103,6 +105,3 @@ jobs:
           reporter: java-junit
           fail-on-error: false
           only-summary: true
-      - name: Adding reports to summary
-        if: always()
-        run: echo "$(cat ./java/runner/build/test-reports.md)" >> $GITHUB_STEP_SUMMARY

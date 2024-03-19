@@ -34,6 +34,8 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
@@ -46,9 +48,6 @@ public class IntegrationTest extends TbIntTestPreparation {
     private static final Logger LOG = Logger.getLogger(IntegrationTest.class.getName());
 
     private static final Set<String> SKIP_CONNECTORS = Set.of("uniswap", "uniswap-l2");
-    private static final Set<String> SKIP_CONNECTORS_DATA_VALIDATION = Set.of(
-        "uniswap", "uniswap-l2", "ascendex", "deribit", "coinflex", "cryptofacilities", "bitfinex"
-    );
 
     public static final GenericContainer APP_CONTAINER = new GenericContainer(
             new ImageFromDockerfile("localhost/timebase-crypto-connectors:snapshot").
@@ -85,7 +84,9 @@ public class IntegrationTest extends TbIntTestPreparation {
         APP_CONTAINER.stop();
         TIMEBASE_CONTAINER.stop();
 
-        ReportGenerator.generate(new File("build/test-report.md"), "## Connector Statuses", reports);
+        ReportGenerator.generate(new File("build/test-report.md"),
+            "### Status Report (" + LocalDateTime.now().withNano(0).withSecond(0) + ")",
+            reports);
     }
 
     DXTickDB db;
@@ -115,7 +116,6 @@ public class IntegrationTest extends TbIntTestPreparation {
     @Order(2)
     Stream<DynamicTest> testDataFeedL2Validate() {
         return reports.values().stream()
-//            .filter(c -> !SKIP_CONNECTORS_DATA_VALIDATION.contains(c.stream()))
             .map(c -> DynamicTest.dynamicTest(
                 "Validate L2 for " + c.connector(),
                 () -> c.runTest(ReportGenerator.VALIDATE_L2_REPORT, () -> tryBuildOrderBook(c))
