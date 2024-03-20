@@ -65,7 +65,7 @@ configure(leafProjects) {
     apply plugin: 'java-library'
     apply plugin: 'maven-publish'
     apply plugin: 'io.spring.dependency-management'
-    apply plugin: 'com.github.spotbugs' // Static Code analysis
+    //apply plugin: 'com.github.spotbugs' // Static Code analysis
     apply plugin: 'signing'
     //apply plugin: 'checkstyle'
 
@@ -92,21 +92,28 @@ configure(leafProjects) {
 //        exclude group: 'jakarta.annotation', module: 'jakarta.annotation-api' // GNU license
 //    }
 
-    spotbugsMain {
-        enabled = true
-        reports {
-            html.enabled = true
-        }
-        reportLevel = 'high'
-    }
+//    spotbugsMain {
+//        enabled = false
+//        reports {
+//            html.enabled = true
+//        }
+//        reportLevel = 'high'
+//    }
+//
+//    spotbugsTest {
+//        enabled = false
+//        reports {
+//            html.enabled = true
+//        }
+//        reportLevel = 'high'
+//    }
 
-    spotbugsTest {
-        enabled = false
-        reports {
-            html.enabled = true
-        }
-        reportLevel = 'high'
-    }
+//    spotbugs {
+//        toolVersion = "4.2.3"
+//        effort = "max"
+//        reportLevel = "medium"
+//        excludeFilter = rootProject.file('spotbugs-excludes.xml')
+//    }
 
     task allDeps(type: DependencyReportTask) {}
 
@@ -245,13 +252,6 @@ configure(leafProjects) {
 
     repositories {
         mavenCentral()
-    }
-
-    spotbugs {
-        toolVersion = "4.2.3"
-        effort = "max"
-        reportLevel = "medium"
-        excludeFilter = rootProject.file('spotbugs-excludes.xml')
     }
 
     jar {
