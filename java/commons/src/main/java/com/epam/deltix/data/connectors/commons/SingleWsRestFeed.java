@@ -337,10 +337,6 @@ public abstract class SingleWsRestFeed extends MdFeed {
     protected void onClose() {
     }
 
-    /**
-     * @param relativeUrl
-     */
-
     protected void getAsync(String id, String relativeUrl) {
         mgmtService.execute(() -> {
             if (state != STARTED_STATE) {
@@ -359,9 +355,6 @@ public abstract class SingleWsRestFeed extends MdFeed {
         });
     }
 
-    /**
-     * @param relativeUrl
-     */
     protected CharSequence post(String relativeUrl) {
         CharSequence response = null;
         String fullUrl = restUrl + relativeUrl;
@@ -382,25 +375,27 @@ public abstract class SingleWsRestFeed extends MdFeed {
     }
 
     /**
-     * @param jsonWriter
-     * @param symbols
+     * @param jsonWriter writer
+     * @param symbols list of symbols
      */
     protected abstract void subscribe(JsonWriter jsonWriter, String... symbols);
 
     /**
-     * @param data
-     * @param last
+     * @param data data
+     * @param last is last portion
+     * @param jsonWriter writer
      */
     protected abstract void onWsJson(CharSequence data, boolean last, JsonWriter jsonWriter);
 
     /**
-     * @param id
-     * @param body
+     * @param id id of element
+     * @param body text
      */
     protected abstract void onRestJson(String id, CharSequence body);
 
     /**
-     * @param wsUrl
+     * @param wsUrl authentication address
+     * @return authentication url with token
      */
     protected abstract String authenticate(String wsUrl);
 }

@@ -103,7 +103,7 @@ public class MdModel {
         /**
          *
          * @see com.epam.deltix.qsrv.hf.pub.md.RecordClassDescriptor RecordClassDescriptor
-         * @return
+         * @return RecordClassDescriptors for l1
          */
         public RecordClassDescriptor[] level1Types() {
             return level1 != null ? level1 : EMPTY_RCDS;
@@ -116,7 +116,7 @@ public class MdModel {
         /**
          *
          * @see com.epam.deltix.qsrv.hf.pub.md.RecordClassDescriptor RecordClassDescriptor
-         * @return
+         * @return RecordClassDescriptors for l2
          */
         public RecordClassDescriptor[] level2Types() {
             return level2 != null ? level2 : EMPTY_RCDS;
@@ -133,7 +133,7 @@ public class MdModel {
         /**
          *
          * @see com.epam.deltix.qsrv.hf.pub.md.RecordClassDescriptor RecordClassDescriptor
-         * @return
+         * @return RecordClassDescriptors for custom types
          */
         public RecordClassDescriptor[] customTypes() {
             return custom != null ? custom : EMPTY_RCDS;
@@ -153,7 +153,7 @@ public class MdModel {
 
         /**
          *
-         * @return
+         * @return true if empty
          */
         public boolean isEmpty() {
             return !(trades() || level1() || level2() || custom());
@@ -177,95 +177,54 @@ public class MdModel {
         }
     }
 
-    /**
-     *
-     * @param <S>
-     */
     public static class ModifiableOptions<S extends Options> extends Options {
         private ModifiableOptions() {
         }
 
-        /**
-         *
-         * @return
-         */
         @SuppressWarnings("unchecked")
         public S withTrades() {
             trades = DEFAULT_RCDS;
             return (S) this;
         }
 
-        /**
-         *
-         * @param tradesType
-         * @return
-         */
         @SuppressWarnings("unchecked")
         public S withTrades(final RecordClassDescriptor... tradesType) {
             trades = tradesType;
             return (S) this;
         }
 
-        /**
-         *
-         * @return
-         */
         @SuppressWarnings("unchecked")
         public S withLevel1() {
             level1 = DEFAULT_RCDS;
             return (S) this;
         }
 
-        /**
-         *
-         * @param level1Types
-         * @return
-         */
         @SuppressWarnings("unchecked")
         public S withLevel1(final RecordClassDescriptor... level1Types) {
             level1 = level1Types;
             return (S) this;
         }
 
-        /**
-         *
-         * @return
-         */
         @SuppressWarnings("unchecked")
         public S withLevel2() {
             level2 = DEFAULT_RCDS;
             return (S) this;
         }
 
-        /**
-         *
-         * @param level2Types
-         * @return
-         */
         @SuppressWarnings("unchecked")
         public S withLevel2(final RecordClassDescriptor... level2Types) {
             level2 = level2Types;
             return (S) this;
         }
 
-        /**
-         *
-         * @param customTypes
-         * @return
-         */
         @SuppressWarnings("unchecked")
         public S withCustom(final RecordClassDescriptor... customTypes) {
             custom = customTypes;
             return (S) this;
         }
 
-        /**
-         *
-         * @param customTypes
-         * @return
-         */
         @SuppressWarnings("unchecked")
-        public S withCustom(final Class... customTypes) {
+        public S withCustom(final Class ... customTypes) {
             final Introspector introspector = introspector();
             custom = Arrays.stream(customTypes).
                     map(c -> {
@@ -283,10 +242,6 @@ public class MdModel {
      *
      */
     public static class Availability extends ModifiableOptions<Availability> {
-        /**
-         *
-         * @return
-         */
         public MdModel build() {
             return new MdModel(this);
         }
@@ -296,10 +251,7 @@ public class MdModel {
      *
      */
     public class Selection extends ModifiableOptions<Selection> {
-        /**
-         *
-         * @return
-         */
+
         @Override
         public Selection withTrades() {
             if (!availability.trades()) {
@@ -308,10 +260,6 @@ public class MdModel {
             return super.withTrades();
         }
 
-        /**
-         *
-         * @return
-         */
         @Override
         public Selection withLevel1() {
             if (!availability.level1()) {
@@ -320,10 +268,6 @@ public class MdModel {
             return super.withLevel1();
         }
 
-        /**
-         *
-         * @return
-         */
         @Override
         public Selection withLevel2() {
             if (!availability.level2()) {
@@ -332,8 +276,8 @@ public class MdModel {
             return super.withLevel2();
         }
 
-        public Selection withCustom(final Class... customTypes) {
-            final Class[] unknown = Arrays.stream(customTypes)
+        public Selection withCustom(final Class ... customTypes) {
+            final Class<?>[] unknown = Arrays.stream(customTypes)
                     .filter(c -> !availability.custom(c))
                     .toArray(Class[]::new);
             if (unknown.length > 0) {
@@ -347,10 +291,6 @@ public class MdModel {
             return super.withCustom(customTypes);
         }
 
-        /**
-         *
-         * @return
-         */
         public Options build() {
             return new Options(
                     tradesTypes(),
@@ -366,18 +306,10 @@ public class MdModel {
         this.availability = availability;
     }
 
-    /**
-     *
-     * @return
-     */
     public Availability available() {
         return availability;
     }
 
-    /**
-     *
-     * @return
-     */
     public Selection select() {
         return new Selection();
     }
