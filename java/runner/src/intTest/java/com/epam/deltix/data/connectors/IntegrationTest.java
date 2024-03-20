@@ -56,7 +56,15 @@ public class IntegrationTest extends TbIntTestPreparation {
             withReuse(true).
             withNetwork(NETWORK).
             withExposedPorts(8055).
-            withEnv("JAVA_OPTS", "-Dtimebase.url=dxtick://timebase:8011 -Dlogging.config=/runner/config/logback.xml").
+            withEnv("JAVA_OPTS",
+                "-Dtimebase.url=dxtick://timebase:8011 " +
+                    "-Dlogging.config=/runner/config/logback.xml " +
+                    "-Dconnectors.binance-spot.wsUrl=wss://stream.binance.us:9443/ws " +
+                    "-Dconnectors.binance-spot.restUrl=https://api.binance.us/api/v3 " +
+                    "-Dconnectors.binance-futures.wsUrl=wss://fstream.binance.us/stream " +
+                    "-Dconnectors.binance-futures.restUrl=https://fapi.binance.us/fapi/v1 " +
+                    "-Dconnectors.binance-dlv.wsUrl=wss://dstream.binance.us/stream " +
+                    "-Dconnectors.binance-dlv.restUrl=https://dapi.binance.us/dapi/v1 ").
             withFileSystemBind("build/intTest/config", "/runner/config", BindMode.READ_WRITE).
             withStartupTimeout(Duration.ofMinutes(5));
 

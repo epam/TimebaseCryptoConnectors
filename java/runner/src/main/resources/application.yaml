@@ -190,6 +190,7 @@ connectors:
   binance-spot:
     stream: binance-spot
     wsUrl: wss://stream.binance.com:9443/ws
+    restUrl: https://api.binance.com/api/v3
     depth: 20
     model:
       - "L1"
@@ -211,7 +212,7 @@ connectors:
 
   binance-dlv:
     type: binance-futures
-    stream: binance-futures
+    stream: binance-futures-dlv
     wsUrl: wss://dstream.binance.com/stream
     restUrl: https://dapi.binance.com/dapi/v1
     depth: 50
