@@ -3,9 +3,9 @@ package com.epam.deltix.data.connectors.bybit;
 import com.epam.deltix.data.connectors.commons.*;
 import com.epam.deltix.data.connectors.commons.annotations.Connector;
 
-@Connector("Bybit-Futures")
-public class BybitFuturesDataConnector extends DataConnector<BybitFuturesConnectorSettings> {
-    public BybitFuturesDataConnector(BybitFuturesConnectorSettings settings) {
+@Connector("Bybit")
+public class BybitDataConnector extends DataConnector<BybitConnectorSettings> {
+    public BybitDataConnector(BybitConnectorSettings settings) {
         super(settings, MdModel.availability()
             .withTrades()
             .withLevel1()
@@ -20,7 +20,7 @@ public class BybitFuturesDataConnector extends DataConnector<BybitFuturesConnect
             final String... symbols) {
 
         return errorListener -> {
-            final BybitFuturesFeed result = new BybitFuturesFeed(
+            final BybitFeed result = new BybitFeed(
                     settings().getWsUrl(),
                     settings().getDepth(),
                     selected,

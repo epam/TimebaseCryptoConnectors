@@ -66,36 +66,49 @@ connectors:
     instruments: "BTC220930, LTC220930"
 
   bybit-linear-futures:
-    type: bybit-futures
-    stream: bybit-futures
-    wsUrl: wss://stream.bybit.com/realtime_public # linear futures
+    type: bybit
+    stream: bybit-linear-futures
+    wsUrl: wss://stream.bybit.com/v5/public/linear
     depth: 20
     model:
       - "L1"
       - "L2"
       - "TRADES"
-    instruments: "LTCUSDT=LTC/USDT,ADAUSDT=ADA/USDT"
+    instruments: "BTCUSDT=BTC/USDT,LTCUSDT=LTC/USDT,ADAUSDT=ADA/USDT"
 
   bybit-inverse-futures:
-    type: bybit-futures
-    stream: bybit-futures
-    wsUrl: wss://stream.bybit.com/realtime # inverse futures
+    type: bybit
+    stream: bybit-inverse-futures
+    wsUrl: wss://stream.bybit.com/v5/public/inverse
     depth: 20
     model:
       - "L1"
       - "L2"
       - "TRADES"
-    instruments: "MANAUSD=MANA/USD,LUNAUSD=LUNA/USD"
+    instruments: "MANAUSD=MANA/USD,LTCUSD=LTC/USD,ETHUSD=ETH/USD"
+
+  bybit-options:
+    type: bybit
+    stream: bybit-options
+    wsUrl: wss://stream.bybit.com/v5/public/option
+    depth: 20
+    model:
+      - "L1"
+      - "L2"
+      - "TRADES"
+    instruments: "BTC-26APR24-84000-C,BTC-26APR24-94000-C,BTC-26APR24-92000-P"
 
   bybit-spot:
-    stream: bybit-spot
-    wsUrl: wss://stream.bybit.com/spot/quote/ws/v1
+    type: bybit
+    stream: bybit
+    wsUrl: wss://stream.bybit.com/v5/public/spot
     depth: 20
     model:
       - "L1"
       - "L2"
       - "TRADES"
-    instruments: "BTCUSDT=BTC/USDT,ETHUSDT=ETH/USDT"
+    instruments: "BTCUSDT=BTC/USDT,ETHUSDT=ETH/USDT,XRPUSDT=XRP/USDT,ETHBTC=ETH/BTC,
+                  XRPBTC=XRP/BTC,DOTUSDT=DOT/USDT,XLMUSDT=XLM/USDT"
 
   okex:
     stream: okex
@@ -208,11 +221,12 @@ connectors:
       - "L1"
       - "L2"
       - "TRADES"
-    instruments: "btcusdt=BTC/USDT,ethusdt=ETH/USDT,adausdt=ADA/USDT"
+    instruments: "btcusdt=BTC/USDT,BTCUSDT_240628=BTC/USD_240628,ethusdt=ETH/USDT,
+                  adausdt=ADA/USDT,XLMUSDT=XLM/USDT,ETCUSDT=ETC/USDT,LINKUSDT=LINK/USDT"
 
   binance-dlv:
     type: binance-futures
-    stream: binance-futures-dlv
+    stream: binance-futures
     wsUrl: wss://dstream.binance.com/stream
     restUrl: https://dapi.binance.com/dapi/v1
     depth: 50
@@ -220,7 +234,8 @@ connectors:
       - "L1"
       - "L2"
       - "TRADES"
-    instruments: "dotusd_perp=DOT/USD,bnbusd_220930=BNB/USD"
+    instruments: "dotusd_perp=DOT/USD,LINKUSD_PERP=LINK/USD_PERP,ETHUSD_PERP=ETHPC,ETHUSD_240329=ETH/USD_240329,
+                  MANAUSD_PERP=MANA/USD,SOLUSD_PERP=SOL/USD"
 
   kucoin:
     stream: kucoin
