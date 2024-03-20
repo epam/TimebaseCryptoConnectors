@@ -50,7 +50,6 @@ By default, we launch with the [default](https://raw.githubusercontent.com/epam/
 |[BITPANDA](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/bitpanda)|SPOT|
 |[BitMEX](java/connectors/bitmex/README.md)|Quanto Contract, Inverse Perpetual SWAP, Linear Perpetual, Quanto Perpetual, Linear Futures, Quanto Futures, Inverse Futures|
 |[Coinbase](https://github.com/epam/TimebaseCryptoConnectors/blob/main/java/connectors/coinbase/README.md)|SPOT|
-|[COINFLEX](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/coinflex)|SPOT, Linear Futures|
 |[CRYPTOFACILITIES](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/cryptofacilities)|Linear Futures|
 |[DERIBIT](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/deribit)|Inverse and Linear Futures, Options, Perpetual|
 |[HITBTC](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/cryptofacilities)|SPOT|
