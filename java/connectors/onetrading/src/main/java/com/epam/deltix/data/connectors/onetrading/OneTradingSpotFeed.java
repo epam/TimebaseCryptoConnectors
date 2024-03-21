@@ -1,4 +1,4 @@
-package com.epam.deltix.data.connectors.bitpanda;
+package com.epam.deltix.data.connectors.onetrading;
 
 import com.epam.deltix.data.connectors.commons.*;
 import com.epam.deltix.data.connectors.commons.json.*;
@@ -8,13 +8,13 @@ import com.epam.deltix.timebase.messages.universal.AggressorSide;
 
 import java.util.Arrays;
 
-public class BitpandaSpotFeed extends MdSingleWsFeed {
+public class OneTradingSpotFeed extends MdSingleWsFeed {
     // all fields are used by one single thread of WsFeed's ExecutorService
     private final JsonValueParser jsonParser = new JsonValueParser();
 
     private final Iso8601DateTimeParser dtParser = new Iso8601DateTimeParser();
 
-    public BitpandaSpotFeed(
+    public OneTradingSpotFeed(
             final String uri,
             final int depth,
             final MdModel.Options selected,
@@ -72,20 +72,20 @@ public class BitpandaSpotFeed extends MdSingleWsFeed {
         String type = object.getString("type");
         if ("ORDER_BOOK_SNAPSHOT".equalsIgnoreCase(type)) {
             String instrument = object.getString("instrument_code");
-            long timestamp = dtParser.set(object.getStringRequired("time")).millis();
+            long timestamp = object.getLong("time") / 1_000_000;
             QuoteSequenceProcessor quotesListener = processor().onBookSnapshot(instrument, timestamp);
             processSnapshotSide(quotesListener, object.getArray("bids"), false);
             processSnapshotSide(quotesListener, object.getArray("asks"), true);
             quotesListener.onFinish();
         } else if ("ORDER_BOOK_UPDATE".equalsIgnoreCase(type)) {
             String instrument = object.getString("instrument_code");
-            long timestamp = dtParser.set(object.getStringRequired("time")).millis();
+            long timestamp = object.getLong("time") / 1_000_000;
             QuoteSequenceProcessor quotesListener = processor().onBookUpdate(instrument, timestamp);
             processUpdates(quotesListener, object.getArray("changes"));
             quotesListener.onFinish();
         } else if ("PRICE_TICK".equalsIgnoreCase(type)) {
             String instrument = object.getString("instrument_code");
-            long timestamp = dtParser.set(object.getStringRequired("time")).millis();
+            long timestamp = object.getLong("time") / 1_000_000;
 
             long price = object.getDecimal64Required("price");
             long size = object.getDecimal64Required("amount");

@@ -1,18 +1,18 @@
-package com.epam.deltix.data.connectors.bitpanda;
+package com.epam.deltix.data.connectors.onetrading;
 
 import com.epam.deltix.data.connectors.commons.DataConnectorSettings;
 import com.epam.deltix.data.connectors.commons.annotations.ConnectorSettings;
 
-@ConnectorSettings("BITPANDA")
-public class BitpandaSpotConnectorSettings extends DataConnectorSettings {
+@ConnectorSettings("ONETRADING")
+public class OneTradingSpotConnectorSettings extends DataConnectorSettings {
 
-    private String wsUrl = "wss://streams.exchange.bitpanda.com";
+    private String wsUrl = "wss://streams.fast.onetrading.com?x-version=3";
 
-    public BitpandaSpotConnectorSettings() {
+    public OneTradingSpotConnectorSettings() {
         super();
     }
 
-    public BitpandaSpotConnectorSettings(String tbUrl, String stream, String wsUrl) {
+    public OneTradingSpotConnectorSettings(String tbUrl, String stream, String wsUrl) {
         super(tbUrl, stream);
         this.wsUrl = wsUrl;
     }

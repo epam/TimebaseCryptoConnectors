@@ -1,11 +1,11 @@
-package com.epam.deltix.data.connectors.bitpanda;
+package com.epam.deltix.data.connectors.onetrading;
 
 import com.epam.deltix.data.connectors.commons.*;
 import com.epam.deltix.data.connectors.commons.annotations.Connector;
 
-@Connector("BITPANDA")
-public class BitpandaSpotDataConnector extends DataConnector<BitpandaSpotConnectorSettings> {
-    public BitpandaSpotDataConnector(BitpandaSpotConnectorSettings settings) {
+@Connector("ONETRADING")
+public class OneTradingSpotDataConnector extends DataConnector<OneTradingSpotConnectorSettings> {
+    public OneTradingSpotDataConnector(OneTradingSpotConnectorSettings settings) {
         super(settings, MdModel.availability()
             .withTrades()
             .withLevel1()
@@ -20,7 +20,7 @@ public class BitpandaSpotDataConnector extends DataConnector<BitpandaSpotConnect
             final String... symbols) {
 
         return errorListener -> {
-            final BitpandaSpotFeed result = new BitpandaSpotFeed(
+            final OneTradingSpotFeed result = new OneTradingSpotFeed(
                     settings().getWsUrl(),
                     settings().getDepth(),
                     selected,
