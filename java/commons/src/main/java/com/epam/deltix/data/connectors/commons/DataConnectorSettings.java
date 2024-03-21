@@ -10,6 +10,8 @@ public class DataConnectorSettings {
     private String stream;
     private int depth = 20;
 
+    private boolean disabled;
+
     public DataConnectorSettings() {
     }
 
@@ -74,4 +76,11 @@ public class DataConnectorSettings {
         this.depth = depth;
     }
 
+    public boolean isDisabled() {
+        return disabled;
+    }
+
+    public void setDisabled(boolean disabled) {
+        this.disabled = disabled;
+    }
 }

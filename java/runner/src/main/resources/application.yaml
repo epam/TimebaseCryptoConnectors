@@ -162,7 +162,7 @@ connectors:
       - "L1"
       - "L2"
       - "TRADES"
-    instruments: "PI_XBTUSD, PF_LTCUSD, PF_ETHUSD"
+    instruments: "PI_ETHUSD, PI_XBTUSD, PI_XRPUSD, PI_LTCUSD, PI_BCHUSD, PF_LTCUSD, PF_ETHUSD"
 
   hitbtc:
     stream: hitbtc
