@@ -6,7 +6,7 @@ import com.epam.deltix.data.connectors.commons.annotations.ConnectorSettings;
 @ConnectorSettings("OKCOIN")
 public class OkcoinSpotConnectorSettings extends DataConnectorSettings {
 
-    private String wsUrl = "wss://real.okcoin.com:8443/ws/v3";
+    private String wsUrl = "wss://real.okcoin.com:8443/ws/v5/public";
 
     public OkcoinSpotConnectorSettings() {
         super();

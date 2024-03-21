@@ -186,7 +186,7 @@ connectors:
 
   okcoin:
     stream: okcoin
-    wsUrl: wss://real.okcoin.com:8443/ws/v3
+    wsUrl: wss://real.okcoin.com:8443/ws/v5/public
     depth: 20
     model:
       - "L1"
