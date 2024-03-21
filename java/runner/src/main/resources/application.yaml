@@ -66,7 +66,7 @@ connectors:
       - "L1"
       - "L2"
       - "TRADES"
-    instruments: "BTC220930, LTC220930"
+    instruments: "BTC240322,ETH240322"
 
   bybit-linear-futures:
     type: bybit
