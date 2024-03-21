@@ -28,7 +28,7 @@ dependencies {
     implementation project(':java:connectors:kraken-futures')
     implementation project(':java:connectors:kraken-spot')
     implementation project(':java:connectors:okcoin')
-    implementation project(':java:connectors:okex')
+    implementation project(':java:connectors:okx')
     implementation project(':java:connectors:poloniex')
     implementation project(':java:connectors:kucoin')
     implementation project(':java:connectors:deribit')

@@ -1,11 +1,11 @@
-package com.epam.deltix.data.connectors.okex;
+package com.epam.deltix.data.connectors.okx;
 
 import com.epam.deltix.data.connectors.commons.*;
 import com.epam.deltix.data.connectors.commons.annotations.Connector;
 
-@Connector("OKEX")
-public class OkexSpotDataConnector extends DataConnector<OkexSpotConnectorSettings> {
-    public OkexSpotDataConnector(OkexSpotConnectorSettings settings) {
+@Connector("OKX")
+public class OkxSpotDataConnector extends DataConnector<OkxSpotConnectorSettings> {
+    public OkxSpotDataConnector(OkxSpotConnectorSettings settings) {
         super(settings, MdModel.availability()
             .withTrades()
             .withLevel1()
@@ -20,7 +20,7 @@ public class OkexSpotDataConnector extends DataConnector<OkexSpotConnectorSettin
             final String... symbols) {
 
         return errorListener -> {
-            final OkexSpotFeed result = new OkexSpotFeed(
+            final OkxSpotFeed result = new OkxSpotFeed(
                     settings().getWsUrl(),
                     settings().getDepth(),
                     selected,

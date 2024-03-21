@@ -1,4 +1,4 @@
-package com.epam.deltix.data.connectors.okex;
+package com.epam.deltix.data.connectors.okx;
 
 import com.epam.deltix.data.connectors.commons.*;
 import com.epam.deltix.data.connectors.commons.json.*;
@@ -9,11 +9,11 @@ import com.epam.deltix.timebase.messages.universal.AggressorSide;
 
 import java.util.Arrays;
 
-public class OkexSpotFeed extends MdSingleWsFeed {
+public class OkxSpotFeed extends MdSingleWsFeed {
     // all fields are used by one single thread of WsFeed's ExecutorService
     private final JsonValueParser jsonParser = new JsonValueParser();
 
-    public OkexSpotFeed(
+    public OkxSpotFeed(
             final String uri,
             final int depth,
             final MdModel.Options selected,
@@ -66,6 +66,13 @@ public class OkexSpotFeed extends MdSingleWsFeed {
 
         JsonValue jsonValue = jsonParser.eoj();
         JsonObject object = jsonValue.asObject();
+
+        String event = object.getString("event");
+        if ("error".equalsIgnoreCase(event)) {
+            String errorMessage = object.getString("msg");
+            logger().warning("Feed error: " + errorMessage);
+            return;
+        }
 
         JsonObject arg = object.getObject("arg");
         String channel = arg.getString("channel");

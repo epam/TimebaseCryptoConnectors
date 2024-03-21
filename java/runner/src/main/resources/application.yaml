@@ -113,15 +113,16 @@ connectors:
     instruments: "BTCUSDT=BTC/USDT,ETHUSDT=ETH/USDT,XRPUSDT=XRP/USDT,ETHBTC=ETH/BTC,
                   XRPBTC=XRP/BTC,DOTUSDT=DOT/USDT,XLMUSDT=XLM/USDT"
 
-  okex:
-    stream: okex
-    wsUrl: wss://ws.okex.com:8443/ws/v5/public
+  okx:
+    stream: okx
+    wsUrl: wss://ws.okx.com:8443/ws/v5/public
     depth: 20
     model:
       - "L1"
       - "L2"
       - "TRADES"
-    instruments: "BTC-UST=BTC/USD,BTC-USDT-220930"
+    instruments: "LTC-EUR=LTC/EUR,BTC-EUR=BTC/EUR,ETH-EUR=ETH/EUR,DOGE-EUR=DOGE/EUR,
+                  BTC-USDT-240322=BTC/USDT"
 
   bitfinex:
     stream: bitfinex
