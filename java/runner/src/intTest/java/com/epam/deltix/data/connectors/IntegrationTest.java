@@ -34,7 +34,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
@@ -57,10 +56,9 @@ public class IntegrationTest extends TbIntTestPreparation {
             withNetwork(NETWORK).
             withExposedPorts(8055).
             withEnv("JAVA_OPTS",
-                "-Dtimebase.url=dxtick://timebase:8011 " +
-                    "-Dlogging.config=/runner/config/logback.xml " +
-                    "-Dconnectors.binance-spot.wsUrl=wss://stream.binance.us:9443/ws " +
-                    "-Dconnectors.binance-spot.restUrl=https://api.binance.us/api/v3 ").
+                "-Dtimebase.url=dxtick://timebase:8011 -Dlogging.config=/runner/config/logback.xml").
+            withEnv("CONNECTORS_BINANCE-SPOT_WSURL", "wss://stream.binance.us:9443/ws").
+            withEnv("CONNECTORS_BINANCE-SPOT_RESTURL", "https://api.binance.us/api/v3").
             withFileSystemBind("build/intTest/config", "/runner/config", BindMode.READ_WRITE).
             withStartupTimeout(Duration.ofMinutes(5));
 
@@ -73,6 +71,13 @@ public class IntegrationTest extends TbIntTestPreparation {
 
     @BeforeAll
     static void beforeAll() throws Exception {
+        Map<String, String> envMap = System.getenv();
+        for (String envName : envMap.keySet()) {
+            if (envName.startsWith("CONNECTORS_")) {
+                APP_CONTAINER.withEnv(envName, envMap.get(envName));
+            }
+        }
+
         TIMEBASE_CONTAINER.start();
         APP_CONTAINER.start();
 

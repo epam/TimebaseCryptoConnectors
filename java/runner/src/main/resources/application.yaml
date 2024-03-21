@@ -8,7 +8,10 @@ connectors:
   coinbase:
     stream: coinbase
     depth: 20
-    wsUrl: wss://ws-feed.pro.coinbase.com
+    wsUrl: wss://ws-feed.exchange.coinbase.com
+    apiKey: # API key as a string
+    apiSecret: # API secret as a string
+    passphrase: # Passphrase you specified when creating the API key
     model:
       - "L1"
       - "L2"
