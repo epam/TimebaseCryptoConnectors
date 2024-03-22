@@ -36,7 +36,7 @@ connectors:
       - "L1"
       - "L2"
       - "TRADES"
-    instruments: "PF_XBTUSD,PI_XRPUSD,PF_ETHUSD,FI_XBTUSD_220930"
+    instruments: "PF_XBTUSD,PI_XRPUSD,PF_ETHUSD,FI_XBTUSD_240628,FI_ETHUSD_240628"
 
   bitmex:
     stream: bitmex
@@ -66,7 +66,7 @@ connectors:
       - "L1"
       - "L2"
       - "TRADES"
-    instruments: "BTC240322,ETH240322"
+    instruments: "BTC240628,ETH240628"
 
   bybit-linear-futures:
     type: bybit
@@ -99,7 +99,7 @@ connectors:
       - "L1"
       - "L2"
       - "TRADES"
-    instruments: "BTC-26APR24-84000-C,BTC-26APR24-94000-C,BTC-26APR24-92000-P"
+    instruments: "BTC-27DEC24-180000-C,BTC-27DEC24-160000-P,BTC-27DEC24-160000-C"
 
   bybit-spot:
     type: bybit
@@ -122,7 +122,7 @@ connectors:
       - "L2"
       - "TRADES"
     instruments: "LTC-EUR=LTC/EUR,BTC-EUR=BTC/EUR,ETH-EUR=ETH/EUR,DOGE-EUR=DOGE/EUR,
-                  BTC-USDT-240322=BTC/USDT"
+                  BTC-USDT-240628=BTC/USDT"
 
   bitfinex:
     stream: bitfinex
@@ -238,7 +238,7 @@ connectors:
       - "L1"
       - "L2"
       - "TRADES"
-    instruments: "dotusd_perp=DOT/USD,LINKUSD_PERP=LINK/USD_PERP,ETHUSD_PERP=ETHPC,ETHUSD_240329=ETH/USD_240329,
+    instruments: "dotusd_perp=DOT/USD,LINKUSD_PERP=LINK/USD_PERP,ETHUSD_PERP=ETHPC,ETHUSD_240628=ETH/USD_240628,
                   MANAUSD_PERP=MANA/USD,SOLUSD_PERP=SOL/USD"
 
   kucoin:
