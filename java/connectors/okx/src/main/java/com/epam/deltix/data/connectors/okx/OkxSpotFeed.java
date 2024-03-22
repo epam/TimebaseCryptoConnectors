@@ -1,4 +1,4 @@
-package com.epam.deltix.data.connectors.okcoin;
+package com.epam.deltix.data.connectors.okx;
 
 import com.epam.deltix.data.connectors.commons.*;
 import com.epam.deltix.data.connectors.commons.json.*;
@@ -9,11 +9,11 @@ import com.epam.deltix.timebase.messages.universal.AggressorSide;
 
 import java.util.Arrays;
 
-public class OkcoinSpotFeed extends MdSingleWsFeed {
+public class OkxSpotFeed extends MdSingleWsFeed {
     // all fields are used by one single thread of WsFeed's ExecutorService
     private final JsonValueParser jsonParser = new JsonValueParser();
 
-    public OkcoinSpotFeed(
+    public OkxSpotFeed(
             final String uri,
             final int depth,
             final MdModel.Options selected,
@@ -22,10 +22,10 @@ public class OkcoinSpotFeed extends MdSingleWsFeed {
             final Logger logger,
             final String... symbols) {
 
-        super("OKCOIN",
+        super("OKEX",
                 uri,
                 depth,
-            30000,
+                30000,
                 selected,
                 output,
                 errorListener,
@@ -168,4 +168,5 @@ public class OkcoinSpotFeed extends MdSingleWsFeed {
 
         return timestamp;
     }
+
 }

@@ -8,6 +8,12 @@ public class CoinbaseConnectorSettings extends DataConnectorSettings {
 
     private String wsUrl = "wss://ws-feed.pro.coinbase.com";
 
+    private String apiKey;
+
+    private String apiSecret;
+
+    private String passphrase;
+
     public CoinbaseConnectorSettings() {
         super();
     }
@@ -24,5 +30,29 @@ public class CoinbaseConnectorSettings extends DataConnectorSettings {
 
     public void setWsUrl(String wsUrl) {
         this.wsUrl = wsUrl;
+    }
+
+    public String getApiKey() {
+        return apiKey;
+    }
+
+    public void setApiKey(String apiKey) {
+        this.apiKey = apiKey;
+    }
+
+    public String getApiSecret() {
+        return apiSecret;
+    }
+
+    public void setApiSecret(String apiSecret) {
+        this.apiSecret = apiSecret;
+    }
+
+    public String getPassphrase() {
+        return passphrase;
+    }
+
+    public void setPassphrase(String passphrase) {
+        this.passphrase = passphrase;
     }
 }

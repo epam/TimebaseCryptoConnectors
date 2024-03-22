@@ -1,18 +1,18 @@
-package com.epam.deltix.data.connectors.okcoin;
+package com.epam.deltix.data.connectors.okx;
 
 import com.epam.deltix.data.connectors.commons.DataConnectorSettings;
 import com.epam.deltix.data.connectors.commons.annotations.ConnectorSettings;
 
-@ConnectorSettings("OKCOIN")
-public class OkcoinSpotConnectorSettings extends DataConnectorSettings {
+@ConnectorSettings("OKX")
+public class OkxSpotConnectorSettings extends DataConnectorSettings {
 
-    private String wsUrl = "wss://real.okcoin.com:8443/ws/v5/public";
+    private String wsUrl = "wss://ws.okex.com:8443/ws/v5/public";
 
-    public OkcoinSpotConnectorSettings() {
+    public OkxSpotConnectorSettings() {
         super();
     }
 
-    public OkcoinSpotConnectorSettings(String tbUrl, String stream, String wsUrl) {
+    public OkxSpotConnectorSettings(String tbUrl, String stream, String wsUrl) {
         super(tbUrl, stream);
         this.wsUrl = wsUrl;
     }

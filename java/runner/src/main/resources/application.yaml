@@ -8,7 +8,10 @@ connectors:
   coinbase:
     stream: coinbase
     depth: 20
-    wsUrl: wss://ws-feed.pro.coinbase.com
+    wsUrl: wss://ws-feed.exchange.coinbase.com
+    apiKey: # API key as a string
+    apiSecret: # API secret as a string
+    passphrase: # Passphrase you specified when creating the API key
     model:
       - "L1"
       - "L2"
@@ -63,49 +66,63 @@ connectors:
       - "L1"
       - "L2"
       - "TRADES"
-    instruments: "BTC220930, LTC220930"
+    instruments: "BTC240322,ETH240322"
 
   bybit-linear-futures:
-    type: bybit-futures
-    stream: bybit-futures
-    wsUrl: wss://stream.bybit.com/realtime_public # linear futures
+    type: bybit
+    stream: bybit-linear-futures
+    wsUrl: wss://stream.bybit.com/v5/public/linear
     depth: 20
     model:
       - "L1"
       - "L2"
       - "TRADES"
-    instruments: "LTCUSDT=LTC/USDT,ADAUSDT=ADA/USDT"
+    instruments: "BTCUSDT=BTC/USDT,LTCUSDT=LTC/USDT,ADAUSDT=ADA/USDT"
 
   bybit-inverse-futures:
-    type: bybit-futures
-    stream: bybit-futures
-    wsUrl: wss://stream.bybit.com/realtime # inverse futures
+    type: bybit
+    stream: bybit-inverse-futures
+    wsUrl: wss://stream.bybit.com/v5/public/inverse
     depth: 20
     model:
       - "L1"
       - "L2"
       - "TRADES"
-    instruments: "MANAUSD=MANA/USD,LUNAUSD=LUNA/USD"
+    instruments: "MANAUSD=MANA/USD,LTCUSD=LTC/USD,ETHUSD=ETH/USD"
+
+  bybit-options:
+    type: bybit
+    stream: bybit-options
+    wsUrl: wss://stream.bybit.com/v5/public/option
+    depth: 20
+    model:
+      - "L1"
+      - "L2"
+      - "TRADES"
+    instruments: "BTC-26APR24-84000-C,BTC-26APR24-94000-C,BTC-26APR24-92000-P"
 
   bybit-spot:
-    stream: bybit-spot
-    wsUrl: wss://stream.bybit.com/spot/quote/ws/v1
+    type: bybit
+    stream: bybit
+    wsUrl: wss://stream.bybit.com/v5/public/spot
     depth: 20
     model:
       - "L1"
       - "L2"
       - "TRADES"
-    instruments: "BTCUSDT=BTC/USDT,ETHUSDT=ETH/USDT"
+    instruments: "BTCUSDT=BTC/USDT,ETHUSDT=ETH/USDT,XRPUSDT=XRP/USDT,ETHBTC=ETH/BTC,
+                  XRPBTC=XRP/BTC,DOTUSDT=DOT/USDT,XLMUSDT=XLM/USDT"
 
-  okex:
-    stream: okex
-    wsUrl: wss://ws.okex.com:8443/ws/v5/public
+  okx:
+    stream: okx
+    wsUrl: wss://ws.okx.com:8443/ws/v5/public
     depth: 20
     model:
       - "L1"
       - "L2"
       - "TRADES"
-    instruments: "BTC-UST=BTC/USD,BTC-USDT-220930"
+    instruments: "LTC-EUR=LTC/EUR,BTC-EUR=BTC/EUR,ETH-EUR=ETH/EUR,DOGE-EUR=DOGE/EUR,
+                  BTC-USDT-240322=BTC/USDT"
 
   bitfinex:
     stream: bitfinex
@@ -127,25 +144,15 @@ connectors:
       - "TRADES"
     instruments: "BTC_USDT=BTC/USD,DOGE_USDC=DOGE/USD,ETH_USDT=ETH/USD"
 
-  bitpanda:
-    stream: bitpanda
-    wsUrl: wss://streams.exchange.bitpanda.com
+  onetrading:
+    stream: onetrading
+    wsUrl: wss://streams.fast.onetrading.com?x-version=3
     depth: 20
     model:
       - "L1"
       - "L2"
       - "TRADES"
-    instruments: "BTC_EUR=BTC/EUR,ETH_EUR=ETH/EUR"
-
-  coinflex:
-    stream: coinflex
-    wsUrl: wss://v2api.coinflex.com/v2/websocket
-    depth: 20
-    model:
-      - "L1"
-      - "L2"
-      - "TRADES"
-    instruments: "USDT-USD-SWAP-LIN,BTC-USD-220930-LIN,BTC-USD,DOGE-USD"
+    instruments: "BTC_EUR=BTC/EUR,ETH_EUR=ETH/EUR,ETH_BTC=ETH/BTC"
 
   cryptofacilities:
     stream: cryptofacilities
@@ -155,7 +162,7 @@ connectors:
       - "L1"
       - "L2"
       - "TRADES"
-    instruments: "PI_XBTUSD, PF_LTCUSD, PF_ETHUSD"
+    instruments: "PI_ETHUSD, PI_XBTUSD, PI_XRPUSD, PI_LTCUSD, PI_BCHUSD, PF_LTCUSD, PF_ETHUSD"
 
   hitbtc:
     stream: hitbtc
@@ -179,7 +186,7 @@ connectors:
 
   okcoin:
     stream: okcoin
-    wsUrl: wss://real.okcoin.com:8443/ws/v3
+    wsUrl: wss://real.okcoin.com:8443/ws/v5/public
     depth: 20
     model:
       - "L1"
@@ -200,6 +207,7 @@ connectors:
   binance-spot:
     stream: binance-spot
     wsUrl: wss://stream.binance.com:9443/ws
+    restUrl: https://api.binance.com/api/v3
     depth: 20
     model:
       - "L1"
@@ -217,7 +225,8 @@ connectors:
       - "L1"
       - "L2"
       - "TRADES"
-    instruments: "btcusdt=BTC/USDT,ethusdt=ETH/USDT,adausdt=ADA/USDT"
+    instruments: "btcusdt=BTC/USDT,BTCUSDT_240628=BTC/USD_240628,ethusdt=ETH/USDT,
+                  adausdt=ADA/USDT,XLMUSDT=XLM/USDT,ETCUSDT=ETC/USDT,LINKUSDT=LINK/USDT"
 
   binance-dlv:
     type: binance-futures
@@ -229,7 +238,8 @@ connectors:
       - "L1"
       - "L2"
       - "TRADES"
-    instruments: "dotusd_perp=DOT/USD,bnbusd_220930=BNB/USD"
+    instruments: "dotusd_perp=DOT/USD,LINKUSD_PERP=LINK/USD_PERP,ETHUSD_PERP=ETHPC,ETHUSD_240329=ETH/USD_240329,
+                  MANAUSD_PERP=MANA/USD,SOLUSD_PERP=SOL/USD"
 
   kucoin:
     stream: kucoin

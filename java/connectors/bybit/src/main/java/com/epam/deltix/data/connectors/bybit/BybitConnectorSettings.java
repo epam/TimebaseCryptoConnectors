@@ -1,18 +1,18 @@
-package com.epam.deltix.data.connectors.okcoin;
+package com.epam.deltix.data.connectors.bybit;
 
 import com.epam.deltix.data.connectors.commons.DataConnectorSettings;
 import com.epam.deltix.data.connectors.commons.annotations.ConnectorSettings;
 
-@ConnectorSettings("OKCOIN")
-public class OkcoinSpotConnectorSettings extends DataConnectorSettings {
+@ConnectorSettings("Bybit")
+public class BybitConnectorSettings extends DataConnectorSettings {
 
-    private String wsUrl = "wss://real.okcoin.com:8443/ws/v5/public";
+    private String wsUrl = "wss://stream.bybit.com/spot/quote/ws/v1";
 
-    public OkcoinSpotConnectorSettings() {
+    public BybitConnectorSettings() {
         super();
     }
 
-    public OkcoinSpotConnectorSettings(String tbUrl, String stream, String wsUrl) {
+    public BybitConnectorSettings(String tbUrl, String stream, String wsUrl) {
         super(tbUrl, stream);
         this.wsUrl = wsUrl;
     }

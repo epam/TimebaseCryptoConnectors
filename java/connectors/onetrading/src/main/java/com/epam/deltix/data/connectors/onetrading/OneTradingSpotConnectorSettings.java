@@ -1,18 +1,18 @@
-package com.epam.deltix.data.connectors.okcoin;
+package com.epam.deltix.data.connectors.onetrading;
 
 import com.epam.deltix.data.connectors.commons.DataConnectorSettings;
 import com.epam.deltix.data.connectors.commons.annotations.ConnectorSettings;
 
-@ConnectorSettings("OKCOIN")
-public class OkcoinSpotConnectorSettings extends DataConnectorSettings {
+@ConnectorSettings("ONETRADING")
+public class OneTradingSpotConnectorSettings extends DataConnectorSettings {
 
-    private String wsUrl = "wss://real.okcoin.com:8443/ws/v5/public";
+    private String wsUrl = "wss://streams.fast.onetrading.com?x-version=3";
 
-    public OkcoinSpotConnectorSettings() {
+    public OneTradingSpotConnectorSettings() {
         super();
     }
 
-    public OkcoinSpotConnectorSettings(String tbUrl, String stream, String wsUrl) {
+    public OneTradingSpotConnectorSettings(String tbUrl, String stream, String wsUrl) {
         super(tbUrl, stream);
         this.wsUrl = wsUrl;
     }

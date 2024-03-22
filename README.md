@@ -43,11 +43,9 @@ By default, we launch with the [default](https://raw.githubusercontent.com/epam/
 |Exchange|Supported Contracts|
 |------|------------------|
 |[AscendEX](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/ascendex)|SPOT, Linear Futures|
-|[BYBIT&nbsp;FUTURES](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/bybit-futures)|Inverse and Linear Futures|
-|[BYBIT&nbsp;SPOT](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/bybit-spot)|SPOT|
+|[BYBIT](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/bybit)| SPOT, Inverse and Linear Futures, Options|
 |[BITFINEX](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/bitfinex)|SPOT, Linear Futures|
 |[BITMART](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/bitmart)|SPOT|
-|[BITPANDA](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/bitpanda)|SPOT|
 |[BitMEX](java/connectors/bitmex/README.md)|Quanto Contract, Inverse Perpetual SWAP, Linear Perpetual, Quanto Perpetual, Linear Futures, Quanto Futures, Inverse Futures|
 |[Coinbase](https://github.com/epam/TimebaseCryptoConnectors/blob/main/java/connectors/coinbase/README.md)|SPOT|
 |[CRYPTOFACILITIES](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/cryptofacilities)|Linear Futures|
@@ -59,5 +57,6 @@ By default, we launch with the [default](https://raw.githubusercontent.com/epam/
 |[Kraken&nbsp;SPOT](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/kraken-spot)|SPOT|
 |[Kucoin](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/kucoin)|SPOT, Futures|
 |[OKEX](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/okex)|SPOT, Linear and Inverse SWAP, Inverse and Linear Futures|
+|[One Trading (bitpanda)](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/onetrading)|SPOT|
 |[POLONIEX](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/poloniex)|SPOT|
 |[Uniswap](https://github.com/epam/TimebaseCryptoConnectors/blob/main/docs/uniswap.md)|ERC-20 SWAP|

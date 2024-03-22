@@ -34,7 +34,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
@@ -56,19 +55,31 @@ public class IntegrationTest extends TbIntTestPreparation {
             withReuse(true).
             withNetwork(NETWORK).
             withExposedPorts(8055).
-            withEnv("JAVA_OPTS", "-Dtimebase.url=dxtick://timebase:8011 -Dlogging.config=/runner/config/logback.xml").
+            withEnv("JAVA_OPTS",
+                "-Dtimebase.url=dxtick://timebase:8011 -Dlogging.config=/runner/config/logback.xml").
+            withEnv("CONNECTORS_UNISWAP_DISABLED", "true").
+            withEnv("CONNECTORS_UNISWAP-L2_DISABLED", "true").
+            withEnv("CONNECTORS_BINANCE-SPOT_WSURL", "wss://stream.binance.us:9443/ws").
+            withEnv("CONNECTORS_BINANCE-SPOT_RESTURL", "https://api.binance.us/api/v3").
             withFileSystemBind("build/intTest/config", "/runner/config", BindMode.READ_WRITE).
             withStartupTimeout(Duration.ofMinutes(5));
 
     private static final int READ_TIMEOUT_S = 10;
 
     private static final int SMOKE_READ_MESSAGES = 100;
-    private static final int VALIDATION_READ_MESSAGES = 1000;
+    private static final int VALIDATION_READ_MESSAGES = 2000;
 
     private static Map<String, TestConnectorReports> reports = new LinkedHashMap<>();
 
     @BeforeAll
     static void beforeAll() throws Exception {
+        Map<String, String> envMap = System.getenv();
+        for (String envName : envMap.keySet()) {
+            if (envName.startsWith("CONNECTORS_")) {
+                APP_CONTAINER.withEnv(envName, envMap.get(envName));
+            }
+        }
+
         TIMEBASE_CONTAINER.start();
         APP_CONTAINER.start();
 
@@ -167,7 +178,6 @@ public class IntegrationTest extends TbIntTestPreparation {
         Map<String, DataValidator> validators = new HashMap<>();
         AtomicLong errors = new AtomicLong();
 
-        Set<String> supportedModel = new HashSet<>();
         try (TickCursor cursor = stream.select(TimeConstants.TIMESTAMP_UNKNOWN, new SelectionOptions(false, true))) {
             int messages = 0;
             while (readWithTimeout(timeoutSeconds, cursor, connector)) {
@@ -179,7 +189,6 @@ public class IntegrationTest extends TbIntTestPreparation {
                 // validate
                 if (message instanceof PackageHeaderInfo) {
                     PackageHeaderInfo packageHeader = (PackageHeaderInfo) message;
-                    updateSupportedModel(packageHeader, supportedModel);
                     DataValidator validator = validators.computeIfAbsent(
                         message.getSymbol().toString(),
                         k -> createValidator(k, (sender, severity, exception, stringMessage) -> {
@@ -211,6 +220,17 @@ public class IntegrationTest extends TbIntTestPreparation {
             }
         } finally {
             exportStream(stream);
+        }
+
+        Set<String> supportedModel = new HashSet<>();
+        try (TickCursor cursor = stream.select(TimeConstants.TIMESTAMP_UNKNOWN, new SelectionOptions(false, false))) {
+            while (cursor.next()) {
+                InstrumentMessage message = cursor.getMessage();
+                if (message instanceof PackageHeaderInfo) {
+                    updateSupportedModel((PackageHeaderInfo) message, supportedModel);
+                }
+            }
+        } finally {
             connector.addTestMessage(
                 ReportGenerator.SUPPORTED_MODEL_REPORT,
                 supportedModel.stream().sorted().collect(Collectors.joining(","))
