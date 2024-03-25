@@ -264,6 +264,17 @@ connectors:
       - "TRADES"
     instruments: "ada_usdc-perpetual=ADA/USDC,avax_usdc-perpetual=AVAX/USDC,sol_usdc-perpetual=SOL/USDC,xrp_usdc-perpetual=XRP/USDC"
 
+  polygon-io-stocks:
+    type: polygon-io
+    stream: polygon-io
+    wsUrl: wss://delayed.polygon.io/stocks
+    restUrl: https://api.polygon.io
+    apiKey:  # <api key>
+    model:
+      - "L1"
+      - "TRADES"
+    instruments: "TSLA,IEF,RACE,HYG,MSFT,MCD,AMD,REGN,TMO,HUBS,SHY,DBC,GLD,TIP,CVX,ABBV,HRL,VZ,PEP,JPM,AAPL,TM,INTC,UNH"
+
   uniswap:
     stream: uniswap
     type: uniswap

@@ -118,6 +118,19 @@ public class MdProcessor {
         getProcessors(instrument).trades.onTrade(timestamp, instrument, price, size, side);
     }
 
+    public void onL1Snapshot(
+        final String instrument,
+        final long timestamp,
+        final @Decimal long bidPrice,
+        final @Decimal long bidSize,
+        final @Decimal long askPrice,
+        final @Decimal long askSize) {
+
+        getProcessors(instrument).level1.onSnapshot(
+            instrument, timestamp, bidPrice, bidSize, askPrice, askSize
+        );
+    }
+
     void close(final String reason) {
         MessageOutput out;
         synchronized (this) {
@@ -172,6 +185,7 @@ public class MdProcessor {
 
     private class InstrumentDataProcessors {
         private final QuoteSequenceProcessor level2;
+        private final L1Producer level1;
         private final TradeProducer trades;
 
         private InstrumentDataProcessors(final String instrument) {
@@ -196,6 +210,7 @@ public class MdProcessor {
                             )
             );
 
+            level1 = new L1Producer(source, output);
             trades = new TradeProducer(source, output);
         }
     }
