@@ -188,7 +188,8 @@ public class L2Processor<B extends Book<I, E>, I extends BookItem<E>, E extends 
      * Dumps a text view of the book
      *
      * @param to to
-     * @param <T>
+     * @param <T> Any 'Appendable'
+     * @param maxLevels number of levels to include
      * @return a parameter 'to' passed
      */
     public <T extends Appendable> T dump(final T to, final int maxLevels) {
@@ -262,7 +263,7 @@ public class L2Processor<B extends Book<I, E>, I extends BookItem<E>, E extends 
 
     /**
      *
-     * @param originalTimestamp
+     * @param originalTimestamp original time in epoch milliseconds
      */
     public void onIncrementalPackageStarted(final long originalTimestamp) {
         onIncrementalPackageStarted(TimeConstants.TIMESTAMP_UNKNOWN, originalTimestamp);
@@ -270,8 +271,8 @@ public class L2Processor<B extends Book<I, E>, I extends BookItem<E>, E extends 
 
     /**
      *
-     * @param timestamp
-     * @param originalTimestamp
+     * @param timestamp start time in epoch milliseconds
+     * @param originalTimestamp original time in epoch milliseconds
      */
     public void onIncrementalPackageStarted(final long timestamp, final long originalTimestamp) {
         isSnapshotMode = false;
@@ -290,7 +291,7 @@ public class L2Processor<B extends Book<I, E>, I extends BookItem<E>, E extends 
 
     /**
      *
-     * @param event
+     * @param event event
      */
     public void onEvent(final E event) {
         if (event.isOffer()) {

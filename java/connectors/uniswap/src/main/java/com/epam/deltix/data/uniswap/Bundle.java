@@ -7,12 +7,12 @@ import com.epam.deltix.timebase.messages.SchemaElement;
 public class Bundle implements Updatable {
     // bundle address
     private String id;
-    //
+    //price of ETH in usd
     private String ethPriceUSD;
 
     @Override
     public String getTbSymbol() {
-        return id;
+        return "bundle";
     }
 
     @SchemaElement()

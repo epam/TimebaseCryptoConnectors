@@ -1,23 +1,8 @@
 package com.epam.deltix.data.connectors.uniswap;
 
-import com.epam.deltix.data.connectors.commons.CloseableMessageOutput;
-import com.epam.deltix.data.connectors.commons.ErrorListener;
-import com.epam.deltix.data.connectors.commons.HttpFeed;
-import com.epam.deltix.data.connectors.commons.HttpPoller;
-import com.epam.deltix.data.connectors.commons.Logger;
-import com.epam.deltix.data.connectors.commons.MdModel;
-import com.epam.deltix.data.connectors.uniswap.subscriptions.BundleSubscription;
-import com.epam.deltix.data.connectors.uniswap.subscriptions.FactorySubscription;
-import com.epam.deltix.data.connectors.uniswap.subscriptions.IdentifiedUniswapSymbol;
-import com.epam.deltix.data.connectors.uniswap.subscriptions.PoolSubscription;
-import com.epam.deltix.data.connectors.uniswap.subscriptions.Subscription;
-import com.epam.deltix.data.connectors.uniswap.subscriptions.TokenIdentifier;
-import com.epam.deltix.data.connectors.uniswap.subscriptions.TokenSubscription;
-import com.epam.deltix.data.connectors.uniswap.subscriptions.UniswapSymbol;
-import com.epam.deltix.data.uniswap.BundleAction;
-import com.epam.deltix.data.uniswap.FactoryAction;
-import com.epam.deltix.data.uniswap.PoolAction;
-import com.epam.deltix.data.uniswap.TokenAction;
+import com.epam.deltix.data.connectors.commons.*;
+import com.epam.deltix.data.connectors.uniswap.subscriptions.*;
+import com.epam.deltix.data.uniswap.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,6 +13,9 @@ public class UniswapFeed extends HttpFeed {
     private final String uri;
     private final int pollTimeoutMillis;
     private final String[] symbols;
+    private final String uniswapApiUrl;
+    private final int amount;
+    private final int depth;
 
     public UniswapFeed(
             final String uri,
@@ -36,12 +24,19 @@ public class UniswapFeed extends HttpFeed {
             final ErrorListener errorListener,
             final Logger logger,
             final int pollTimeoutMillis,
-            final String... symbols) {
+            final int amount,
+            final int depth,
+            final String uniswapApiUrl,
+            final String... symbols
+    ) {
         super(selected, output, errorListener, logger);
 
         this.uri = uri;
         this.pollTimeoutMillis = pollTimeoutMillis;
         this.symbols = symbols != null ? symbols : new String[]{};
+        this.uniswapApiUrl = uniswapApiUrl;
+        this.amount = amount;
+        this.depth = depth;
     }
 
     @Override
@@ -49,7 +44,7 @@ public class UniswapFeed extends HttpFeed {
         super.start();
 
         // 1. resolve uniswap token ids
-        final IdentifiedUniswapSymbol[] identifiedUniswapSymbols;
+        IdentifiedUniswapSymbol[] identifiedUniswapSymbols;
         if (symbols == null || symbols.length == 0) {
             identifiedUniswapSymbols = new IdentifiedUniswapSymbol[]{};
         } else {
@@ -96,6 +91,62 @@ public class UniswapFeed extends HttpFeed {
                     uri,
                     this,
                     logger(),
+                    identifiedUniswapSymbols
+            ));
+        }
+        if (selected.custom(PositionAction.class)) {
+            subscriptions.add(new PositionSubscription(
+                    uri,
+                    this,
+                    logger(),
+                    identifiedUniswapSymbols
+            ));
+        }
+
+        if (selected.custom(TickAction.class)) {
+            subscriptions.add(new TickSubscription(
+                    uri,
+                    this,
+                    logger(),
+                    identifiedUniswapSymbols
+            ));
+        }
+
+        if (selected.custom(SwapAction.class)) {
+            subscriptions.add(new SwapSubscription(
+                    uri,
+                    this,
+                    logger(),
+                    identifiedUniswapSymbols
+            ));
+        }
+
+        if (selected.custom(MintAction.class)) {
+            subscriptions.add(new MintSubscription(
+                    uri,
+                    this,
+                    logger(),
+                    identifiedUniswapSymbols
+            ));
+        }
+
+        if (selected.custom(BurnAction.class)) {
+            subscriptions.add(new BurnSubscription(
+                    uri,
+                    this,
+                    logger(),
+                    identifiedUniswapSymbols
+            ));
+        }
+
+        if (selected.level2()) {
+            subscriptions.add(new PriceSubscription(
+                    uniswapApiUrl,
+                    this,
+                    logger(),
+                    selected,
+                    amount,
+                    depth,
                     identifiedUniswapSymbols
             ));
         }

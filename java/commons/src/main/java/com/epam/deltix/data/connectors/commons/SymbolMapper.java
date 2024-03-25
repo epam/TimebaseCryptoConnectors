@@ -9,15 +9,15 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * <p>This class is thread-safe.
- * <p>Symbology for the symbols: "NAME_FOR_CONNECTOR[=NAME_FOR_TIMEBASE]". If a symbol name contains char '=',
+ * <p>This class is thread-safe.</p>
+ *
+ * Symbology for the symbols: "NAME_FOR_CONNECTOR[=NAME_FOR_TIMEBASE]". If a symbol name contains char '=',
  * use escaping with the '\' character. For '\' use escaping '\\'. Examples:
  * <ul>
  *   <li>BTC/USD - the data connector requests the vendor using the "BTC/USD" name and the same name writing the result data to TB</li>
  *   <li>BTC-USD=BTC/USD - the data connector requests the vendor using the "BTC-USD" name and the "BTC/USD" name writing the result data to TB</li>
  *   <li>BTC\=USD=BTC\\USD - the data connector requests the vendor using the "BTC=USD" name and the "BTC\USD" name writing the result data to TB</li>
  * </ul>
- * <p>
  */
 public class SymbolMapper implements CloseableMessageOutputFactory {
     private final CharSequenceToObjectMap<String> mapping = new CharSequenceToObjectMap<>(); // guarded by itself
@@ -69,7 +69,7 @@ public class SymbolMapper implements CloseableMessageOutputFactory {
                     return;
                 }
 
-                final String to;
+                String to;
                 synchronized (mapping) {
                     to = mapping.get(from);
                 }

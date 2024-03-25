@@ -5,6 +5,7 @@ import com.epam.deltix.data.connectors.commons.json.*;
 import com.epam.deltix.dfp.Decimal64Utils;
 import com.epam.deltix.qsrv.hf.tickdb.pub.TimeConstants;
 import com.epam.deltix.timebase.messages.TypeConstants;
+import com.epam.deltix.timebase.messages.universal.AggressorSide;
 
 import java.util.*;
 
@@ -42,7 +43,7 @@ public class KucoinFeed extends MdSingleWsRestFeed {
     @Override
     protected void subscribe(JsonWriter jsonWriter, String... symbols) {
         StringBuilder symbolsStringBuilder = new StringBuilder();
-        Arrays.stream(symbols).forEach(symbol -> symbolsStringBuilder.append(symbol).append(","));
+        Arrays.stream(symbols).forEach(symbol -> symbolsStringBuilder.append(symbol.toLowerCase()).append(","));
         String symbolsString = symbolsStringBuilder.deleteCharAt(symbolsStringBuilder.length() - 1)
                 .toString().toUpperCase();
 
@@ -57,7 +58,7 @@ public class KucoinFeed extends MdSingleWsRestFeed {
 
         Arrays.asList(symbols).forEach(symbol -> {
             Queue<JsonObject> updatesQueue = new LinkedList<>();
-            updatesBufferMap.put(symbol, updatesQueue);
+            updatesBufferMap.put(symbol.toLowerCase(), updatesQueue);
         });
         orderBookUpdatesJson.toJsonAndEoj(jsonWriter);
 
@@ -112,11 +113,14 @@ public class KucoinFeed extends MdSingleWsRestFeed {
             }
         } else if ("trade.l3match".equals(subject)) {
             String symbol = jasonData.getString("symbol").toLowerCase();
-            Long timestamp = jasonData.getLong("time");
+            long timestamp = jasonData.getLong("time");
             long price = jasonData.getDecimal64Required("price");
             long size = jasonData.getDecimal64Required("size");
+            String tradeDirection = jasonData.getString("side");
 
-            processor().onTrade(symbol, timestamp, price, size);
+            AggressorSide side = "buy".equalsIgnoreCase(tradeDirection) ? AggressorSide.BUY : AggressorSide.SELL;
+
+            processor().onTrade(symbol, timestamp, price, size, side);
         }
 
         //ping server

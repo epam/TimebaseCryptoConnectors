@@ -108,6 +108,10 @@ public class ConnectorsRunner {
 
     private void startConnectors() {
         connectors.forEach((name, connector) -> {
+            if (connector.settings().isDisabled()) {
+                return;
+            }
+
             MdModel.Options model = buildModel(connector.model(), name);
             LOG.info("Connector '" + name + "' subscribe model: " + model);
 

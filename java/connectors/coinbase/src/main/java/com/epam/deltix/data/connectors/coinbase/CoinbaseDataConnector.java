@@ -21,8 +21,7 @@ public class CoinbaseDataConnector extends DataConnector<CoinbaseConnectorSettin
 
         return errorListener -> {
             final CoinbaseFeed result = new CoinbaseFeed(
-                    settings().getWsUrl(),
-                    settings().getDepth(),
+                    settings(),
                     selected,
                     outputFactory.create(),
                     errorListener,

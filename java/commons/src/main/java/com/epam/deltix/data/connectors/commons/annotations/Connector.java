@@ -12,6 +12,8 @@ public @interface Connector {
 
     /**
      * Data Connector name.
+     *
+     * @return name of the Data Connector
      */
     String value() default "";
 

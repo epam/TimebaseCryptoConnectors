@@ -84,7 +84,7 @@ public abstract class Book<I extends BookItem<E>, E extends BookEvent> {
      * @return new size of the book
      */
     int trim(final int newSize) {
-        if ((newSize < 0) && (newSize > currentSize)) {
+        if ((newSize < 0) || (newSize > currentSize)) {
             throw new IndexOutOfBoundsException(newSize + " for the current size " + currentSize);
         }
 
@@ -101,6 +101,7 @@ public abstract class Book<I extends BookItem<E>, E extends BookEvent> {
      * <p>Makes this book to process the given event. <br>
      * Usually book changes it's state in response of getting an event. <br>
      * If you try to apply event with invalid value of price, size etc. book will ignore this event.</p>
+     *
      *
      * @param event event to be applied to this book side
      */

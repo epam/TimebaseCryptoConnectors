@@ -1,8 +1,8 @@
 package com.epam.deltix.data.connectors.commons;
 
 /**
+ * Base Data Connector class
  *
- * @param <T>
  */
 public abstract class DataConnector<T extends DataConnectorSettings> implements AutoCloseable {
     public static volatile CloseableMessageOutputFactory DEBUG_OUTPUT_FACTORY = null; // not sure we need to
@@ -32,8 +32,8 @@ public abstract class DataConnector<T extends DataConnectorSettings> implements 
     }
 
     /**
-     *
-     * @return
+     * Model
+     * @return Actual model
      */
     public MdModel model() {
         return model;
@@ -45,8 +45,8 @@ public abstract class DataConnector<T extends DataConnectorSettings> implements 
 
     /**
      *
-     * @param selected
-     * @param symbols
+     * @param selected options
+     * @param symbols symbols to subscribe
      */
     public final synchronized void subscribe(final MdModel.Options selected, final String... symbols) {
         if (closed) {
@@ -95,10 +95,11 @@ public abstract class DataConnector<T extends DataConnectorSettings> implements 
 
     /**
      *
-     * @param selected
-     * @param outputFactory
-     * @param symbols
-     * @return
+     * @param selected options
+     * @param outputFactory factory
+     * @param symbols symbols to subscribe
+     *
+     * @return factory to receive data
      */
     protected abstract RetriableFactory<MdFeed> doSubscribe(
             MdModel.Options selected,

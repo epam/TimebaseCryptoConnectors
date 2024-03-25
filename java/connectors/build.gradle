@@ -41,4 +41,5 @@ configure(leafProjects) {
                 findAll { it instanceof ProjectDependency }.
                 forEach { jar.from project(it.getDependencyProject().path).sourceSets.main.output }
     }
+
 }

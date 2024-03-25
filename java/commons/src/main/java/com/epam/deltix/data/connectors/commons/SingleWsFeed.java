@@ -312,16 +312,15 @@ public abstract class SingleWsFeed extends MdFeed {
     protected void onClose() {};
 
     /**
-     *
-     * @param jsonWriter
-     * @param symbols
+     * @param jsonWriter writer
+     * @param symbols symbols to subscribe
      */
     protected abstract void subscribe(JsonWriter jsonWriter, String... symbols);
 
     /**
-     *
-     * @param data
-     * @param last
+     * @param data data
+     * @param last is last portion
+     * @param jsonWriter writer
      */
     protected abstract void onJson(CharSequence data, boolean last, JsonWriter jsonWriter);
 

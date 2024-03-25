@@ -2,6 +2,7 @@ package com.epam.deltix.data.connectors.commons;
 
 import com.epam.deltix.dfp.Decimal;
 import com.epam.deltix.timebase.messages.TimeStampedMessage;
+import com.epam.deltix.timebase.messages.universal.AggressorSide;
 import com.epam.deltix.timebase.messages.universal.PackageHeader;
 import com.epam.deltix.timebase.messages.universal.PackageType;
 import com.epam.deltix.timebase.messages.universal.TradeEntry;
@@ -37,11 +38,25 @@ public class TradeProducer {
         final @Decimal long price,
         final @Decimal long size) {
 
+        onTrade(originalTimestamp, symbol, price, size, null);
+    }
+
+    public void onTrade(
+        final long originalTimestamp,
+        final CharSequence symbol,
+        final @Decimal long price,
+        final @Decimal long size,
+        final AggressorSide side) {
+
         tradePackage.setOriginalTimestamp(originalTimestamp);
         tradePackage.setSymbol(symbol);
 
         trade.setPrice(price);
         trade.setSize(size);
+
+        if (side != null) {
+            trade.setSide(side);
+        }
 
         output.send(tradePackage);
     }

@@ -2,6 +2,7 @@ package com.epam.deltix.data.connectors.bitmart;
 
 import com.epam.deltix.data.connectors.commons.*;
 import com.epam.deltix.data.connectors.commons.json.*;
+import com.epam.deltix.timebase.messages.universal.AggressorSide;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -80,6 +81,9 @@ public class BitmartSpotFeed extends MdSingleWsFeed {
 
         JsonObject object = jsonValue.asObject();
         String type = object.getString("table");
+        if (type == null) {
+            return;
+        }
         String[] typeSplitted = type.split("/");
         if (typeSplitted.length < 2) {
             return;
@@ -102,10 +106,14 @@ public class BitmartSpotFeed extends MdSingleWsFeed {
                 JsonObject trade = jsonData.getObject(i);
                 String symbol = trade.getString("symbol");
                 if (skipSnapshotsSet.contains(symbol)) {
+                    String tradeDirection = trade.getString("side");
+                    AggressorSide side = "buy".equalsIgnoreCase(tradeDirection) ? AggressorSide.BUY : AggressorSide.SELL;
+
                     processor().onTrade(
                         symbol, trade.getLong("s_t"),
                         trade.getDecimal64Required("price"),
-                        trade.getDecimal64Required("size")
+                        trade.getDecimal64Required("size"),
+                        side
                     );
                 } else {
                     // skip trade snapshot

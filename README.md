@@ -43,20 +43,20 @@ By default, we launch with the [default](https://raw.githubusercontent.com/epam/
 |Exchange|Supported Contracts|
 |------|------------------|
 |[AscendEX](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/ascendex)|SPOT, Linear Futures|
-|[BYBIT&nbsp;FUTURES](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/bybit-futures)|Inverse and Linear Futures|
-|[BYBIT&nbsp;SPOT](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/bybit-spot)|SPOT|
+|[BYBIT](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/bybit)| SPOT, Inverse and Linear Futures, Options|
 |[BITFINEX](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/bitfinex)|SPOT, Linear Futures|
 |[BITMART](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/bitmart)|SPOT|
-|[BITPANDA](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/bitpanda)|SPOT|
 |[BitMEX](java/connectors/bitmex/README.md)|Quanto Contract, Inverse Perpetual SWAP, Linear Perpetual, Quanto Perpetual, Linear Futures, Quanto Futures, Inverse Futures|
 |[Coinbase](https://github.com/epam/TimebaseCryptoConnectors/blob/main/java/connectors/coinbase/README.md)|SPOT|
-|[COINFLEX](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/coinflex)|SPOT, Linear Futures|
 |[CRYPTOFACILITIES](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/cryptofacilities)|Linear Futures|
-|[FTX](https://github.com/epam/TimebaseCryptoConnectors/blob/main/java/connectors/ftx/README.md)|SPOT, Linear Futures|
+|[DERIBIT](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/deribit)|Inverse and Linear Futures, Options, Perpetual|
 |[HITBTC](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/cryptofacilities)|SPOT|
 |[HUOBI FUTURES](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/huobi-futures)|Inverse Futures|
 |[HUOBI SPOT](https://github.com/epam/TimebaseCryptoConnectors/blob/main/java/connectors/huobi-spot/README.md)|SPOT|
 |[Kraken&nbsp;FUTURES](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/kraken-futures)|Inverse and Linear Perpetual SWAP, Inverse Futures with Expiration|
 |[Kraken&nbsp;SPOT](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/kraken-spot)|SPOT|
-|[OKEX](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/okex)|SPOT, Linear and Inverse SWAP, Inverse and Linear Futures|
+|[Kucoin](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/kucoin)|SPOT, Futures|
+|[OKX](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/okx)|SPOT, Linear and Inverse SWAP, Inverse and Linear Futures|
+|[One Trading (bitpanda)](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/onetrading)|SPOT|
 |[POLONIEX](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/poloniex)|SPOT|
+|[Uniswap](https://github.com/epam/TimebaseCryptoConnectors/blob/main/docs/uniswap.md)|ERC-20 SWAP|

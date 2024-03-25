@@ -24,7 +24,7 @@ public enum MdModelEnum {
         }
     }
 
-    public static void withCustom(MdModel.ModifiableOptions options, MdModel model, Class<?>... customTypes) {
+    public static void withCustom(MdModel.ModifiableOptions options, MdModel model, Class<?> ... customTypes) {
         if (customTypes != null && customTypes.length > 0) {
             options.withCustom(customTypes);
         } else {

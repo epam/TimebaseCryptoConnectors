@@ -4,6 +4,7 @@ import com.epam.deltix.data.connectors.commons.*;
 import com.epam.deltix.data.connectors.commons.json.*;
 import com.epam.deltix.dfp.Decimal64Utils;
 import com.epam.deltix.timebase.messages.TypeConstants;
+import com.epam.deltix.timebase.messages.universal.AggressorSide;
 import com.epam.deltix.util.collections.generated.LongToObjectHashMap;
 
 import java.util.Arrays;
@@ -181,11 +182,14 @@ public class BitfinexSpotFeed extends MdSingleWsFeed {
                                     throw new RuntimeException("Invalid trade size: " + trade.size());
                                 }
 
+                                AggressorSide side =  trade.getDouble(2) > 0 ? AggressorSide.BUY : AggressorSide.SELL;
+
                                 processor().onTrade(
                                     channel.symbol(),
                                     trade.getLong(1),
                                     trade.getDecimal64Required(3),
-                                    Decimal64Utils.abs(trade.getDecimal64Required(2))
+                                    Decimal64Utils.abs(trade.getDecimal64Required(2)),
+                                    side
                                 );
                             }
                         }

@@ -20,9 +20,8 @@ import com.epam.deltix.util.collections.generated.ObjectArrayList;
 import com.epam.deltix.util.time.TimeKeeper;
 
 /**
+ * L2 Data Producer
  *
- * @param <I>
- * @param <E>
  */
 public class L2Producer<I extends BookItem<E>, E extends BookEvent>
         extends L2ListenerAdapter<I, E> {

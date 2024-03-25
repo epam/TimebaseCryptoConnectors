@@ -12,6 +12,7 @@ import com.epam.deltix.qsrv.hf.tickdb.pub.TimeConstants;
 import com.epam.deltix.timebase.messages.InstrumentMessage;
 import com.epam.deltix.timebase.messages.service.FeedStatus;
 import com.epam.deltix.timebase.messages.service.SecurityFeedStatusMessage;
+import com.epam.deltix.timebase.messages.universal.AggressorSide;
 import com.epam.deltix.util.collections.CharSequenceToObjectMap;
 
 import java.util.ArrayList;
@@ -105,7 +106,16 @@ public class MdProcessor {
             final long timestamp,
             final @Decimal long price,
             final @Decimal long size) {
-        getProcessors(instrument).trades.onTrade(timestamp, instrument, price, size);
+        onTrade(instrument, timestamp, price, size, null);
+    }
+
+    public void onTrade(
+            final String instrument,
+            final long timestamp,
+            final @Decimal long price,
+            final @Decimal long size,
+            final AggressorSide side) {
+        getProcessors(instrument).trades.onTrade(timestamp, instrument, price, size, side);
     }
 
     void close(final String reason) {

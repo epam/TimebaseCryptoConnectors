@@ -3,14 +3,15 @@ package com.epam.deltix.data.connectors.okcoin;
 import com.epam.deltix.data.connectors.commons.*;
 import com.epam.deltix.data.connectors.commons.json.*;
 import com.epam.deltix.dfp.Decimal64Utils;
+import com.epam.deltix.qsrv.hf.tickdb.pub.TimeConstants;
 import com.epam.deltix.timebase.messages.TypeConstants;
+import com.epam.deltix.timebase.messages.universal.AggressorSide;
 
 import java.util.Arrays;
 
 public class OkcoinSpotFeed extends MdSingleWsFeed {
     // all fields are used by one single thread of WsFeed's ExecutorService
     private final JsonValueParser jsonParser = new JsonValueParser();
-    private final Iso8601DateTimeParser dtParser = new Iso8601DateTimeParser();
 
     public OkcoinSpotFeed(
             final String uri,
@@ -24,7 +25,7 @@ public class OkcoinSpotFeed extends MdSingleWsFeed {
         super("OKCOIN",
                 uri,
                 depth,
-                60000,
+            30000,
                 selected,
                 output,
                 errorListener,
@@ -36,16 +37,19 @@ public class OkcoinSpotFeed extends MdSingleWsFeed {
     protected void subscribe(JsonWriter jsonWriter, String... symbols) {
         JsonValue subscriptionJson = JsonValue.newObject();
         JsonObject body = subscriptionJson.asObject();
-
         body.putString("op", "subscribe");
         JsonArray args = body.putArray("args");
         Arrays.asList(symbols).forEach(s -> {
             if (selected().level1() || selected().level2()) {
-                args.addString(String.format("spot/depth:%s", s));
+                JsonObject object = args.addObject();
+                object.putString("channel", "books");
+                object.putString("instId", s);
             }
 
             if (selected().trades()) {
-                args.addString(String.format("spot/trade:%s", s));
+                JsonObject object = args.addObject();
+                object.putString("channel", "trades");
+                object.putString("instId", s);
             }
         });
 
@@ -61,56 +65,56 @@ public class OkcoinSpotFeed extends MdSingleWsFeed {
         }
 
         JsonValue jsonValue = jsonParser.eoj();
-
         JsonObject object = jsonValue.asObject();
-        String type = object.getString("table");
-        if ("spot/depth".equalsIgnoreCase(type)) {
-            JsonArray jsonData = object.getArray("data");
-            if (jsonData.size() == 0) {
-                return;
-            }
 
+        String event = object.getString("event");
+        if ("error".equalsIgnoreCase(event)) {
+            String errorMessage = object.getString("msg");
+            logger().warning("Feed error: " + errorMessage);
+            return;
+        }
+
+        JsonObject arg = object.getObject("arg");
+        String channel = arg.getString("channel");
+        String instrument = arg.getStringRequired("instId");
+
+        JsonArray arrayData = object.getArray("data");
+        if (arrayData == null || arrayData.size() < 1) {
+            return;
+        }
+
+        if ("books".equalsIgnoreCase(channel)) {
             String action = object.getStringRequired("action");
-            if ("partial".equalsIgnoreCase(action)) {
-                for (int i = 0; i < jsonData.size(); ++i) {
-                    JsonObject snapshot = jsonData.getObject(i);
-                    String instrument = snapshot.getStringRequired("instrument_id");
-                    long timestamp = dtParser.set(snapshot.getStringRequired("timestamp")).millis();
-
-                    QuoteSequenceProcessor quotesListener = processor().onBookSnapshot(instrument, timestamp);
-                    processSnapshotSide(quotesListener, snapshot.getArray("bids"), false);
-                    processSnapshotSide(quotesListener, snapshot.getArray("asks"), true);
-                    quotesListener.onFinish();
-                }
+            JsonObject jsonData = arrayData.getObject(0);
+            long timestamp = getTimestamp(jsonData.getString("ts"));
+            if ("snapshot".equalsIgnoreCase(action)) {
+                QuoteSequenceProcessor quotesListener = processor().onBookSnapshot(instrument, timestamp);
+                processSnapshotSide(quotesListener, jsonData.getArray("bids"), false);
+                processSnapshotSide(quotesListener, jsonData.getArray("asks"), true);
+                quotesListener.onFinish();
             } else if ("update".equalsIgnoreCase(action)) {
-                for (int i = 0; i < jsonData.size(); ++i) {
-                    JsonObject updates = jsonData.getObject(i);
-                    String instrument = updates.getStringRequired("instrument_id");
-                    long timestamp = dtParser.set(updates.getStringRequired("timestamp")).millis();
-
-                    QuoteSequenceProcessor quotesListener = processor().onBookUpdate(instrument, timestamp);
-                    processChanges(quotesListener, updates.getArray("bids"), false);
-                    processChanges(quotesListener, updates.getArray("asks"), true);
-                    quotesListener.onFinish();
-                }
+                QuoteSequenceProcessor quotesListener = processor().onBookUpdate(instrument, timestamp);
+                processChanges(quotesListener, jsonData.getArray("bids"), false);
+                processChanges(quotesListener, jsonData.getArray("asks"), true);
+                quotesListener.onFinish();
             }
-        } else if ("spot/trade".equalsIgnoreCase(type)) {
-            JsonArray jsonData = object.getArray("data");
-            for (int i = 0; i < jsonData.size(); ++i) {
-                JsonObject trade = jsonData.getObject(i);
-                processor().onTrade(
-                    trade.getString("instrument_id"),
-                    dtParser.set(trade.getStringRequired("timestamp")).millis(),
-                    trade.getDecimal64Required("price"),
-                    trade.getDecimal64Required("size")
-                );
+        } else if ("trades".equalsIgnoreCase(channel)) {
+            JsonArray jsonDataArray = object.getArrayRequired("data");
+            for (int i = 0; i < jsonDataArray.size(); ++i) {
+                JsonObject trade = jsonDataArray.getObjectRequired(i);
+                long timestamp = getTimestamp(trade.getString("ts"));
+                long price = trade.getDecimal64Required("px");
+                long size = trade.getDecimal64Required("sz");
+                String tradeDirection = trade.getString("side");
+
+                AggressorSide side = "buy".equalsIgnoreCase(tradeDirection) ? AggressorSide.BUY : AggressorSide.SELL;
+
+                processor().onTrade(instrument, timestamp, price, size, side);
             }
         }
     }
 
-    private void processSnapshotSide(
-        final QuoteSequenceProcessor quotesListener, final JsonArray quotePairs, final boolean ask) {
-
+    private void processSnapshotSide(QuoteSequenceProcessor quotesListener, JsonArray quotePairs, boolean ask) {
         if (quotePairs == null) {
             return;
         }
@@ -132,10 +136,7 @@ public class OkcoinSpotFeed extends MdSingleWsFeed {
         }
     }
 
-
-    private void processChanges(
-        final QuoteSequenceProcessor quotesListener, final JsonArray changes, final boolean ask) {
-
+    private void processChanges(QuoteSequenceProcessor quotesListener, JsonArray changes, boolean isAsk) {
         if (changes == null) {
             return;
         }
@@ -154,9 +155,17 @@ public class OkcoinSpotFeed extends MdSingleWsFeed {
             quotesListener.onQuote(
                 change.getDecimal64Required(0),
                 size,
-                ask
+                isAsk
             );
         }
     }
 
+    private long getTimestamp(String tsString) {
+        long timestamp = TimeConstants.TIMESTAMP_UNKNOWN;
+        if (tsString != null) {
+            timestamp = Long.parseLong(tsString);
+        }
+
+        return timestamp;
+    }
 }

@@ -17,24 +17,23 @@ dependencies {
     implementation project(':java:connectors:bitfinex')
     implementation project(':java:connectors:bitmart')
     implementation project(':java:connectors:bitmex')
-    implementation project(':java:connectors:bitpanda')
-    implementation project(':java:connectors:bybit-futures')
-    implementation project(':java:connectors:bybit-spot')
+    implementation project(':java:connectors:onetrading')
+    implementation project(':java:connectors:bybit')
     implementation project(':java:connectors:coinbase')
-    implementation project(':java:connectors:coinflex')
     implementation project(':java:connectors:ascendex')
     implementation project(':java:connectors:cryptofacilities')
-    implementation project(':java:connectors:ftx')
     implementation project(':java:connectors:hitbtc')
     implementation project(':java:connectors:huobi-futures')
     implementation project(':java:connectors:huobi-spot')
     implementation project(':java:connectors:kraken-futures')
     implementation project(':java:connectors:kraken-spot')
     implementation project(':java:connectors:okcoin')
-    implementation project(':java:connectors:okex')
+    implementation project(':java:connectors:okx')
     implementation project(':java:connectors:poloniex')
     implementation project(':java:connectors:kucoin')
     implementation project(':java:connectors:deribit')
+
+    implementation project(':java:connectors:uniswap')
 
     implementation 'javax.annotation:javax.annotation-api'
 
@@ -48,6 +47,9 @@ dependencies {
     intTestImplementation 'org.finos.timebase-ce:timebase-client'
     intTestImplementation 'com.epam.deltix:timebase-collections'
     intTestImplementation 'com.epam.deltix:timebase-messages'
+    intTestImplementation 'com.epam.deltix:orderbook-core'
+    intTestImplementation 'com.epam.deltix:dfp'
+    intTestImplementation 'com.epam.deltix:containers'
     intTestImplementation "org.testcontainers:testcontainers"
     intTestImplementation "org.testcontainers:junit-jupiter"
     intTestImplementation 'org.junit.jupiter:junit-jupiter-api'
@@ -82,8 +84,20 @@ task prepareFilesForDocker(type: Copy) {
     destinationDir project.file("$buildDir/docker")
 }
 
+task prepareFilesForIntTests(type: Copy) {
+    into ('/config') {
+        from "$projectDir/src/main/resources/application.yaml"
+    }
+
+    into ('/config') {
+        from "$projectDir/src/intTest/resources/logback.xml"
+    }
+
+    destinationDir project.file("$buildDir/intTest")
+}
+
 task intTest(type: Test) {
-    dependsOn(prepareFilesForDocker)
+    dependsOn(prepareFilesForDocker, prepareFilesForIntTests)
     useJUnitPlatform()
     testLogging {
         //showStandardStreams = true

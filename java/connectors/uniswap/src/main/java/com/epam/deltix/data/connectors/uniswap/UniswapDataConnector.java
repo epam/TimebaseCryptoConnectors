@@ -1,27 +1,32 @@
 package com.epam.deltix.data.connectors.uniswap;
 
-import com.epam.deltix.data.connectors.commons.CloseableMessageOutput;
-import com.epam.deltix.data.connectors.commons.CloseableMessageOutputFactory;
-import com.epam.deltix.data.connectors.commons.DataConnector;
-import com.epam.deltix.data.connectors.commons.MdFeed;
-import com.epam.deltix.data.connectors.commons.MdModel;
-import com.epam.deltix.data.connectors.commons.RetriableFactory;
+import com.epam.deltix.data.connectors.commons.*;
 import com.epam.deltix.data.connectors.commons.annotations.Connector;
-import com.epam.deltix.data.uniswap.BundleAction;
-import com.epam.deltix.data.uniswap.FactoryAction;
-import com.epam.deltix.data.uniswap.PoolAction;
-import com.epam.deltix.data.uniswap.TokenAction;
+import com.epam.deltix.data.uniswap.*;
 import com.epam.deltix.timebase.messages.InstrumentMessage;
 
 @Connector("UNISWAP")
 public class UniswapDataConnector extends DataConnector<UniswapConnectorSettings> {
     public UniswapDataConnector(final UniswapConnectorSettings settings) {
         super(settings, MdModel.availability()
-            .withCustom(
-                    FactoryAction.class,
-                    BundleAction.class,
-                    PoolAction.class,
-                    TokenAction.class)
+                .withCustom(
+                        FactoryAction.class,
+                        BundleAction.class,
+                        PoolAction.class,
+                        TokenAction.class,
+                        PositionAction.class,
+                        TickAction.class,
+                        SwapAction.class,
+                        MintAction.class,
+                        BurnAction.class,
+                        CollectAction.class,
+                        FlashAction.class,
+                        TransactionAction.class,
+                        PositionSnapshotAction.class,
+                        UniswapDayDataAction.class,
+                        TokenDayDataAction.class,
+                        TokenHourDataAction.class)
+                .withLevel2()
                 .build()
         );
     }
@@ -39,9 +44,12 @@ public class UniswapDataConnector extends DataConnector<UniswapConnectorSettings
                     outputFactory.create(),
                     errorListener,
                     logger(),
-                    5_000,
+                    10_000,
+                    settings().getAmount(),
+                    settings().getDepth(),
+                    settings().getUniswapApiUrl(),
                     symbols
-                    );
+            );
             result.start();
             return result;
         };
@@ -79,9 +87,11 @@ public class UniswapDataConnector extends DataConnector<UniswapConnectorSettings
                                 FactoryAction.class,
                                 BundleAction.class,
                                 PoolAction.class,
-                                TokenAction.class).
+                                TokenAction.class,
+                                PositionAction.class,
+                                TickAction.class).
                         build(),
-                "BUSD/WETH", "/ICHI"
+                "BUSD/WETH"
         );
 
         System.in.read();

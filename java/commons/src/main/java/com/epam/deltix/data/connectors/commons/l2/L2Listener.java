@@ -17,8 +17,8 @@ public interface L2Listener<I extends BookItem<E>, E extends BookEvent> {
      * This method is usually called by notifier.</p>
      *
      * @param instrumentBook withInstrument book which notified this listener
-     * @param timestamp
-     * @param originalTimestamp
+     * @param timestamp epoch time in milliseconds of the snapshot
+     * @param originalTimestamp original time of the snapshot
      */
     void onSnapshotStarted(InstrumentBooks<I, E> instrumentBook, long timestamp, long originalTimestamp);
 
@@ -27,8 +27,8 @@ public interface L2Listener<I extends BookItem<E>, E extends BookEvent> {
      * This method is usually called by notifier.</p>
      *
      * @param instrumentBook withInstrument book which notified this listener
-     * @param timestamp
-     * @param originalTimestamp
+     * @param timestamp epoch time in milliseconds of the snapshot
+     * @param originalTimestamp original time of the snapshot
      */
     void onIncrementStarted(InstrumentBooks<I, E> instrumentBook, long timestamp, long originalTimestamp);
 

@@ -4,6 +4,7 @@ import com.epam.deltix.data.connectors.commons.*;
 import com.epam.deltix.data.connectors.commons.json.*;
 import com.epam.deltix.qsrv.hf.tickdb.pub.TimeConstants;
 import com.epam.deltix.timebase.messages.TypeConstants;
+import com.epam.deltix.timebase.messages.universal.AggressorSide;
 import com.epam.deltix.util.collections.generated.LongToLongHashMap;
 
 import java.util.Arrays;
@@ -105,7 +106,10 @@ public class BitmexFeed extends MdSingleWsFeed {
                         String symbol = trade.getStringRequired("symbol");
                         long timestamp = dtParser.set(trade.getStringRequired("timestamp")).millis();
 
-                        processor().onTrade(symbol, timestamp, price, size);
+                        String tradeDirection = trade.getString("side");
+                        AggressorSide side = "buy".equalsIgnoreCase(tradeDirection) ? AggressorSide.BUY : AggressorSide.SELL;
+
+                        processor().onTrade(symbol, timestamp, price, size, side);
                     }
                 }
             }
