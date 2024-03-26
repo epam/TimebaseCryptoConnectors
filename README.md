@@ -59,3 +59,4 @@ By default, we launch with the [default](https://raw.githubusercontent.com/epam/
 |[OKX](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/okx)|SPOT, Linear and Inverse SWAP, Inverse and Linear Futures|
 |[One Trading (bitpanda)](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/onetrading)|SPOT|
 |[POLONIEX](https://github.com/epam/TimebaseCryptoConnectors/tree/main/java/connectors/poloniex)|SPOT|
+
