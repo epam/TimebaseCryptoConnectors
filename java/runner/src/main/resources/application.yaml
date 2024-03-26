@@ -268,8 +268,7 @@ connectors:
     type: polygon-io
     stream: polygon-io
     wsUrl: wss://delayed.polygon.io/stocks
-    restUrl: https://api.polygon.io
-    apiKey:  # <api key>
+    apiKey: # api key
     model:
       - "L1"
       - "TRADES"

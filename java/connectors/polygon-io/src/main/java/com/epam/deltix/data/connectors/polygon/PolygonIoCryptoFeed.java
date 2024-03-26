@@ -8,6 +8,7 @@ import com.epam.deltix.data.connectors.commons.json.JsonArray;
 import com.epam.deltix.data.connectors.commons.json.JsonObject;
 import com.epam.deltix.data.connectors.commons.json.JsonValue;
 import com.epam.deltix.data.connectors.commons.json.JsonWriter;
+import com.epam.deltix.timebase.messages.universal.AggressorSide;
 
 public class PolygonIoCryptoFeed extends PolygonIoFeed {
 
@@ -55,9 +56,21 @@ public class PolygonIoCryptoFeed extends PolygonIoFeed {
                 long timestamp = obj.getLong("t");
                 long price = obj.getDecimal64Required("p");
                 long size = obj.getDecimal64Required("s");
+                String ex = String.valueOf(obj.getLong("x"));
+                JsonArray conditionsArray = obj.getArray("c");
+                String conditions = readConditions(conditionsArray);
+                AggressorSide side = null;
+                if (conditionsArray.size() > 0) {
+                    long condition = conditionsArray.getLong(0);
+                    if (condition == 1) {
+                        side = AggressorSide.SELL;
+                    } else if (condition == 2) {
+                        side = AggressorSide.BUY;
+                    }
+                }
 
                 processor().onTrade(
-                    instrument, timestamp, price, size
+                    instrument, timestamp, price, size, side, ex, conditions
                 );
             } else if ("XQ".equalsIgnoreCase(event)) {
                 String instrument = obj.getString("pair");
@@ -66,9 +79,10 @@ public class PolygonIoCryptoFeed extends PolygonIoFeed {
                 long askSize = obj.getDecimal64Required("as");
                 long bidPrice = obj.getDecimal64Required("bp");
                 long bidSize = obj.getDecimal64Required("bs");
+                String ex = String.valueOf(obj.getLong("x"));
 
                 processor().onL1Snapshot(
-                    instrument, timestamp, bidPrice, bidSize, askPrice, askSize
+                    instrument, timestamp, bidPrice, bidSize, ex, askPrice, askSize, ex
                 );
             }
         }

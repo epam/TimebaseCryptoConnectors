@@ -59,7 +59,7 @@ public class IntegrationTest extends TbIntTestPreparation {
                 "-Dtimebase.url=dxtick://timebase:8011 -Dlogging.config=/runner/config/logback.xml").
             withEnv("CONNECTORS_UNISWAP_DISABLED", "true").
             withEnv("CONNECTORS_UNISWAP-L2_DISABLED", "true").
-            withEnv("CONNECTORS_POLYGON-IO_STOCKS_DISABLED", "true").
+            withEnv("CONNECTORS_POLYGON-IO-STOCKS_DISABLED", "true").
             withEnv("CONNECTORS_BINANCE-SPOT_WSURL", "wss://stream.binance.us:9443/ws").
             withEnv("CONNECTORS_BINANCE-SPOT_RESTURL", "https://api.binance.us/api/v3").
             withFileSystemBind("build/intTest/config", "/runner/config", BindMode.READ_WRITE).

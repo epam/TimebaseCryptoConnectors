@@ -14,12 +14,11 @@ public abstract class PolygonIoFeed extends MdSingleWsFeed {
     // all fields are used by one single thread of WsFeed's ExecutorService
     private final JsonValueParser jsonParser = new JsonValueParser();
 
-    private final String restUrl;
     private final String apiKey;
 
     private final PolygonIoEndpoint endpoint;
 
-    protected Map<Long, String> exchanges = new HashMap<>();
+    private final StringBuilder sb = new StringBuilder();
 
     public PolygonIoFeed(
             final PolygonIoConnectorSettings settings,
@@ -39,8 +38,6 @@ public abstract class PolygonIoFeed extends MdSingleWsFeed {
             logger,
             symbols);
 
-        this.restUrl = settings.getRestUrl();
-
         this.apiKey = settings.getApiKey();
         if (apiKey == null || apiKey.isEmpty()) {
             throw new RuntimeException("Api key is not specified");
@@ -54,49 +51,11 @@ public abstract class PolygonIoFeed extends MdSingleWsFeed {
 
     @Override
     protected void subscribe(JsonWriter jsonWriter, String... symbols) {
-        exchanges = requestExchanges();
-
         JsonValue authJson = JsonValue.newObject();
         JsonObject authBody = authJson.asObject();
         authBody.putString("action", "auth");
         authBody.putString("params", apiKey);
         authJson.toJsonAndEoj(jsonWriter);
-    }
-
-    private Map<Long, String> requestExchanges() {
-        Map<Long, String> idToExchange = new HashMap<>();
-        if (restUrl == null || restUrl.isEmpty()) {
-            return idToExchange;
-        }
-
-        try {
-            HttpClient httpClient = HttpClient.newBuilder().build();
-            HttpRequest request = HttpRequest.newBuilder(
-                URI.create(restUrl + "/v3/reference/exchanges?asset_class=stocks&apiKey=" + apiKey)
-            ).GET().build();
-            HttpResponse<String> exchangesResponse = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            String responseBody = exchangesResponse.body();
-
-            jsonParser.parse(responseBody);
-            JsonValue jsonValue = jsonParser.eoj();
-            JsonObject object = jsonValue.asObject();
-            String status = object.getString("status");
-            if ("OK".equalsIgnoreCase(status)) {
-                JsonArray array = object.getArray("results");
-                if (array != null) {
-                    for (int i = 0; i < array.size(); ++i) {
-                        JsonObject exchangeInfo = array.getObject(i);
-                        long id = exchangeInfo.getLong("id");
-                        String name = exchangeInfo.getString("name");
-                        idToExchange.put(id, name);
-                    }
-                }
-            }
-        } catch (Throwable t) {
-            logger().warning("Failed to request exchanges list", t);
-        }
-
-        return idToExchange;
     }
 
     @Override
@@ -121,4 +80,20 @@ public abstract class PolygonIoFeed extends MdSingleWsFeed {
 
     protected abstract void processPolygonData(JsonArray array);
 
+    protected String readConditions(JsonArray conditions) {
+        if (conditions == null) {
+            return null;
+        }
+
+        sb.setLength(0);
+        for (int i = 0; i < conditions.size(); ++i) {
+            if (i > 0) {
+                sb.append(",");
+            }
+
+            sb.append(String.valueOf(conditions.getLong(i)));
+        }
+
+        return sb.toString();
+    }
 }

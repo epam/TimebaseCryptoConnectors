@@ -57,11 +57,11 @@ public class PolygonIoStocksFeed extends PolygonIoFeed {
                 long timestamp = obj.getLong("t");
                 long price = obj.getDecimal64Required("p");
                 long size = obj.getDecimal64Required("s");
-                long ex = obj.getLong("x");
-                String exName = exchanges.get(ex);
+                String ex = String.valueOf(obj.getLong("x"));
+                String conditions = readConditions(obj.getArray("c"));
 
                 processor().onTrade(
-                    instrument, timestamp, price, size
+                    instrument, timestamp, price, size, null, ex, conditions
                 );
 
                 if (logger().isDebugEnabled()) {
@@ -70,7 +70,8 @@ public class PolygonIoStocksFeed extends PolygonIoFeed {
                             " | t: " + timestamp +
                             " | p: " + Decimal64Utils.toString(price) +
                             ", s: " + Decimal64Utils.toString(size) +
-                            ", ex: " + (exName != null ? exName : "?")
+                            ", ex: " + ex +
+                            ", conditions: " + conditions
                     );
                 }
             } else if ("Q".equalsIgnoreCase(event)) {
@@ -78,15 +79,13 @@ public class PolygonIoStocksFeed extends PolygonIoFeed {
                 long timestamp = obj.getLong("t");
                 long askPrice = obj.getDecimal64Required("ap");
                 long askSize = obj.getDecimal64Required("as");
-                long askEx = obj.getLong("ax");
+                String askEx = String.valueOf(obj.getLong("ax"));
                 long bidPrice = obj.getDecimal64Required("bp");
                 long bidSize = obj.getDecimal64Required("bs");
-                long bidEx = obj.getLong("bx");
-                String askExName = exchanges.get(askEx);
-                String bidExName = exchanges.get(bidEx);
+                String bidEx = String.valueOf(obj.getLong("bx"));
 
                 processor().onL1Snapshot(
-                    instrument, timestamp, bidPrice, bidSize, askPrice, askSize
+                    instrument, timestamp, bidPrice, bidSize, bidEx, askPrice, askSize, askEx
                 );
 
                 if (logger().isDebugEnabled()) {
@@ -95,10 +94,10 @@ public class PolygonIoStocksFeed extends PolygonIoFeed {
                             " | t: " + timestamp +
                             " | bidP: " + Decimal64Utils.toString(bidPrice) +
                             ", bidS: " + Decimal64Utils.toString(bidSize) +
-                            ", bidEx: " + (bidExName != null ? bidExName : "?") +
+                            ", bidEx: " + bidEx +
                             "| askP: " + Decimal64Utils.toString(askPrice) +
                             ", askS: " + Decimal64Utils.toString(askSize) +
-                            ", askEx: " + (askExName != null ? askExName : "?")
+                            ", askEx: " + askEx
                     );
                 }
             } else if ("status".equalsIgnoreCase(event)) {

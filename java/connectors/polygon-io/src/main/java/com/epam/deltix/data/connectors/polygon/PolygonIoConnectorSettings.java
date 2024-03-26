@@ -8,8 +8,6 @@ public class PolygonIoConnectorSettings extends DataConnectorSettings {
 
     private String wsUrl = "wss://socket.polygon.io/stocks";
 
-    private String restUrl;
-
     private String apiKey;
 
     public PolygonIoConnectorSettings() {
@@ -27,14 +25,6 @@ public class PolygonIoConnectorSettings extends DataConnectorSettings {
 
     public void setWsUrl(String wsUrl) {
         this.wsUrl = wsUrl;
-    }
-
-    public String getRestUrl() {
-        return restUrl;
-    }
-
-    public void setRestUrl(String restUrl) {
-        this.restUrl = restUrl;
     }
 
     public String getApiKey() {

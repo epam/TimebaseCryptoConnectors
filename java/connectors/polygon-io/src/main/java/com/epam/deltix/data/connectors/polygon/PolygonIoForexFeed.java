@@ -54,9 +54,12 @@ public class PolygonIoForexFeed extends PolygonIoFeed {
                 long timestamp = obj.getLong("t");
                 long askPrice = obj.getDecimal64Required("a");
                 long bidPrice = obj.getDecimal64Required("b");
+                String exchange = obj.getString("x");
 
                 processor().onL1Snapshot(
-                    instrument, timestamp, bidPrice, Decimal64Utils.ZERO, askPrice, Decimal64Utils.ZERO
+                    instrument, timestamp,
+                    bidPrice, Decimal64Utils.ZERO, exchange,
+                    askPrice, Decimal64Utils.ZERO, exchange
                 );
             }
         }
