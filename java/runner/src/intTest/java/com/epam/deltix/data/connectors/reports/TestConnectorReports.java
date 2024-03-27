@@ -8,17 +8,20 @@ import java.util.Map;
 public class TestConnectorReports {
     private final String connector;
     private final String stream;
+    private final boolean disabled;
 
     private final Map<String, TestReport> reports = new LinkedHashMap<>();
 
     public TestConnectorReports(final JsonObject fromJsom) {
         this(fromJsom.getStringRequired("name"),
-            fromJsom.getStringRequired("stream"));
+            fromJsom.getStringRequired("stream"),
+            fromJsom.getBoolean("disabled"));
     }
 
-    public TestConnectorReports(final String connector, final String stream) {
+    public TestConnectorReports(final String connector, final String stream, final boolean disabled) {
         this.connector = connector;
         this.stream = stream;
+        this.disabled = disabled;
     }
 
     public void runTest(String name, Runnable r) {
@@ -49,6 +52,10 @@ public class TestConnectorReports {
 
     public String stream() {
         return stream;
+    }
+
+    public boolean isDisabled() {
+        return disabled;
     }
 
     public Map<String, TestReport> reports() {

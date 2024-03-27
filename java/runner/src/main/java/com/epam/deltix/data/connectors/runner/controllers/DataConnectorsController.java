@@ -35,7 +35,8 @@ public class DataConnectorsController {
                     settings.getType(),
                     settings.getName(),
                     settings.getStream(),
-                    "UNKNOWN" // todo: get status
+                    "UNKNOWN", // todo: get status
+                    settings.isDisabled()
                 )
             );
         });
