@@ -196,7 +196,7 @@ connectors:
       - "L1"
       - "L2"
       - "TRADES"
-    instruments: "BTC-USD=BTC/USD, ETH-USD=ETH/USD"
+    instruments: "BTC-USD=BTC/USD, ETH-USD=ETH/USD, USDT-USD=USDT/USD, USDC-USDT=USDC/USDT"
 
   ascendex:
     stream: ascendex
