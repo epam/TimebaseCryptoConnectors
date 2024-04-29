@@ -30,6 +30,24 @@ With [TimeBase Community Edition](https://github.com/finos/TimeBase-CE) you get 
 
 https://user-images.githubusercontent.com/46220620/172610668-e9fcd008-4a49-477e-93ba-45038ca9a3d4.mp4
 
+
+## Build and Run
+
+Build the project with [Gradle](http://gradle.org/) using this
+[build.gradle](https://github.com/epam/TimebaseCryptoConnectors/blob/main/build.gradle) file.
+
+You will require the Java 11+ and Gradle 8.6 to build:
+
+Full clean and build of all modules
+
+```shell
+    $ ./gradlew clean build
+```
+
+And start it
+```shell
+    $ ./bin/runner.sh
+```
 ### Configuration 
 
 By default, we launch with the [default](https://raw.githubusercontent.com/epam/TimebaseCryptoConnectors/main/java/runner/src/main/resources/application.yaml) configuration to start all the available data connectors. Recorded market data is saved into `/timebase-home` directory. You can create custom configurations to run just the selected connectors with specific settings.
