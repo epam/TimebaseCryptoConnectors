@@ -11,10 +11,7 @@ import com.epam.deltix.dfp.Decimal64Utils;
 import com.epam.deltix.qsrv.hf.tickdb.pub.DXTickStream;
 import com.epam.deltix.timebase.messages.TypeConstants;
 import com.epam.deltix.timebase.messages.universal.*;
-import com.epam.deltix.timebase.orderbook.api.MarketSide;
-import com.epam.deltix.timebase.orderbook.api.OrderBook;
-import com.epam.deltix.timebase.orderbook.api.OrderBookFactory;
-import com.epam.deltix.timebase.orderbook.api.OrderBookQuote;
+import com.epam.deltix.timebase.orderbook.api.*;
 import com.epam.deltix.timebase.orderbook.options.OrderBookOptionsBuilder;
 import com.epam.deltix.timebase.orderbook.options.OrderBookType;
 import com.epam.deltix.timebase.orderbook.options.UpdateMode;
@@ -330,7 +327,7 @@ public class L2DataValidator implements DataValidator {
         if (!SKIP_CONNECTORS_TRADE_SIDE_VALIDATION.contains(stream.toString())) {
             if (entry.getSide() == null) {
                 sendMessageToLogger(headerInfo, quotes.getQuote(0).getExchangeId(),
-                        "Trade side doesn't exist", Severity.ERROR
+                        "Trade side doesn't exist", Severity.WARNING
                 );
             }
         }

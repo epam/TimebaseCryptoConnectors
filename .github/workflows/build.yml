@@ -3,7 +3,7 @@ name: Build CI
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: [main, int-test]
   pull_request:
     types: [opened, synchronize]
     branches: [main]
