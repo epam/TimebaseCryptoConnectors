@@ -1,8 +1,6 @@
 # TimeBase Crypto Market Data Connectors
 
 [![Build CI](https://github.com/epam/TimebaseCryptoConnectors/actions/workflows/build.yml/badge.svg)](https://github.com/epam/TimebaseCryptoConnectors/actions/workflows/build.yml)
-[![Language grade: Java](https://img.shields.io/lgtm/grade/java/g/epam/TimebaseCryptoConnectors.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/epam/TimebaseCryptoConnectors/context:java)
-[![Total alerts](https://img.shields.io/lgtm/alerts/g/epam/TimebaseCryptoConnectors.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/epam/TimebaseCryptoConnectors/alerts/)
 
 With [TimeBase Community Edition](https://github.com/finos/TimeBase-CE) you get access to free [market data connectors](#supported-crypto-exchanges) you can use to receive normalized market data with any level of granularity (top of the book, L2) from the most popular crypto exchanges and recording it in [TimeBase](https://kb.timebase.info/) **in a matter of minutes**. 
 
