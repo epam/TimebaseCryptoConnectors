@@ -236,13 +236,13 @@ public class DataValidatorImpl implements DataValidator {
     }
 
     public static void main(String[] args) {
-        DXTickDB db = TickDBFactory.openFromUrl("dxtick://localhost:8160", true);
-        final DXTickStream stream = db.getStream("bitfinex");
+        DXTickDB db = TickDBFactory.openFromUrl("dxtick://localhost:8201", true);
+        final DXTickStream stream = db.getStream("bybit-options");
 
         Map<String, DataValidator> validators = new HashMap<>();
         AtomicLong errors = new AtomicLong();
 
-        try (TickCursor cursor = stream.select(TimeConstants.TIMESTAMP_UNKNOWN, new SelectionOptions(false, true))) {
+        try (TickCursor cursor = stream.select(TimeConstants.TIMESTAMP_UNKNOWN, new SelectionOptions(false, false))) {
             int messages = 0;
             while (cursor.next()) {
                 InstrumentMessage message = cursor.getMessage();
@@ -275,6 +275,8 @@ public class DataValidatorImpl implements DataValidator {
                 }
             }
         }
+
+        db.close();
     }
 
     private static DataValidator createValidator(String symbol, LogProcessor log, DXTickStream strem) {

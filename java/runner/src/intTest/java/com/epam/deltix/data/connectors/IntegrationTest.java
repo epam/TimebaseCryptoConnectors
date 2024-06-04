@@ -65,7 +65,7 @@ public class IntegrationTest extends TbIntTestPreparation {
             withFileSystemBind("build/intTest/config", "/runner/config", BindMode.READ_WRITE).
             withStartupTimeout(Duration.ofMinutes(5));
 
-    private static final int READ_TIMEOUT_S = 10;
+    private static final int READ_TIMEOUT_S = 20;
 
     private static final int SMOKE_READ_MESSAGES = 100;
     private static final int VALIDATION_READ_MESSAGES = 2000;

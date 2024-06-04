@@ -174,9 +174,11 @@ public class L2Producer<I extends BookItem<E>, E extends BookEvent>
             case VENDOR_SNAPSHOT:
             case PERIODICAL_SNAPSHOT:
                 if ((updatedSides & OFFER_MASK) == 0) {
+                    resetAsksEntry.setExchangeId(exchangeId);
                     entries.add(resetAsksEntry);
                 }
                 if ((updatedSides & BID_MASK) == 0) {
+                    resetBidsEntry.setExchangeId(exchangeId);
                     entries.add(resetBidsEntry);
                 }
                 break;
