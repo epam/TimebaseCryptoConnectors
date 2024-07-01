@@ -7,14 +7,17 @@ public class DataConnectorDto {
     private String stream;
     private String status;
 
+    private boolean disabled;
+
     public DataConnectorDto() {
     }
 
-    public DataConnectorDto(String type, String name, String stream, String status) {
+    public DataConnectorDto(String type, String name, String stream, String status, boolean disabled) {
         this.type = type;
         this.name = name;
         this.stream = stream;
         this.status = status;
+        this.disabled = disabled;
     }
 
     public String getType() {
@@ -47,5 +50,13 @@ public class DataConnectorDto {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public boolean isDisabled() {
+        return disabled;
+    }
+
+    public void setDisabled(boolean disabled) {
+        this.disabled = disabled;
     }
 }

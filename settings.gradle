@@ -1,3 +1,6 @@
+import java.nio.file.Files
+import java.nio.file.Paths
+
 def excludingProjects = ['buildSrc'] as Set
 
 def discoverSubprojects
@@ -7,7 +10,7 @@ discoverSubprojects = { File baseFolder, File currentFolder, List toCollection -
         def relative = baseFolder.toPath().relativize(dir.toPath())
         def projectName = relative.toString().replace(File.separatorChar, ':' as char)
 
-        if (new File('build.gradle', dir).exists() && new File('src', dir).exists()) {
+        if (Files.exists(Paths.get(dir.getAbsolutePath(), 'build.gradle')) && Files.exists(Paths.get(dir.getAbsolutePath(), 'src'))) {
             println "Found project: ${projectName}"
 
             if (!excludingProjects.contains(projectName)) {
@@ -21,5 +24,5 @@ discoverSubprojects = { File baseFolder, File currentFolder, List toCollection -
     return toCollection
 }
 
-include discoverSubprojects(rootDir, new File("java", rootDir), new ArrayList()) as String[]
+include discoverSubprojects(rootDir, new File(rootDir, "java"), new ArrayList()) as String[]
 

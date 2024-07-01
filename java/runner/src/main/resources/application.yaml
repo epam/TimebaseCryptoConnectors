@@ -196,7 +196,7 @@ connectors:
       - "L1"
       - "L2"
       - "TRADES"
-    instruments: "BTC-USD=BTC/USD, ETH-USD=ETH/USD"
+    instruments: "BTC-USD=BTC/USD, ETH-USD=ETH/USD, USDT-USD=USDT/USD, USDC-USDT=USDC/USDT"
 
   ascendex:
     stream: ascendex
@@ -260,13 +260,23 @@ connectors:
 
   deribit:
     stream: deribit
-    wsUrl: wss://test.deribit.com/ws/api/v2
+    wsUrl: wss://streams.deribit.com/ws/api/v2
     depth: 20
     model:
       - "L1"
       - "L2"
       - "TRADES"
-    instruments: "ada_usdc-perpetual=ADA/USDC,avax_usdc-perpetual=AVAX/USDC,sol_usdc-perpetual=SOL/USDC,xrp_usdc-perpetual=XRP/USDC"
+    instruments: "BTC_USDT-perpetual=BTC/USDT,ETH_USDT-perpetual=ETH/USDT,LTC_USDC-perpetual=LTC/USDC,xrp_usdc-perpetual=XRP/USDC"
+
+  polygon-io-stocks:
+    type: polygon-io
+    stream: polygon-io
+    wsUrl: wss://delayed.polygon.io/stocks
+    apiKey: # api key
+    model:
+      - "L1"
+      - "TRADES"
+    instruments: "TSLA,IEF,RACE,HYG,MSFT,MCD,AMD,REGN,TMO,HUBS,SHY,DBC,GLD,TIP,CVX,ABBV,HRL,VZ,PEP,JPM,AAPL,TM,INTC,UNH"
 
   uniswap:
     stream: uniswap

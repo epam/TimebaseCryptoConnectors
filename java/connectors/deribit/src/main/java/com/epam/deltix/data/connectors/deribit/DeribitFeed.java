@@ -11,6 +11,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class DeribitFeed extends MdSingleWsFeed {
+
+    private static final long PING_PERIOD = 5000;
+
     private final JsonValueParser jsonParser = new JsonValueParser();
     private Map<String, Long> changeIdMap = new HashMap<>();
 
@@ -23,7 +26,26 @@ public class DeribitFeed extends MdSingleWsFeed {
             final Logger logger,
             final String... symbols) {
 
-        super("DERIBIT", uri, depth, 5000, selected, output, errorListener, logger, symbols);
+        super("DERIBIT", uri, depth, 5000, selected, output, errorListener, logger,
+            getPeriodicalJsonTask(), symbols);
+    }
+
+    private static PeriodicalJsonTask getPeriodicalJsonTask() {
+        return new PeriodicalJsonTask() {
+            @Override
+            public long delayMillis() {
+                return PING_PERIOD;
+            }
+
+            @Override
+            public void execute(JsonWriter jsonWriter) {
+                jsonWriter.startObject();
+                jsonWriter.objectMember("method");
+                jsonWriter.stringValue("public/test");
+                jsonWriter.endObject();
+                jsonWriter.eoj();
+            }
+        };
     }
 
     @Override
