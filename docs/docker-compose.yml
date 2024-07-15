@@ -34,7 +34,7 @@ services:
       - timebase
 
   crypto-connectors:
-    image: "epam/timebase-crypto-connectors:0.1.10"    
+    image: "epam/timebase-crypto-connectors:0.1.13"    
     environment:
       - JAVA_OPTS=
         -Xmx1g
