@@ -80,7 +80,7 @@ jobs:
         run: ./gradlew test
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           path: build/reports/junit
           name: Test Report
@@ -91,7 +91,7 @@ jobs:
           echo "$(cat ./java/runner/build/test-reports.md)" >> $GITHUB_STEP_SUMMARY
       - name: Upload Integration test results
         if: always()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: integration-test-results
           path: |
