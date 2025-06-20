@@ -23,6 +23,5 @@ discoverSubprojects = { File baseFolder, File currentFolder, List toCollection -
     }
     return toCollection
 }
-
 include discoverSubprojects(rootDir, new File(rootDir, "java"), new ArrayList()) as String[]
 
