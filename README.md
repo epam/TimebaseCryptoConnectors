@@ -50,8 +50,7 @@ And start it
 
 By default, we launch with the [default](https://raw.githubusercontent.com/epam/TimebaseCryptoConnectors/main/java/runner/src/main/resources/application.yaml) configuration to start all the available data connectors. Recorded market data is saved into `/timebase-home` directory. You can create custom configurations to run just the selected connectors with specific settings.
 
-> Refer to the [configuration](https://github.com/epam/TimebaseCryptoConnectors/blob/main/docs/configuration.md) to learn how to configure. 
-
+> Refer to the [configuration](https://github.com/epam/TimebaseCryptoConnectors/blob/main/docs/configuration.md) to learn how to configure.     
 > Refer to the [developers tutorials](https://github.com/epam/TimebaseCryptoConnectors/blob/main/docs/developer.md) for more in depth information about data model and tutorials on how to develop custom data connectors. 
 
 ## Supported Crypto Exchanges
