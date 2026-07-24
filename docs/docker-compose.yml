@@ -16,6 +16,7 @@ services:
         -Xlog:gc=debug:file=/timebase-home/GClog-TimeBase.log:time,uptime,level,tags:filecount=5,filesize=100m
     ports:
       - 8011:8011
+      - 8021:8021
     volumes:
       - "./timebase-home:/timebase-home"
 
