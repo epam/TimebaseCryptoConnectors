@@ -1,7 +1,7 @@
 version: "3"
 services:
   timebase:
-    image: "finos/timebase-ce-server:6.1.14"
+    image: "finos/timebase-ce-server:6.2"
     stop_grace_period: 5m
     ulimits:
       nofile:
@@ -20,7 +20,7 @@ services:
       - "./timebase-home:/timebase-home"
 
   timebase-admin:
-    image: "epam/timebase-ws-server:1.0.4"
+    image: "epam/timebase-ws-server:1.2"
     environment:
       - JAVA_OPTS=
         -Xmx1g
