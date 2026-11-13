@@ -1,4 +1,4 @@
-FROM amazoncorretto:11-alpine3.17
+FROM amazoncorretto:11-alpine3.23
 
 ENV LANG=C.UTF-8
 COPY runner /runner
